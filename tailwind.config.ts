@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -24,6 +25,21 @@ export default {
 				ring: 'hsl(var(--ring))',
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
+				navy: {
+					DEFAULT: '#003366',
+					light: '#0A4A8B',
+					dark: '#00264D',
+				},
+				gold: {
+					DEFAULT: '#B8860B',
+					light: '#DAA520',
+					dark: '#8B6914',
+				},
+				priority: {
+					high: '#B22222',
+					medium: '#FF8C00',
+					low: '#2E8B57',
+				},
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))'
@@ -84,11 +100,46 @@ export default {
 					to: {
 						height: '0'
 					}
-				}
+				},
+				'fade-in': {
+					'0%': {
+						opacity: '0',
+					},
+					'100%': {
+						opacity: '1',
+					},
+				},
+				'slide-in': {
+					'0%': {
+						transform: 'translateY(20px)',
+						opacity: '0',
+					},
+					'100%': {
+						transform: 'translateY(0)',
+						opacity: '1',
+					},
+				},
+				'rotate-notice': {
+					'0%, 15%': {
+						opacity: '0',
+						transform: 'translateY(20px)',
+					},
+					'20%, 80%': {
+						opacity: '1',
+						transform: 'translateY(0)',
+					},
+					'85%, 100%': {
+						opacity: '0',
+						transform: 'translateY(-20px)',
+					},
+				},
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in': 'fade-in 0.5s ease-out',
+				'slide-in': 'slide-in 0.5s ease-out',
+				'rotate-notice': 'rotate-notice 10s ease-in-out infinite',
 			}
 		}
 	},
