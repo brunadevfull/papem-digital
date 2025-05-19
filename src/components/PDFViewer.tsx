@@ -9,7 +9,7 @@ interface PDFViewerProps {
 }
 
 const PDFViewer: React.FC<PDFViewerProps> = ({ documentType, title }) => {
-  const { pageChangeInterval } = useDisplay();
+  const { pageChangeInterval, activeEscalaDoc } = useDisplay();
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(5); // Placeholder, would normally come from PDF.js
   const [loading, setLoading] = useState(false);
@@ -18,6 +18,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ documentType, title }) => {
   // Simulate PDF loading and page changes
   useEffect(() => {
     setLoading(true);
+    setCurrentPage(1); // Reset to first page when document changes
     
     // Simulate loading delay
     const loadTimer = setTimeout(() => {
@@ -33,7 +34,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ documentType, title }) => {
         window.clearInterval(timerRef.current);
       }
     };
-  }, [documentType]);
+  }, [documentType, activeEscalaDoc?.id]);
   
   // Set up page rotation interval
   useEffect(() => {
@@ -55,11 +56,19 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ documentType, title }) => {
     }
   }, [loading, totalPages, pageChangeInterval]);
 
+  // Display category subtitle for escala documents
+  const categorySubtitle = documentType === "escala" && activeEscalaDoc?.category ? 
+    `(${activeEscalaDoc.category === "oficial" ? "Oficiais" : "Praças"})` : 
+    "";
+
   return (
     <Card className="h-full overflow-hidden border-navy">
       <CardHeader className="bg-navy text-white py-2">
         <CardTitle className="text-center flex items-center justify-between">
-          <span>{title}</span>
+          <div className="flex items-center">
+            <span>{title}</span>
+            {categorySubtitle && <span className="ml-2 text-sm">{categorySubtitle}</span>}
+          </div>
           <span className="text-sm">
             {loading ? "Carregando..." : `Página ${currentPage} de ${totalPages}`}
           </span>
@@ -79,7 +88,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ documentType, title }) => {
                 <p className="text-2xl text-center text-navy">
                   {documentType === "plasa" 
                     ? `Plano de Serviço - Página ${currentPage}`
-                    : `Escala de Serviço - Página ${currentPage}`
+                    : `Escala de Serviço${categorySubtitle ? ' ' + categorySubtitle : ''} - Página ${currentPage}`
                   }
                   <br />
                   <span className="text-sm text-gray-500">

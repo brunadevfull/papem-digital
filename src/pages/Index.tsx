@@ -43,7 +43,7 @@ const Index = () => {
           <div className="h-3/5">
             <PDFViewer 
               documentType="escala" 
-              title={activeEscalaDoc?.title || "Escala de Serviço"} 
+              title={activeEscalaDoc?.title || "Escala de Serviço"}
             />
           </div>
           

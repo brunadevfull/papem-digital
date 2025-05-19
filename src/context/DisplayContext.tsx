@@ -1,5 +1,5 @@
 
-import React, { createContext, useState, useContext, useEffect } from "react";
+import React, { createContext, useState, useContext, useEffect, useRef } from "react";
 
 export interface Notice {
   id: string;
@@ -16,6 +16,7 @@ export interface PDFDocument {
   title: string;
   url: string;
   type: "plasa" | "escala";
+  category?: "oficial" | "praca"; // Added category field for escala documents
   uploadDate: Date;
   active: boolean;
 }
@@ -27,7 +28,9 @@ interface DisplayContextType {
   activePlasaDoc: PDFDocument | null;
   activeEscalaDoc: PDFDocument | null;
   pageChangeInterval: number;
+  documentAlternateInterval: number;
   setPageChangeInterval: (interval: number) => void;
+  setDocumentAlternateInterval: (interval: number) => void;
   addNotice: (notice: Omit<Notice, "id">) => void;
   updateNotice: (notice: Notice) => void;
   deleteNotice: (id: string) => void;
@@ -94,9 +97,19 @@ const sampleDocuments: PDFDocument[] = [
   },
   {
     id: "escala1",
-    title: "Escala de Serviço - Maio 2025",
+    title: "Escala de Serviço (Oficiais) - Maio 2025",
     url: "https://lovable.dev/placeholder.pdf", // Placeholder URL
     type: "escala",
+    category: "oficial",
+    uploadDate: new Date(),
+    active: true
+  },
+  {
+    id: "escala2",
+    title: "Escala de Serviço (Praças) - Maio 2025",
+    url: "https://lovable.dev/placeholder.pdf", // Placeholder URL
+    type: "escala",
+    category: "praca",
     uploadDate: new Date(),
     active: true
   }
@@ -106,12 +119,43 @@ export const DisplayProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [notices, setNotices] = useState<Notice[]>(sampleNotices);
   const [documents, setDocuments] = useState<PDFDocument[]>(sampleDocuments);
   const [pageChangeInterval, setPageChangeInterval] = useState<number>(10000); // 10 seconds default
+  const [documentAlternateInterval, setDocumentAlternateInterval] = useState<number>(30000); // 30 seconds default
+  const [activeEscalaIndex, setActiveEscalaIndex] = useState<number>(0);
   
   const plasaDocuments = documents.filter(doc => doc.type === "plasa");
   const escalaDocuments = documents.filter(doc => doc.type === "escala");
   
   const activePlasaDoc = plasaDocuments.find(doc => doc.active) || null;
-  const activeEscalaDoc = escalaDocuments.find(doc => doc.active) || null;
+  
+  // Get active escalas
+  const activeEscalas = escalaDocuments.filter(doc => doc.active);
+  
+  // Set up escala alternation
+  const escalaTimerRef = useRef<number | null>(null);
+  
+  // Handle escala alternation
+  useEffect(() => {
+    if (activeEscalas.length > 1) {
+      if (escalaTimerRef.current) {
+        window.clearInterval(escalaTimerRef.current);
+      }
+      
+      escalaTimerRef.current = window.setInterval(() => {
+        setActiveEscalaIndex(prev => (prev + 1) % activeEscalas.length);
+      }, documentAlternateInterval);
+      
+      return () => {
+        if (escalaTimerRef.current) {
+          window.clearInterval(escalaTimerRef.current);
+        }
+      };
+    }
+  }, [activeEscalas, documentAlternateInterval]);
+  
+  // Get the current active escala based on the alternation index
+  const activeEscalaDoc = activeEscalas.length > 0 
+    ? activeEscalas[activeEscalaIndex % activeEscalas.length] 
+    : null;
 
   const addNotice = (notice: Omit<Notice, "id">) => {
     const newNotice = {
@@ -172,7 +216,9 @@ export const DisplayProvider: React.FC<{ children: React.ReactNode }> = ({ child
         activePlasaDoc,
         activeEscalaDoc,
         pageChangeInterval,
+        documentAlternateInterval,
         setPageChangeInterval,
+        setDocumentAlternateInterval,
         addNotice,
         updateNotice,
         deleteNotice,

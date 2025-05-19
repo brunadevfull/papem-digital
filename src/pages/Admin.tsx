@@ -28,6 +28,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useDisplay, Notice, PDFDocument } from "@/context/DisplayContext";
 import { useToast } from "@/hooks/use-toast";
+import { 
+  Sheet, 
+  SheetContent, 
+  SheetDescription, 
+  SheetHeader, 
+  SheetTitle, 
+  SheetTrigger 
+} from "@/components/ui/sheet";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 
 const Admin = () => {
   const { 
@@ -41,7 +50,9 @@ const Admin = () => {
     updateDocument,
     deleteDocument,
     pageChangeInterval,
-    setPageChangeInterval
+    documentAlternateInterval,
+    setPageChangeInterval,
+    setDocumentAlternateInterval
   } = useDisplay();
   
   const { toast } = useToast();
@@ -59,6 +70,8 @@ const Admin = () => {
   const [selectedDocType, setSelectedDocType] = useState<"plasa" | "escala">("plasa");
   const [docTitle, setDocTitle] = useState("");
   const [docUrl, setDocUrl] = useState("");
+  const [docCategory, setDocCategory] = useState<"oficial" | "praca" | undefined>(undefined);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   
   // Form handlers
   const handleNoticeSubmit = (e: React.FormEvent) => {
@@ -91,13 +104,41 @@ const Admin = () => {
     });
   };
   
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setSelectedFile(file);
+      
+      // Auto-populate title from filename if empty
+      if (!docTitle) {
+        let fileName = file.name.replace(/\.[^/.]+$/, ""); // Remove file extension
+        setDocTitle(fileName);
+      }
+      
+      // In a real application, we'd upload to a server and get a URL
+      // For demo purposes, create an object URL
+      const fileUrl = URL.createObjectURL(file);
+      setDocUrl(fileUrl);
+    }
+  };
+  
   const handleDocumentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!docTitle || !docUrl) {
+    if (!docTitle || (!docUrl && !selectedFile)) {
       toast({
         title: "Erro",
-        description: "Título e URL do documento são obrigatórios.",
+        description: "Título e arquivo do documento são obrigatórios.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // For escala docs, category is required
+    if (selectedDocType === "escala" && !docCategory) {
+      toast({
+        title: "Erro",
+        description: "Selecione a categoria da escala (Oficial ou Praça).",
         variant: "destructive"
       });
       return;
@@ -107,6 +148,7 @@ const Admin = () => {
       title: docTitle,
       url: docUrl,
       type: selectedDocType,
+      category: selectedDocType === "escala" ? docCategory : undefined,
       active: true
     });
     
@@ -118,6 +160,8 @@ const Admin = () => {
     // Reset form
     setDocTitle("");
     setDocUrl("");
+    setSelectedFile(null);
+    setDocCategory(undefined);
   };
   
   const toggleNoticeActive = (notice: Notice) => {
@@ -166,6 +210,17 @@ const Admin = () => {
       });
     }
   };
+  
+  const updateDocumentAlternateInterval = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value);
+    if (value >= 10 && value <= 300) {
+      setDocumentAlternateInterval(value * 1000);
+      toast({
+        title: "Intervalo de alternância atualizado",
+        description: `Documentos agora alternam a cada ${value} segundos.`
+      });
+    }
+  };
 
   const formatDate = (date: Date) => {
     return date.toISOString().split("T")[0];
@@ -210,7 +265,13 @@ const Admin = () => {
                       <Label htmlFor="docType">Tipo de Documento</Label>
                       <Select 
                         value={selectedDocType} 
-                        onValueChange={(value) => setSelectedDocType(value as "plasa" | "escala")}
+                        onValueChange={(value) => {
+                          setSelectedDocType(value as "plasa" | "escala");
+                          // Reset category when switching to PLASA
+                          if (value === "plasa") {
+                            setDocCategory(undefined);
+                          }
+                        }}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione o tipo" />
@@ -222,18 +283,50 @@ const Admin = () => {
                       </Select>
                     </div>
                     
+                    {/* Category selector for Escala documents */}
+                    {selectedDocType === "escala" && (
+                      <div className="space-y-2">
+                        <Label htmlFor="docCategory">Categoria da Escala</Label>
+                        <Select 
+                          value={docCategory} 
+                          onValueChange={(value) => setDocCategory(value as "oficial" | "praca")}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione a categoria" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="oficial">Oficiais</SelectItem>
+                            <SelectItem value="praca">Praças</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                    
                     <div className="space-y-2">
                       <Label htmlFor="docTitle">Título do Documento</Label>
                       <Input 
                         id="docTitle" 
-                        placeholder="Ex: PLASA - Maio 2025"
+                        placeholder={`Ex: ${selectedDocType === "plasa" ? "PLASA - Maio 2025" : "Escala de Serviço - Maio 2025"}`}
                         value={docTitle}
                         onChange={(e) => setDocTitle(e.target.value)}
                       />
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="docUrl">URL do Documento (PDF)</Label>
+                      <Label htmlFor="docFile">Arquivo do Documento (PDF)</Label>
+                      <Input 
+                        id="docFile"
+                        type="file"
+                        accept="application/pdf"
+                        onChange={handleFileChange}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        {selectedFile ? `Arquivo selecionado: ${selectedFile.name}` : "Nenhum arquivo selecionado"}
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="docUrl">URL do Documento (alternativo)</Label>
                       <Input 
                         id="docUrl" 
                         placeholder="https://exemplo.com/documento.pdf"
@@ -242,7 +335,7 @@ const Admin = () => {
                         type="url"
                       />
                       <p className="text-xs text-muted-foreground">
-                        Em um sistema completo, haveria um upload de arquivo aqui.
+                        Se você não tiver um arquivo para upload, pode fornecer uma URL.
                       </p>
                     </div>
                   </CardContent>
@@ -287,6 +380,26 @@ const Admin = () => {
                               >
                                 {doc.active ? "Ativo" : "Inativo"}
                               </Button>
+                              <Sheet>
+                                <SheetTrigger asChild>
+                                  <Button variant="outline" size="sm">Visualizar</Button>
+                                </SheetTrigger>
+                                <SheetContent className="w-[85vw] sm:max-w-4xl">
+                                  <SheetHeader>
+                                    <SheetTitle>{doc.title}</SheetTitle>
+                                    <SheetDescription>
+                                      Visualização prévia do documento
+                                    </SheetDescription>
+                                  </SheetHeader>
+                                  <div className="mt-6 h-[80vh]">
+                                    <iframe 
+                                      src={doc.url} 
+                                      className="w-full h-full border rounded"
+                                      title={doc.title}
+                                    />
+                                  </div>
+                                </SheetContent>
+                              </Sheet>
                               <Button 
                                 variant="destructive" 
                                 size="sm"
@@ -320,7 +433,14 @@ const Admin = () => {
                         {escalaDocuments.map((doc) => (
                           <li key={doc.id} className="border rounded-md p-3 flex justify-between items-center">
                             <div>
-                              <p className="font-medium">{doc.title}</p>
+                              <p className="font-medium">
+                                {doc.title}
+                                {doc.category && (
+                                  <span className="ml-2 text-xs bg-navy text-white px-2 py-0.5 rounded-full">
+                                    {doc.category === "oficial" ? "Oficiais" : "Praças"}
+                                  </span>
+                                )}
+                              </p>
                               <p className="text-xs text-muted-foreground">
                                 {new Date(doc.uploadDate).toLocaleDateString('pt-BR')}
                               </p>
@@ -333,6 +453,26 @@ const Admin = () => {
                               >
                                 {doc.active ? "Ativo" : "Inativo"}
                               </Button>
+                              <Sheet>
+                                <SheetTrigger asChild>
+                                  <Button variant="outline" size="sm">Visualizar</Button>
+                                </SheetTrigger>
+                                <SheetContent className="w-[85vw] sm:max-w-4xl">
+                                  <SheetHeader>
+                                    <SheetTitle>{doc.title}</SheetTitle>
+                                    <SheetDescription>
+                                      Visualização prévia do documento
+                                    </SheetDescription>
+                                  </SheetHeader>
+                                  <div className="mt-6 h-[80vh]">
+                                    <iframe 
+                                      src={doc.url} 
+                                      className="w-full h-full border rounded"
+                                      title={doc.title}
+                                    />
+                                  </div>
+                                </SheetContent>
+                              </Sheet>
                               <Button 
                                 variant="destructive" 
                                 size="sm"
@@ -529,13 +669,48 @@ const Admin = () => {
                   </p>
                 </div>
                 
+                <div className="space-y-2">
+                  <div className="flex items-center">
+                    <Label htmlFor="documentAlternateInterval">
+                      Intervalo de Alternância entre Escalas (segundos)
+                    </Label>
+                    <HoverCard>
+                      <HoverCardTrigger asChild>
+                        <span className="ml-2 text-blue-500 cursor-help text-sm">[?]</span>
+                      </HoverCardTrigger>
+                      <HoverCardContent className="w-80">
+                        <p className="text-sm">
+                          Define quanto tempo cada escala (Oficiais/Praças) será exibida antes de alternar para a outra. 
+                          Esta configuração só tem efeito quando há mais de uma escala ativa.
+                        </p>
+                      </HoverCardContent>
+                    </HoverCard>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Input 
+                      id="documentAlternateInterval" 
+                      type="number" 
+                      min="10" 
+                      max="300" 
+                      className="w-24"
+                      value={documentAlternateInterval / 1000}
+                      onChange={updateDocumentAlternateInterval}
+                    />
+                    <span className="text-sm text-muted-foreground">segundos</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Recomendado: tempo suficiente para visualizar todas as páginas de cada documento.
+                  </p>
+                </div>
+                
                 <div className="border-t pt-4">
                   <h3 className="font-medium mb-2">Instruções Gerais</h3>
                   <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
                     <li>Todos os documentos devem estar no formato PDF.</li>
                     <li>Para melhor visualização, recomenda-se que os documentos tenham orientação paisagem.</li>
+                    <li>É possível ter múltiplos documentos ativos de cada tipo, que serão alternados automaticamente.</li>
+                    <li>As escalas de Oficiais e Praças serão alternadas automaticamente no intervalo configurado.</li>
                     <li>Avisos com prioridade "Alta" serão exibidos com destaque em vermelho.</li>
-                    <li>É possível ter múltiplos documentos cadastrados, mas apenas um de cada tipo estará ativo por vez.</li>
                   </ul>
                 </div>
               </CardContent>
