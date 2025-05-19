@@ -33,7 +33,7 @@ const Index = () => {
         <div className="lg:w-3/5 h-[calc(100vh-12rem)] min-h-[500px]">
           <PDFViewer 
             documentType="plasa" 
-            title={activePlasaDoc?.title || "PLASA - Plano de Serviço"} 
+            title={activePlasaDoc?.title || "PLASA - Plano de Serviço Semanal"} 
           />
         </div>
         
@@ -43,7 +43,7 @@ const Index = () => {
           <div className="h-3/5 min-h-[300px]">
             <PDFViewer 
               documentType="escala" 
-              title={activeEscalaDoc?.title || "Escala de Serviço"}
+              title={activeEscalaDoc?.title || "Escala de Serviço Semanal"}
             />
           </div>
           

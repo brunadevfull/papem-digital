@@ -25,7 +25,13 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ documentType, title }) => {
       setLoading(false);
       
       // Random total pages between 3-10 for demo purposes
-      setTotalPages(Math.floor(Math.random() * 8) + 3);
+      // For PLASA, set random pages (as mentioned, it varies)
+      // For Escala, just one page is enough based on the examples
+      if (documentType === "plasa") {
+        setTotalPages(Math.floor(Math.random() * 5) + 2); // 2-6 pages for PLASA
+      } else {
+        setTotalPages(1); // Escala is usually just one page
+      }
     }, 1500);
     
     return () => {
@@ -61,6 +67,21 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ documentType, title }) => {
     `(${activeEscalaDoc.category === "oficial" ? "Oficiais" : "Praças"})` : 
     "";
 
+  // Function to determine which image to display based on document type and category
+  const getDocumentImage = () => {
+    if (documentType === "plasa") {
+      return "/lovable-uploads/8c1ec57b-2391-4a98-9fc7-5c4e55a162e0.png";
+    } else if (documentType === "escala") {
+      // Use the appropriate image based on the category
+      if (activeEscalaDoc?.category === "oficial") {
+        return "/lovable-uploads/8c1ec57b-2391-4a98-9fc7-5c4e55a162e0.png";
+      } else {
+        return "/lovable-uploads/ecf9c29e-dfcd-4c3a-bb9e-ede0338bd624.png";
+      }
+    }
+    return "";
+  };
+
   return (
     <Card className="h-full overflow-hidden border-navy">
       <CardHeader className="bg-navy text-white py-2">
@@ -85,19 +106,11 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ documentType, title }) => {
             {/* PDF container with proper A4 aspect ratio and scaling */}
             <div className="w-full h-full overflow-auto flex items-center justify-center bg-gray-100 p-4">
               <div className="bg-white shadow-lg w-full max-h-full aspect-[1/1.414] flex items-center justify-center p-4 border overflow-hidden">
-                {documentType === "plasa" ? (
-                  <img 
-                    src="/lovable-uploads/da99c615-4b81-4d1e-83a3-480696fdefaf.png" 
-                    alt="PLASA - Plano de Serviço"
-                    className="max-w-full max-h-full object-contain"
-                  />
-                ) : (
-                  <img 
-                    src="/lovable-uploads/049f840b-8996-485f-a133-2fe3521ee013.png" 
-                    alt="Escala de Serviço"
-                    className="max-w-full max-h-full object-contain"
-                  />
-                )}
+                <img 
+                  src={getDocumentImage()} 
+                  alt={documentType === "plasa" ? "PLASA - Plano de Serviço" : "Escala de Serviço"}
+                  className="max-w-full max-h-full object-contain"
+                />
                 <div className="absolute bottom-0 left-0 right-0 text-center text-sm text-gray-500 bg-white/70 py-1">
                   Simulação de PDF - Página {currentPage} de {totalPages}
                 </div>
