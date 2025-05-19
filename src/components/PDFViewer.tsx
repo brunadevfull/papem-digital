@@ -82,19 +82,25 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ documentType, title }) => {
           </div>
         ) : (
           <div className="relative w-full h-full flex items-center justify-center">
-            {/* This would be replaced with actual PDF.js rendering */}
-            <div className="w-full h-full flex items-center justify-center bg-gray-100 p-4">
-              <div className="bg-white shadow-lg w-full h-full flex items-center justify-center p-10 border">
-                <p className="text-2xl text-center text-navy">
-                  {documentType === "plasa" 
-                    ? `Plano de Serviço - Página ${currentPage}`
-                    : `Escala de Serviço${categorySubtitle ? ' ' + categorySubtitle : ''} - Página ${currentPage}`
-                  }
-                  <br />
-                  <span className="text-sm text-gray-500">
-                    Aqui seria exibido o conteúdo real do PDF usando PDF.js
-                  </span>
-                </p>
+            {/* PDF container with proper A4 aspect ratio and scaling */}
+            <div className="w-full h-full overflow-auto flex items-center justify-center bg-gray-100 p-4">
+              <div className="bg-white shadow-lg w-full max-h-full aspect-[1/1.414] flex items-center justify-center p-4 border overflow-hidden">
+                {documentType === "plasa" ? (
+                  <img 
+                    src="/lovable-uploads/da99c615-4b81-4d1e-83a3-480696fdefaf.png" 
+                    alt="PLASA - Plano de Serviço"
+                    className="max-w-full max-h-full object-contain"
+                  />
+                ) : (
+                  <img 
+                    src="/lovable-uploads/049f840b-8996-485f-a133-2fe3521ee013.png" 
+                    alt="Escala de Serviço"
+                    className="max-w-full max-h-full object-contain"
+                  />
+                )}
+                <div className="absolute bottom-0 left-0 right-0 text-center text-sm text-gray-500 bg-white/70 py-1">
+                  Simulação de PDF - Página {currentPage} de {totalPages}
+                </div>
               </div>
             </div>
             <div className="absolute bottom-4 right-4 bg-navy text-white px-3 py-1 rounded-full text-sm">

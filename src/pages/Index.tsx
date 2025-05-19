@@ -28,9 +28,9 @@ const Index = () => {
       </header>
       
       {/* Main content area with 60% / 40% split */}
-      <div className="flex-1 flex flex-col lg:flex-row gap-4">
+      <div className="flex-1 flex flex-col lg:flex-row gap-4 overflow-hidden">
         {/* Left side - PLASA (60%) */}
-        <div className="lg:w-3/5 h-[calc(100vh-12rem)]">
+        <div className="lg:w-3/5 h-[calc(100vh-12rem)] min-h-[500px]">
           <PDFViewer 
             documentType="plasa" 
             title={activePlasaDoc?.title || "PLASA - Plano de Serviço"} 
@@ -38,9 +38,9 @@ const Index = () => {
         </div>
         
         {/* Right side - Escala and Notices (40%) */}
-        <div className="lg:w-2/5 h-[calc(100vh-12rem)] flex flex-col gap-4">
+        <div className="lg:w-2/5 h-[calc(100vh-12rem)] min-h-[500px] flex flex-col gap-4">
           {/* Escala de Serviço - top 60% of right side */}
-          <div className="h-3/5">
+          <div className="h-3/5 min-h-[300px]">
             <PDFViewer 
               documentType="escala" 
               title={activeEscalaDoc?.title || "Escala de Serviço"}
