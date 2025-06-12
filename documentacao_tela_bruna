@@ -1,0 +1,429 @@
+# Guia de Instalação - Sistema de Visualização PAPEM
+
+## 1. Pré-requisitos
+
+### 1.1 Instalar Node.js
+- **Download:** https://nodejs.org/
+- **Versão recomendada:** 18.x ou superior
+- **Verificação:**
+```bash
+node --version
+npm --version
+```
+
+### 1.2 Editor de Código (Opcional)
+- Visual Studio Code: https://code.visualstudio.com/
+
+## 2. Configuração do Projeto
+
+### 2.1 Navegar para o diretório do projeto
+```bash
+cd caminho/para/seu/projeto
+```
+
+### 2.2 Instalar dependências
+```bash
+npm install
+```
+
+### 2.3 Verificar se todas as dependências foram instaladas
+```bash
+npm list
+```
+
+## 3. Estrutura do Projeto
+
+Certifique-se de que sua estrutura de arquivos esteja assim:
+```
+projeto/
+├── src/
+│   ├── components/
+│   │   ├── NoticeDisplay.tsx
+│   │   ├── PDFViewer.tsx
+│   │   └── ui/ (componentes shadcn/ui)
+│   ├── context/
+│   │   └── DisplayContext.tsx
+│   ├── pages/
+│   │   ├── Admin.tsx
+│   │   ├── Index.tsx
+│   │   └── NotFound.tsx
+│   ├── App.tsx
+│   ├── main.tsx
+│   └── index.css
+├── package.json
+├── tailwind.config.js
+├── vite.config.ts
+└── tsconfig.json
+```
+
+## 4. Arquivos de Configuração
+
+### 4.1 package.json
+Verifique se contém todas essas dependências:
+```json
+{
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.2",
+    "@tanstack/react-query": "^4.0.0",
+    "tailwindcss": "^3.4.11",
+    "@radix-ui/react-tabs": "^1.0.0",
+    "@radix-ui/react-select": "^1.0.0",
+    "@radix-ui/react-toast": "^1.0.0",
+    "@radix-ui/react-tooltip": "^1.0.0",
+    "@radix-ui/react-sheet": "^1.0.0",
+    "@radix-ui/react-hover-card": "^1.0.0",
+    "lucide-react": "^0.263.1",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.0.0",
+    "tailwind-merge": "^2.0.0",
+    "date-fns": "^2.30.0",
+    "sonner": "^1.0.0",
+    "pdfjs-dist": "^3.11.174"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "typescript": "^5.0.0",
+    "vite": "^5.4.1",
+    "autoprefixer": "^10.4.0",
+    "postcss": "^8.4.0"
+  }
+}
+```
+
+### 4.2 tailwind.config.js
+```javascript
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        navy: {
+          DEFAULT: '#003366',
+          light: '#0A4A8B',
+          dark: '#00264D'
+        },
+        gold: {
+          DEFAULT: '#B8860B',
+          light: '#DAA520',
+          dark: '#8B6914'
+        },
+        priority: {
+          high: '#B22222',
+          medium: '#FF8C00',
+          low: '#2E8B57'
+        }
+      },
+      animation: {
+        'rotate-notice': 'fadeIn 0.5s ease-in-out'
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' }
+        }
+      }
+    },
+  },
+  plugins: [],
+}
+```
+
+### 4.3 vite.config.ts
+```typescript
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import path from 'path'
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
+})
+```
+
+### 4.4 tsconfig.json
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}
+```
+
+## 5. Arquivo Faltante Importante
+
+### 5.1 Criar src/context/DisplayContext.tsx
+Este arquivo parece estar faltando no seu projeto. Crie-o:
+
+```typescript
+import React, { createContext, useContext, useState, useEffect } from "react";
+
+export interface Notice {
+  id: string;
+  title: string;
+  content: string;
+  priority: "high" | "medium" | "low";
+  startDate: Date;
+  endDate: Date;
+  active: boolean;
+}
+
+export interface PDFDocument {
+  id: string;
+  title: string;
+  url: string;
+  type: "plasa" | "escala";
+  category?: "oficial" | "praca";
+  uploadDate: Date;
+  active: boolean;
+}
+
+interface DisplayContextType {
+  notices: Notice[];
+  plasaDocuments: PDFDocument[];
+  escalaDocuments: PDFDocument[];
+  activePlasaDoc: PDFDocument | null;
+  activeEscalaDoc: PDFDocument | null;
+  pageChangeInterval: number;
+  documentAlternateInterval: number;
+  addNotice: (notice: Omit<Notice, "id">) => void;
+  updateNotice: (notice: Notice) => void;
+  deleteNotice: (id: string) => void;
+  addDocument: (document: Omit<PDFDocument, "id" | "uploadDate">) => void;
+  updateDocument: (document: PDFDocument) => void;
+  deleteDocument: (id: string) => void;
+  getActiveNotices: () => Notice[];
+  setPageChangeInterval: (interval: number) => void;
+  setDocumentAlternateInterval: (interval: number) => void;
+}
+
+const DisplayContext = createContext<DisplayContextType | undefined>(undefined);
+
+export const DisplayProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Estados
+  const [notices, setNotices] = useState<Notice[]>([]);
+  const [plasaDocuments, setPlasaDocuments] = useState<PDFDocument[]>([]);
+  const [escalaDocuments, setEscalaDocuments] = useState<PDFDocument[]>([]);
+  const [pageChangeInterval, setPageChangeInterval] = useState(10000); // 10 segundos
+  const [documentAlternateInterval, setDocumentAlternateInterval] = useState(60000); // 60 segundos
+  const [currentEscalaIndex, setCurrentEscalaIndex] = useState(0);
+
+  // Documentos ativos
+  const activePlasaDoc = plasaDocuments.find(doc => doc.active) || null;
+  const activeEscalaDocuments = escalaDocuments.filter(doc => doc.active);
+  const activeEscalaDoc = activeEscalaDocuments[currentEscalaIndex] || null;
+
+  // Alternar entre escalas ativas
+  useEffect(() => {
+    if (activeEscalaDocuments.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setCurrentEscalaIndex(prev => (prev + 1) % activeEscalaDocuments.length);
+    }, documentAlternateInterval);
+
+    return () => clearInterval(interval);
+  }, [activeEscalaDocuments.length, documentAlternateInterval]);
+
+  // Funções
+  const addNotice = (notice: Omit<Notice, "id">) => {
+    const newNotice: Notice = {
+      ...notice,
+      id: Date.now().toString()
+    };
+    setNotices(prev => [...prev, newNotice]);
+  };
+
+  const updateNotice = (updatedNotice: Notice) => {
+    setNotices(prev => prev.map(notice => 
+      notice.id === updatedNotice.id ? updatedNotice : notice
+    ));
+  };
+
+  const deleteNotice = (id: string) => {
+    setNotices(prev => prev.filter(notice => notice.id !== id));
+  };
+
+  const addDocument = (document: Omit<PDFDocument, "id" | "uploadDate">) => {
+    const newDocument: PDFDocument = {
+      ...document,
+      id: Date.now().toString(),
+      uploadDate: new Date()
+    };
+
+    if (document.type === "plasa") {
+      setPlasaDocuments(prev => [...prev, newDocument]);
+    } else {
+      setEscalaDocuments(prev => [...prev, newDocument]);
+    }
+  };
+
+  const updateDocument = (updatedDocument: PDFDocument) => {
+    if (updatedDocument.type === "plasa") {
+      setPlasaDocuments(prev => prev.map(doc => 
+        doc.id === updatedDocument.id ? updatedDocument : doc
+      ));
+    } else {
+      setEscalaDocuments(prev => prev.map(doc => 
+        doc.id === updatedDocument.id ? updatedDocument : doc
+      ));
+    }
+  };
+
+  const deleteDocument = (id: string) => {
+    setPlasaDocuments(prev => prev.filter(doc => doc.id !== id));
+    setEscalaDocuments(prev => prev.filter(doc => doc.id !== id));
+  };
+
+  const getActiveNotices = () => {
+    const now = new Date();
+    return notices.filter(notice => 
+      notice.active && 
+      notice.startDate <= now && 
+      notice.endDate >= now
+    );
+  };
+
+  return (
+    <DisplayContext.Provider value={{
+      notices,
+      plasaDocuments,
+      escalaDocuments,
+      activePlasaDoc,
+      activeEscalaDoc,
+      pageChangeInterval,
+      documentAlternateInterval,
+      addNotice,
+      updateNotice,
+      deleteNotice,
+      addDocument,
+      updateDocument,
+      deleteDocument,
+      getActiveNotices,
+      setPageChangeInterval,
+      setDocumentAlternateInterval
+    }}>
+      {children}
+    </DisplayContext.Provider>
+  );
+};
+
+export const useDisplay = () => {
+  const context = useContext(DisplayContext);
+  if (context === undefined) {
+    throw new Error('useDisplay must be used within a DisplayProvider');
+  }
+  return context;
+};
+```
+
+## 6. Comandos para executar
+
+### 6.1 Instalar componentes shadcn/ui faltantes
+```bash
+npx shadcn-ui@latest init
+npx shadcn-ui@latest add button
+npx shadcn-ui@latest add card
+npx shadcn-ui@latest add input
+npx shadcn-ui@latest add label
+npx shadcn-ui@latest add select
+npx shadcn-ui@latest add tabs
+npx shadcn-ui@latest add textarea
+npx shadcn-ui@latest add toast
+npx shadcn-ui@latest add toaster
+npx shadcn-ui@latest add tooltip
+npx shadcn-ui@latest add sheet
+npx shadcn-ui@latest add hover-card
+npx shadcn-ui@latest add sonner
+```
+
+### 6.2 Executar em modo desenvolvimento
+```bash
+npm run dev
+```
+
+### 6.3 Construir para produção
+```bash
+npm run build
+```
+
+### 6.4 Visualizar build de produção
+```bash
+npm run preview
+```
+
+## 7. Verificação da Instalação
+
+1. **Acesse:** http://localhost:5173/ (página principal)
+2. **Acesse:** http://localhost:5173/admin (painel administrativo)
+3. **Verifique se:** Todas as páginas carregam sem erros
+4. **Teste:** Adicionar avisos e documentos pelo painel admin
+
+## 8. Possíveis Problemas e Soluções
+
+### 8.1 Erro de dependências
+```bash
+npm install --legacy-peer-deps
+```
+
+### 8.2 Erro de TypeScript
+```bash
+npm install -D @types/node
+```
+
+### 8.3 Limpar cache
+```bash
+npm run dev -- --force
+```
+
+### 8.4 Reinstalar node_modules
+```bash
+rm -rf node_modules package-lock.json
+npm install
+```
+
+## 9. Próximos Passos
+
+Após a instalação, você pode:
+1. Personalizar as cores no `tailwind.config.js`
+2. Adicionar autenticação ao painel administrativo
+3. Implementar persistência de dados com banco de dados
+4. Configurar deploy em produção
+
+## 10. Suporte
+
+Se encontrar problemas, verifique:
+- Versão do Node.js (deve ser 18+ )
+- Todas as dependências instaladas corretamente
+- Arquivo `DisplayContext.tsx` criado
+- Configurações do Tailwind CSS
