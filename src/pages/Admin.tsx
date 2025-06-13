@@ -71,7 +71,7 @@ const Admin: React.FC = () => {
   });
   
   // Estados para upload de documentos
-  const [selectedDocType, setSelectedDocType] = useState<"plasa" | "escala">("plasa");
+  const [selectedDocType, setSelectedDocType] = useState<"plasa" | "escala" | "cardapio" | "bono">("plasa");
   const [docTitle, setDocTitle] = useState("");
   const [docUrl, setDocUrl] = useState("");
   const [docCategory, setDocCategory] = useState<"oficial" | "praca" | undefined>(undefined);
@@ -101,6 +101,46 @@ const Admin: React.FC = () => {
     if (lowerFilename.includes('oficial')) return 'oficial';
     if (lowerFilename.includes('praca')) return 'praca';
     return undefined;
+  };
+// Função para obter ícone e cor do tipo de documento
+  const getDocumentTypeInfo = (type: string) => {
+    switch (type) {
+      case "plasa":
+        return {
+          icon: "📄",
+          name: "PLASA",
+          description: "Plano de Serviço",
+          color: "bg-blue-50 border-blue-200 text-blue-800"
+        };
+        case "bono":  
+      return {
+        icon: "📋",
+        name: "BONO",
+        description: "Boletim de Ocorrências",
+        color: "bg-purple-50 border-purple-200 text-purple-800"
+      };
+      case "escala":
+        return {
+          icon: "📋",
+          name: "Escala",
+          description: "Escala de Serviço",
+          color: "bg-green-50 border-green-200 text-green-800"
+        };
+      case "cardapio":
+        return {
+          icon: "🍽️",
+          name: "Cardápio",
+          description: "Cardápio Semanal",
+          color: "bg-orange-50 border-orange-200 text-orange-800"
+        };
+      default:
+        return {
+          icon: "📄",
+          name: "Documento",
+          description: "Documento",
+          color: "bg-gray-50 border-gray-200 text-gray-800"
+        };
+    }
   };
 
   useEffect(() => {
@@ -231,157 +271,163 @@ const Admin: React.FC = () => {
     }
   };
 
-  const handleDocumentSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+const handleDocumentSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  
+  if (!docTitle) {
+    toast({
+      title: "Erro",
+      description: "Título é obrigatório.",
+      variant: "destructive"
+    });
+    return;
+  }
+
+  if (!selectedFile && !docUrl) {
+    toast({
+      title: "Erro",
+      description: "Selecione um arquivo ou forneça uma URL.",
+      variant: "destructive"
+    });
+    return;
+  }
+  
+  if (selectedDocType === "escala" && !docCategory) {
+    toast({
+      title: "Erro",
+      description: "Selecione a categoria da escala (Oficial ou Praça).",
+      variant: "destructive"
+    });
+    return;
+  }
+
+  // ✅ DECLARE typeInfo UMA VEZ SÓ aqui no início
+  const typeInfo = getDocumentTypeInfo(selectedDocType);
+
+  try {
+    setIsUploading(true);
+    setUploadProgress(0);
     
-    if (!docTitle) {
+    if (selectedFile) {
+      console.log("📤 Iniciando upload do arquivo:", selectedFile.name);
+      
+      // ✅ USE a variável typeInfo já declarada (sem const)
       toast({
-        title: "Erro",
-        description: "Título é obrigatório.",
-        variant: "destructive"
+        title: "Upload em andamento...",
+        description: `Enviando ${typeInfo.name} ${selectedFile.name} para o servidor...`
       });
-      return;
-    }
 
-    if (!selectedFile && !docUrl) {
-      toast({
-        title: "Erro",
-        description: "Selecione um arquivo ou forneça uma URL.",
-        variant: "destructive"
+      const formData = new FormData();
+      formData.append('pdf', selectedFile);
+      formData.append('documentType', selectedDocType);
+      formData.append('title', docTitle);
+      
+      if (selectedDocType === "escala" && docCategory) {
+        formData.append('category', docCategory);
+      }
+
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return 90;
+          }
+          return prev + 10;
+        });
+      }, 200);
+
+      const uploadUrl = getBackendUrl('/api/upload-pdf');
+      
+      console.log("📤 Enviando para:", uploadUrl);
+      
+      const uploadResponse = await fetch(uploadUrl, {
+        method: 'POST',
+        body: formData,
       });
-      return;
+
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json().catch(() => ({}));
+        throw new Error(errorData.error || `Erro HTTP: ${uploadResponse.status}`);
+      }
+
+      const uploadResult = await uploadResponse.json();
+      console.log("✅ Upload realizado com sucesso:", uploadResult);
+
+      if (!uploadResult.success) {
+        throw new Error(uploadResult.error || 'Upload falhou');
+      }
+
+      const fullUrl = getBackendUrl(uploadResult.data.url);
+      
+      console.log("📄 Adicionando documento ao contexto:", {
+        title: docTitle,
+        url: fullUrl,
+        type: selectedDocType,
+        category: selectedDocType === "escala" ? docCategory : undefined
+      });
+      
+      addDocument({
+        title: docTitle,
+        url: fullUrl,
+        type: selectedDocType,
+        category: selectedDocType === "escala" ? docCategory : undefined,
+        active: true
+      });
+      
+      // ✅ USE a variável typeInfo já declarada (sem const)
+      toast({
+        title: "Sucesso!",
+        description: `${typeInfo.name} enviado e salvo com sucesso.`
+      });
+      
+    } else if (docUrl && !docUrl.startsWith('blob:')) {
+      const fullUrl = docUrl.startsWith('http') ? docUrl : getBackendUrl(docUrl);
+      
+      addDocument({
+        title: docTitle,
+        url: fullUrl,
+        type: selectedDocType,
+        category: selectedDocType === "escala" ? docCategory : undefined,
+        active: true
+      });
+      
+      // ✅ USE a variável typeInfo já declarada (sem const)
+      toast({
+        title: "Sucesso!",
+        description: `${typeInfo.name} adicionado com sucesso.`
+      });
     }
     
-    if (selectedDocType === "escala" && !docCategory) {
-      toast({
-        title: "Erro",
-        description: "Selecione a categoria da escala (Oficial ou Praça).",
-        variant: "destructive"
-      });
-      return;
+    resetForm();
+
+  } catch (error) {
+    console.error('❌ Erro no upload:', error);
+    
+    let errorMessage = "Não foi possível enviar o arquivo. Tente novamente.";
+    
+    if (error.message?.includes('FILE_TOO_LARGE')) {
+      errorMessage = "Arquivo muito grande. Máximo permitido: 50MB.";
+    } else if (error.message?.includes('INVALID_FILE')) {
+      errorMessage = "Tipo de arquivo não suportado. Use PDFs ou imagens.";
+    } else if (error.message?.includes('MISSING_FIELDS')) {
+      errorMessage = "Dados obrigatórios estão faltando.";
+    } else if (error.message?.includes('fetch')) {
+      errorMessage = "Erro de conexão. Verifique se o servidor está rodando.";
     }
-
-    try {
-      setIsUploading(true);
-      setUploadProgress(0);
-      
-      if (selectedFile) {
-        console.log("📤 Iniciando upload do arquivo:", selectedFile.name);
-        
-        toast({
-          title: "Upload em andamento...",
-          description: `Enviando ${selectedFile.name} para o servidor...`
-        });
-
-        const formData = new FormData();
-        formData.append('pdf', selectedFile);
-        formData.append('documentType', selectedDocType);
-        formData.append('title', docTitle);
-        
-        if (selectedDocType === "escala" && docCategory) {
-          formData.append('category', docCategory);
-        }
-
-        const progressInterval = setInterval(() => {
-          setUploadProgress(prev => {
-            if (prev >= 90) {
-              clearInterval(progressInterval);
-              return 90;
-            }
-            return prev + 10;
-          });
-        }, 200);
-
-        const uploadUrl = getBackendUrl('/api/upload-pdf');
-        
-        console.log("📤 Enviando para:", uploadUrl);
-        
-        const uploadResponse = await fetch(uploadUrl, {
-          method: 'POST',
-          body: formData,
-        });
-
-        clearInterval(progressInterval);
-        setUploadProgress(100);
-
-        if (!uploadResponse.ok) {
-          const errorData = await uploadResponse.json().catch(() => ({}));
-          throw new Error(errorData.error || `Erro HTTP: ${uploadResponse.status}`);
-        }
-
-        const uploadResult = await uploadResponse.json();
-        console.log("✅ Upload realizado com sucesso:", uploadResult);
-
-        if (!uploadResult.success) {
-          throw new Error(uploadResult.error || 'Upload falhou');
-        }
-
-        const fullUrl = getBackendUrl(uploadResult.data.url);
-        
-        console.log("📄 Adicionando documento ao contexto:", {
-          title: docTitle,
-          url: fullUrl,
-          type: selectedDocType,
-          category: selectedDocType === "escala" ? docCategory : undefined
-        });
-        
-        addDocument({
-          title: docTitle,
-          url: fullUrl,
-          type: selectedDocType,
-          category: selectedDocType === "escala" ? docCategory : undefined,
-          active: true
-        });
-        
-        toast({
-          title: "Sucesso!",
-          description: `${selectedDocType === "plasa" ? "PLASA" : "Escala"} enviado e salvo com sucesso.`
-        });
-        
-      } else if (docUrl && !docUrl.startsWith('blob:')) {
-        const fullUrl = docUrl.startsWith('http') ? docUrl : getBackendUrl(docUrl);
-        
-        addDocument({
-          title: docTitle,
-          url: fullUrl,
-          type: selectedDocType,
-          category: selectedDocType === "escala" ? docCategory : undefined,
-          active: true
-        });
-        
-        toast({
-          title: "Sucesso!",
-          description: `${selectedDocType === "plasa" ? "PLASA" : "Escala"} adicionado com sucesso.`
-        });
-      }
-      
-      resetForm();
-
-    } catch (error) {
-      console.error('❌ Erro no upload:', error);
-      
-      let errorMessage = "Não foi possível enviar o arquivo. Tente novamente.";
-      
-      if (error.message?.includes('FILE_TOO_LARGE')) {
-        errorMessage = "Arquivo muito grande. Máximo permitido: 50MB.";
-      } else if (error.message?.includes('INVALID_FILE')) {
-        errorMessage = "Tipo de arquivo não suportado. Use PDFs ou imagens.";
-      } else if (error.message?.includes('MISSING_FIELDS')) {
-        errorMessage = "Dados obrigatórios estão faltando.";
-      } else if (error.message?.includes('fetch')) {
-        errorMessage = "Erro de conexão. Verifique se o servidor está rodando.";
-      }
-      
-      toast({
-        title: "Erro no upload",
-        description: errorMessage,
-        variant: "destructive"
-      });
-    } finally {
-      setIsUploading(false);
-      setUploadProgress(0);
-    }
-  };
+    
+    toast({
+      title: "Erro no upload",
+      description: errorMessage,
+      variant: "destructive"
+    });
+  } finally {
+    setIsUploading(false);
+    setUploadProgress(0);
+  }
+};
 
   const resetForm = () => {
     setDocTitle("");
@@ -439,13 +485,15 @@ const Admin: React.FC = () => {
   };
   
   // Funções para documentos
-  const toggleDocActive = (doc: PDFDocument) => {
+    const toggleDocActive = (doc: PDFDocument) => {
     updateDocument({ ...doc, active: !doc.active });
+    const typeInfo = getDocumentTypeInfo(doc.type);
     toast({
-      title: doc.active ? "Documento desativado" : "Documento ativado",
+      title: doc.active ? `${typeInfo.name} desativado` : `${typeInfo.name} ativado`,
       description: `O documento "${doc.title}" foi ${doc.active ? "desativado" : "ativado"}.`
     });
   };
+
   
   const removeDocument = async (id: string) => {
     if (confirm("Tem certeza que deseja remover este documento?")) {
@@ -840,306 +888,529 @@ const Admin: React.FC = () => {
             </Card>
           </TabsContent>
           
-          {/* Aba de Documentos */}
-          <TabsContent value="documentos">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Upload New Document Form */}
-              <Card className="border-navy">
-                <CardHeader className="bg-navy text-white">
-                  <CardTitle>Adicionar Novo Documento</CardTitle>
-                  <CardDescription className="text-gray-200">
-                    Envie um novo documento PDF ou imagem para o sistema
-                  </CardDescription>
-                </CardHeader>
-                <form onSubmit={handleDocumentSubmit}>
-                  <CardContent className="space-y-4 pt-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="docType">Tipo de Documento</Label>
-                      <Select 
-                        value={selectedDocType} 
-                        onValueChange={(value) => {
-                          setSelectedDocType(value as "plasa" | "escala");
-                          if (value === "plasa") {
-                            setDocCategory(undefined);
-                          }
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione o tipo" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="plasa">📄 PLASA - Plano de Serviço</SelectItem>
-                          <SelectItem value="escala">📋 Escala de Serviço</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    {selectedDocType === "escala" && (
-                      <div className="space-y-2">
-                        <Label htmlFor="docCategory">Categoria da Escala</Label>
-                        <Select 
-                          value={docCategory} 
-                          onValueChange={(value) => setDocCategory(value as "oficial" | "praca")}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione a categoria" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="oficial">👨‍✈️ Oficiais</SelectItem>
-                            <SelectItem value="praca">👨‍🔧 Praças</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="docTitle">Título do Documento</Label>
-                      <Input 
-                        id="docTitle" 
-                        placeholder={`Ex: ${selectedDocType === "plasa" ? "PLASA - Junho 2025" : "Escala de Serviço - Junho 2025"}`}
-                        value={docTitle}
-                        onChange={(e) => setDocTitle(e.target.value)}
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="docFile">Arquivo do Documento</Label>
-                      <Input 
-                        id="docFile"
-                        type="file"
-                        accept="application/pdf,image/*,.pdf,.jpg,.jpeg,.png,.gif,.webp"
-                        onChange={handleFileChange}
-                      />
-                      <div className="text-xs space-y-1">
-                        {selectedFile ? (
-                          <div className="text-green-600 bg-green-50 p-2 rounded">
-                            ✅ <strong>Arquivo selecionado:</strong> {selectedFile.name} 
-                            <br />
-                            📏 <strong>Tamanho:</strong> {formatFileSize(selectedFile.size)}
-                            <br />
-                            📋 <strong>Tipo:</strong> {selectedFile.type}
-                          </div>
-                        ) : (
-                          <div className="text-gray-600">
-                            📁 Aceita PDFs ou imagens (JPG, PNG, GIF, WEBP) - máximo 50MB
-                          </div>
-                        )}
-                      </div>
-                      <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
-                        💡 <strong>Recomendação:</strong> PDFs são automaticamente convertidos para imagens para melhor compatibilidade
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="docUrl">URL do Documento (alternativo)</Label>
-                      <Input 
-                        id="docUrl" 
-                        placeholder="https://exemplo.com/documento.pdf"
-                        value={docUrl.startsWith('blob:') ? '' : docUrl}
-                        onChange={(e) => setDocUrl(e.target.value)}
-                        type="url"
-                        disabled={!!selectedFile}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Se não tiver arquivo para upload, pode fornecer uma URL direta.
-                      </p>
-                    </div>
+        {/* Aba de Documentos - CÓDIGO COMPLETO */}
+<TabsContent value="documentos">
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    {/* Upload New Document Form */}
+    <Card className="border-navy">
+      <CardHeader className="bg-navy text-white">
+        <CardTitle>Adicionar Novo Documento</CardTitle>
+        <CardDescription className="text-gray-200">
+          Envie um novo documento PDF ou imagem para o sistema
+        </CardDescription>
+      </CardHeader>
+      <form onSubmit={handleDocumentSubmit}>
+        <CardContent className="space-y-4 pt-6">
+          <div className="space-y-2">
+            <Label htmlFor="docType">Tipo de Documento</Label>
+            <Select 
+              value={selectedDocType} 
+              onValueChange={(value) => {
+                setSelectedDocType(value as "plasa" | "bono" | "escala" | "cardapio");
+                if (value !== "escala") {
+                  setDocCategory(undefined);
+                }
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o tipo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="plasa">📄 PLASA - Plano de Serviço</SelectItem>
+                <SelectItem value="bono">📋 BONO - Boletim de Ocorrências</SelectItem>
+                <SelectItem value="escala">📋 Escala de Serviço</SelectItem>
+                <SelectItem value="cardapio">🍽️ Cardápio Semanal</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {selectedDocType === "escala" && (
+            <div className="space-y-2">
+              <Label htmlFor="docCategory">Categoria da Escala</Label>
+              <Select 
+                value={docCategory} 
+                onValueChange={(value) => setDocCategory(value as "oficial" | "praca")}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="oficial">👨‍✈️ Oficiais</SelectItem>
+                  <SelectItem value="praca">👨‍🔧 Praças</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          
+          <div className="space-y-2">
+            <Label htmlFor="docTitle">Título do Documento</Label>
+            <Input 
+              id="docTitle" 
+              placeholder={`Ex: ${
+                selectedDocType === "plasa" ? "PLASA - Junho 2025" : 
+                selectedDocType === "bono" ? "BONO - Junho 2025" :
+                selectedDocType === "escala" ? "Escala de Serviço - Junho 2025" :
+                selectedDocType === "cardapio" ? "Cardápio - Semana 25/2025" :
+                "Documento"
+              }`}
+              value={docTitle}
+              onChange={(e) => setDocTitle(e.target.value)}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="docFile">Arquivo do Documento</Label>
+            <Input 
+              id="docFile"
+              type="file"
+              accept="application/pdf,image/*,.pdf,.jpg,.jpeg,.png,.gif,.webp"
+              onChange={handleFileChange}
+            />
+            <div className="text-xs space-y-1">
+              {selectedFile ? (
+                <div className="text-green-600 bg-green-50 p-2 rounded">
+                  ✅ <strong>Arquivo selecionado:</strong> {selectedFile.name} 
+                  <br />
+                  📏 <strong>Tamanho:</strong> {formatFileSize(selectedFile.size)}
+                  <br />
+                  📋 <strong>Tipo:</strong> {selectedFile.type}
+                </div>
+              ) : (
+                <div className="text-gray-600">
+                  📁 Aceita PDFs ou imagens (JPG, PNG, GIF, WEBP) - máximo 50MB
+                </div>
+              )}
+            </div>
+            <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
+              💡 <strong>Recomendação:</strong> PDFs são automaticamente convertidos para imagens para melhor compatibilidade
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="docUrl">URL do Documento (alternativo)</Label>
+            <Input 
+              id="docUrl" 
+              placeholder="https://exemplo.com/documento.pdf"
+              value={docUrl.startsWith('blob:') ? '' : docUrl}
+              onChange={(e) => setDocUrl(e.target.value)}
+              type="url"
+              disabled={!!selectedFile}
+            />
+            <p className="text-xs text-muted-foreground">
+              Se não tiver arquivo para upload, pode fornecer uma URL direta.
+            </p>
+          </div>
 
-                    {isUploading && (
-                      <div className="space-y-2">
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-navy h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${uploadProgress}%` }}
+          {isUploading && (
+            <div className="space-y-2">
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-navy h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+              <p className="text-xs text-center text-navy">
+                {uploadProgress < 100 ? `Enviando... ${uploadProgress}%` : "Processando..."}
+              </p>
+            </div>
+          )}
+        </CardContent>
+        <CardFooter>
+          <Button 
+            type="submit" 
+            className="w-full bg-navy hover:bg-navy-light"
+            disabled={isUploading || (!selectedFile && !docUrl) || !docTitle}
+          >
+            {isUploading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Enviando...
+              </>
+            ) : (
+              <>
+                📤 Adicionar Documento
+              </>
+            )}
+          </Button>
+        </CardFooter>
+      </form>
+    </Card>
+    
+    {/* Document Lists Separadas */}
+    <div className="space-y-6">
+      {/* 📄 PLASA/BONO Documents */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            📄 Documentos PLASA/BONO
+            <span className="text-sm font-normal text-gray-500">
+              ({plasaDocuments.length})
+            </span>
+          </CardTitle>
+          <CardDescription>
+            Planos de Serviço e Boletins - Rolagem automática contínua 
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {plasaDocuments.length === 0 ? (
+            <p className="text-muted-foreground text-center py-4">
+              Nenhum documento PLASA/BONO cadastrado.
+            </p>
+          ) : (
+            <ul className="space-y-2 max-h-48 overflow-y-auto">
+              {plasaDocuments.map((doc) => (
+                <li key={doc.id} className="border rounded-md p-3 flex justify-between items-center document-card">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-lg">
+                        {doc.type === "plasa" ? "📄" : "📋"}
+                      </span>
+                      <p className="font-medium truncate">{doc.title}</p>
+                      <span className={`text-xs px-2 py-0.5 rounded-full status-badge ${
+                        doc.type === "plasa" 
+                          ? "bg-blue-100 text-blue-800" 
+                          : "bg-purple-100 text-purple-800"
+                      }`}>
+                        {doc.type === "plasa" ? "PLASA" : "BONO"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        📅 {new Date(doc.uploadDate).toLocaleDateString('pt-BR')}
+                      </span>
+                      {doc.url.includes('/uploads/') && (
+                        <span className="flex items-center gap-1 bg-green-100 text-green-800 px-2 py-0.5 rounded-full status-badge">
+                          🌐 Servidor
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full status-badge">
+                        📖 Rolagem
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex gap-1 ml-2">
+                    <Button 
+                      variant={doc.active ? "default" : "outline"} 
+                      size="sm"
+                      onClick={() => toggleDocActive(doc)}
+                      title={doc.active ? "Documento ativo" : "Documento inativo"}
+                    >
+                      {doc.active ? "✅" : "💤"}
+                    </Button>
+                    <Sheet>
+                      <SheetTrigger asChild>
+                        <Button variant="outline" size="sm" title="Visualizar documento">👁️</Button>
+                      </SheetTrigger>
+                      <SheetContent className="w-[85vw] sm:max-w-4xl">
+                        <SheetHeader>
+                          <SheetTitle>{doc.title}</SheetTitle>
+                          <SheetDescription>
+                            Visualização prévia do documento
+                          </SheetDescription>
+                        </SheetHeader>
+                        <div className="mt-6 h-[80vh]">
+                          <iframe 
+                            src={doc.url} 
+                            className="w-full h-full border rounded"
+                            title={doc.title}
                           />
                         </div>
-                        <p className="text-xs text-center text-navy">
-                          {uploadProgress < 100 ? `Enviando... ${uploadProgress}%` : "Processando..."}
-                        </p>
-                      </div>
-                    )}
-                  </CardContent>
-                  <CardFooter>
+                      </SheetContent>
+                    </Sheet>
                     <Button 
-                      type="submit" 
-                      className="w-full bg-navy hover:bg-navy-light"
-                      disabled={isUploading || (!selectedFile && !docUrl) || !docTitle}
+                      variant="destructive" 
+                      size="sm"
+                      onClick={() => removeDocument(doc.id)}
+                      title="Remover documento"
                     >
-                      {isUploading ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Enviando...
-                        </>
-                      ) : (
-                        <>
-                          📤 Adicionar Documento
-                        </>
-                      )}
+                      🗑️
                     </Button>
-                  </CardFooter>
-                </form>
-              </Card>
-              
-              {/* Document Lists */}
-              <div className="space-y-6">
-                {/* PLASA Documents */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      📄 Documentos PLASA
-                      <span className="text-sm font-normal text-gray-500">
-                        ({plasaDocuments.length})
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+      
+      {/* 📋 ESCALA Documents */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            📋 Escalas de Serviço
+            <span className="text-sm font-normal text-gray-500">
+              ({escalaDocuments.filter(doc => doc.type === "escala").length})
+            </span>
+          </CardTitle>
+          <CardDescription>
+            Escalas de Oficiais e Praças - Alternância automática
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {escalaDocuments.filter(doc => doc.type === "escala").length === 0 ? (
+            <p className="text-muted-foreground text-center py-4">
+              Nenhuma escala cadastrada.
+            </p>
+          ) : (
+            <ul className="space-y-2 max-h-48 overflow-y-auto">
+              {escalaDocuments.filter(doc => doc.type === "escala").map((doc) => (
+                <li key={doc.id} className="border rounded-md p-3 flex justify-between items-center document-card">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-lg">📋</span>
+                      <p className="font-medium truncate">{doc.title}</p>
+                      {doc.category && (
+                        <span className={`text-xs px-2 py-0.5 rounded-full status-badge ${
+                          doc.category === "oficial" 
+                            ? "bg-blue-100 text-blue-800" 
+                            : "bg-green-100 text-green-800"
+                        }`}>
+                          {doc.category === "oficial" ? "👨‍✈️ Oficiais" : "👨‍🔧 Praças"}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        📅 {new Date(doc.uploadDate).toLocaleDateString('pt-BR')}
                       </span>
-                    </CardTitle>
-                    <CardDescription>
-                      Planos de Serviço disponíveis no sistema
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {plasaDocuments.length === 0 ? (
-                      <p className="text-muted-foreground text-center py-4">
-                        Nenhum documento PLASA cadastrado.
-                      </p>
-                    ) : (
-                      <ul className="space-y-2 max-h-64 overflow-y-auto">
-                        {plasaDocuments.map((doc) => (
-                          <li key={doc.id} className="border rounded-md p-3 flex justify-between items-center">
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium truncate">{doc.title}</p>
-                              <p className="text-xs text-muted-foreground">
-                                📅 {new Date(doc.uploadDate).toLocaleDateString('pt-BR')}
-                                {doc.url.includes('/uploads/') && (
-                                  <span className="ml-2">🌐 Servidor</span>
-                                )}
-                              </p>
-                            </div>
-                            <div className="flex gap-1 ml-2">
-                              <Button 
-                                variant={doc.active ? "default" : "outline"} 
-                                size="sm"
-                                onClick={() => toggleDocActive(doc)}
-                              >
-                                {doc.active ? "✅" : "💤"}
-                              </Button>
-                              <Sheet>
-                                <SheetTrigger asChild>
-                                  <Button variant="outline" size="sm">👁️</Button>
-                                </SheetTrigger>
-                                <SheetContent className="w-[85vw] sm:max-w-4xl">
-                                  <SheetHeader>
-                                    <SheetTitle>{doc.title}</SheetTitle>
-                                    <SheetDescription>
-                                      Visualização prévia do documento
-                                    </SheetDescription>
-                                  </SheetHeader>
-                                  <div className="mt-6 h-[80vh]">
-                                    <iframe 
-                                      src={doc.url} 
-                                      className="w-full h-full border rounded"
-                                      title={doc.title}
-                                    />
-                                  </div>
-                                </SheetContent>
-                              </Sheet>
-                              <Button 
-                                variant="destructive" 
-                                size="sm"
-                                onClick={() => removeDocument(doc.id)}
-                              >
-                                🗑️
-                              </Button>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </CardContent>
-                </Card>
-                
-                {/* Escala Documents */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      📋 Documentos de Escala
-                      <span className="text-sm font-normal text-gray-500">
-                        ({escalaDocuments.length})
+                      {doc.url.includes('/uploads/') && (
+                        <span className="flex items-center gap-1 bg-green-100 text-green-800 px-2 py-0.5 rounded-full status-badge">
+                          🌐 Servidor
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1 bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full status-badge">
+                        🔄 Alternância
                       </span>
-                    </CardTitle>
-                    <CardDescription>
-                      Escalas de Serviço disponíveis no sistema
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {escalaDocuments.length === 0 ? (
-                      <p className="text-muted-foreground text-center py-4">
-                        Nenhum documento de Escala cadastrado.
-                      </p>
-                    ) : (
-                      <ul className="space-y-2 max-h-64 overflow-y-auto">
-                        {escalaDocuments.map((doc) => (
-                          <li key={doc.id} className="border rounded-md p-3 flex justify-between items-center">
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium truncate">
-                                {doc.title}
-                                {doc.category && (
-                                  <span className="ml-2 text-xs bg-navy text-white px-2 py-0.5 rounded-full">
-                                    {doc.category === "oficial" ? "👨‍✈️ Oficiais" : "👨‍🔧 Praças"}
-                                  </span>
-                                )}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                📅 {new Date(doc.uploadDate).toLocaleDateString('pt-BR')}
-                                {doc.url.includes('/uploads/') && (
-                                  <span className="ml-2">🌐 Servidor</span>
-                                )}
-                              </p>
-                            </div>
-                            <div className="flex gap-1 ml-2">
-                              <Button 
-                                variant={doc.active ? "default" : "outline"} 
-                                size="sm"
-                                onClick={() => toggleDocActive(doc)}
-                              >
-                                {doc.active ? "✅" : "💤"}
-                              </Button>
-                              <Sheet>
-                                <SheetTrigger asChild>
-                                  <Button variant="outline" size="sm">👁️</Button>
-                                </SheetTrigger>
-                                <SheetContent className="w-[85vw] sm:max-w-4xl">
-                                  <SheetHeader>
-                                    <SheetTitle>{doc.title}</SheetTitle>
-                                    <SheetDescription>
-                                      Visualização prévia do documento
-                                    </SheetDescription>
-                                  </SheetHeader>
-                                  <div className="mt-6 h-[80vh]">
-                                    <iframe 
-                                      src={doc.url} 
-                                      className="w-full h-full border rounded"
-                                      title={doc.title}
-                                    />
-                                  </div>
-                                </SheetContent>
-                              </Sheet>
-                              <Button 
-                                variant="destructive" 
-                                size="sm"
-                                onClick={() => removeDocument(doc.id)}
-                              >
-                                🗑️
-                              </Button>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </TabsContent>
-          
+                    </div>
+                  </div>
+                  <div className="flex gap-1 ml-2">
+                    <Button 
+                      variant={doc.active ? "default" : "outline"} 
+                      size="sm"
+                      onClick={() => toggleDocActive(doc)}
+                      title={doc.active ? "Escala ativa" : "Escala inativa"}
+                    >
+                      {doc.active ? "✅" : "💤"}
+                    </Button>
+                    <Sheet>
+                      <SheetTrigger asChild>
+                        <Button variant="outline" size="sm" title="Visualizar escala">👁️</Button>
+                      </SheetTrigger>
+                      <SheetContent className="w-[85vw] sm:max-w-4xl">
+                        <SheetHeader>
+                          <SheetTitle>📋 {doc.title}</SheetTitle>
+                          <SheetDescription>
+                            Visualização prévia da escala de serviço
+                          </SheetDescription>
+                        </SheetHeader>
+                        <div className="mt-6 h-[80vh]">
+                          <iframe 
+                            src={doc.url} 
+                            className="w-full h-full border rounded"
+                            title={doc.title}
+                          />
+                        </div>
+                      </SheetContent>
+                    </Sheet>
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      onClick={() => removeDocument(doc.id)}
+                      title="Remover escala"
+                    >
+                      🗑️
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* 🍽️ CARDÁPIO Documents */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            🍽️ Cardápios Semanais
+            <span className="text-sm font-normal text-gray-500">
+              ({escalaDocuments.filter(doc => doc.type === "cardapio").length})
+            </span>
+          </CardTitle>
+          <CardDescription>
+            Cardápios da Semana - Alternância automática
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {escalaDocuments.filter(doc => doc.type === "cardapio").length === 0 ? (
+            <p className="text-muted-foreground text-center py-4">
+              Nenhum cardápio cadastrado.
+            </p>
+          ) : (
+            <ul className="space-y-2 max-h-48 overflow-y-auto">
+              {escalaDocuments.filter(doc => doc.type === "cardapio").map((doc) => (
+                <li key={doc.id} className="border rounded-md p-3 flex justify-between items-center document-card">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-lg">🍽️</span>
+                      <p className="font-medium truncate">{doc.title}</p>
+                      <span className="text-xs bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full status-badge">
+                        CARDÁPIO
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        📅 {new Date(doc.uploadDate).toLocaleDateString('pt-BR')}
+                      </span>
+                      {doc.url.includes('/uploads/') && (
+                        <span className="flex items-center gap-1 bg-green-100 text-green-800 px-2 py-0.5 rounded-full status-badge">
+                          🌐 Servidor
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1 bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full status-badge">
+                        🔄 Alternância
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex gap-1 ml-2">
+                    <Button 
+                      variant={doc.active ? "default" : "outline"} 
+                      size="sm"
+                      onClick={() => toggleDocActive(doc)}
+                      title={doc.active ? "Cardápio ativo" : "Cardápio inativo"}
+                    >
+                      {doc.active ? "✅" : "💤"}
+                    </Button>
+                    <Sheet>
+                      <SheetTrigger asChild>
+                        <Button variant="outline" size="sm" title="Visualizar cardápio">👁️</Button>
+                      </SheetTrigger>
+                      <SheetContent className="w-[85vw] sm:max-w-4xl">
+                        <SheetHeader>
+                          <SheetTitle>🍽️ {doc.title}</SheetTitle>
+                          <SheetDescription>
+                            Visualização prévia do cardápio semanal
+                          </SheetDescription>
+                        </SheetHeader>
+                        <div className="mt-6 h-[80vh]">
+                          <iframe 
+                            src={doc.url} 
+                            className="w-full h-full border rounded"
+                            title={doc.title}
+                          />
+                        </div>
+                      </SheetContent>
+                    </Sheet>
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      onClick={() => removeDocument(doc.id)}
+                      title="Remover cardápio"
+                    >
+                      🗑️
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  </div>
+
+  {/* Informações sobre como funciona */}
+  <Card className="mt-6">
+    <CardHeader>
+      <CardTitle>❓ Como Funciona o Sistema de Documentos</CardTitle>
+      <CardDescription>
+        Entenda como o sistema processa e exibe os diferentes tipos de documentos
+      </CardDescription>
+    </CardHeader>
+    <CardContent>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-blue-50 p-4 rounded-lg">
+          <h4 className="font-medium mb-2 flex items-center gap-2">
+            📄 PLASA (Plano de Serviço)
+          </h4>
+          <ul className="list-disc pl-5 space-y-1 text-sm text-blue-700">
+            <li>PDFs convertidos automaticamente para imagens</li>
+            <li>Rola automaticamente do início ao fim</li>
+            <li>Reinicia após intervalo configurável</li>
+            <li>Velocidade de rolagem ajustável</li>
+            <li>Exibido no lado esquerdo da tela</li>
+          </ul>
+        </div>
+        
+        <div className="bg-purple-50 p-4 rounded-lg">
+          <h4 className="font-medium mb-2 flex items-center gap-2">
+            📋 BONO (Boletim de Ordens e Notícias)
+          </h4>
+          <ul className="list-disc pl-5 space-y-1 text-sm text-purple-700">
+            <li>Mesmo comportamento do PLASA</li>
+            <li>Rolagem automática contínua</li>
+            <li>Alternância com PLASA no lado esquerdo</li>
+            <li>Conversão automática PDF → Imagem</li>
+            <li>Cache inteligente no servidor</li>
+          </ul>
+        </div>
+
+        <div className="bg-green-50 p-4 rounded-lg">
+          <h4 className="font-medium mb-2 flex items-center gap-2">
+            📋 Escalas de Serviço
+          </h4>
+          <ul className="list-disc pl-5 space-y-1 text-sm text-green-700">
+            <li>Exibição estática (sem scroll)</li>
+            <li>Alternância automática entre escalas</li>
+            <li>Categorias: Oficiais e Praças</li>
+            <li>Intervalo de alternância configurável</li>
+            <li>Exibido no lado direito da tela</li>
+          </ul>
+        </div>
+
+        <div className="bg-orange-50 p-4 rounded-lg">
+          <h4 className="font-medium mb-2 flex items-center gap-2">
+            🍽️ Cardápios Semanais
+          </h4>
+          <ul className="list-disc pl-5 space-y-1 text-sm text-orange-700">
+            <li>Alternância automática entre cardápios</li>
+            <li>Exibição estática como as escalas</li>
+            <li>Mesmo intervalo de alternância</li>
+            <li>Cache para melhor performance</li>
+            <li>Rotaciona junto com as escalas</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div className="mt-6 p-4 bg-navy/5 rounded-lg border-l-4 border-navy">
+        <h4 className="font-medium mb-2 text-navy">🔧 Conversão PDF para Imagem</h4>
+        <p className="text-sm text-navy/80">
+          O sistema converte automaticamente PDFs para imagens (JPG) para garantir máxima compatibilidade 
+          e evitar problemas de CORS, fontes faltando, ou incompatibilidades de navegador. 
+          As imagens são armazenadas no servidor e carregadas rapidamente através de cache inteligente.
+        </p>
+      </div>
+      
+      <div className="mt-4 p-4 bg-green-50 rounded-lg border-l-4 border-green-500">
+        <h4 className="font-medium mb-2 text-green-800">💡 Dicas de Uso</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <ul className="list-disc pl-5 space-y-1 text-sm text-green-700">
+            <li>Para melhor qualidade, use PDFs com orientação paisagem</li>
+            <li>Imagens (JPG/PNG) são processadas mais rapidamente que PDFs</li>
+            <li>O sistema mantém cache das páginas convertidas</li>
+            <li>Documentos inativos permanecem salvos mas não são exibidos</li>
+          </ul>
+          <ul className="list-disc pl-5 space-y-1 text-sm text-green-700">
+            <li>PLASA/BONO: Ideal para documentos longos que precisam ser lidos</li>
+            <li>Escalas/Cardápios: Ideal para informações que precisam ser vistas rapidamente</li>
+            <li>Use nomes descritivos nos títulos para melhor organização</li>
+            <li>Cache evita reprocessamento desnecessário</li>
+          </ul>
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+</TabsContent>
           {/* Aba de Configurações */}
           <TabsContent value="configuracoes">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -1572,9 +1843,96 @@ const Admin: React.FC = () => {
                   </div>
                 </CardContent>
               </Card>
+               {/* Cardápio Documents */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      🍽️ Cardápios Semanais
+                      <span className="text-sm font-normal text-gray-500">
+                        ({escalaDocuments.filter(doc => doc.type === "cardapio").length})
+                      </span>
+                    </CardTitle>
+                    <CardDescription>
+                      Cardápios da Semana - Exibição estática
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {escalaDocuments.filter(doc => doc.type === "cardapio").length === 0 ? (
+                      <p className="text-muted-foreground text-center py-4">
+                        Nenhum cardápio cadastrado.
+                      </p>
+                    ) : (
+                      <ul className="space-y-2 max-h-64 overflow-y-auto">
+                        {escalaDocuments.filter(doc => doc.type === "cardapio").map((doc) => (
+                          <li key={doc.id} className="border rounded-md p-3 flex justify-between items-center">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-lg">🍽️</span>
+                                <p className="font-medium truncate">{doc.title}</p>
+                              </div>
+                              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                <span className="flex items-center gap-1">
+                                  📅 {new Date(doc.uploadDate).toLocaleDateString('pt-BR')}
+                                </span>
+                                {doc.url.includes('/uploads/') && (
+                                  <span className="flex items-center gap-1 bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
+                                    🌐 Servidor
+                                  </span>
+                                )}
+                                <span className="flex items-center gap-1 bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full">
+                                  📊 Estático
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex gap-1 ml-2">
+                              <Button 
+                                variant={doc.active ? "default" : "outline"} 
+                                size="sm"
+                                onClick={() => toggleDocActive(doc)}
+                                title={doc.active ? "Cardápio ativo" : "Cardápio inativo"}
+                              >
+                                {doc.active ? "✅" : "💤"}
+                              </Button>
+                              <Sheet>
+                                <SheetTrigger asChild>
+                                  <Button variant="outline" size="sm" title="Visualizar cardápio">👁️</Button>
+                                </SheetTrigger>
+                                <SheetContent className="w-[85vw] sm:max-w-4xl">
+                                  <SheetHeader>
+                                    <SheetTitle>🍽️ {doc.title}</SheetTitle>
+                                    <SheetDescription>
+                                      Visualização prévia do cardápio semanal
+                                    </SheetDescription>
+                                  </SheetHeader>
+                                  <div className="mt-6 h-[80vh]">
+                                    <iframe 
+                                      src={doc.url} 
+                                      className="w-full h-full border rounded"
+                                      title={doc.title}
+                                    />
+                                  </div>
+                                </SheetContent>
+                              </Sheet>
+                              <Button 
+                                variant="destructive" 
+                                size="sm"
+                                onClick={() => removeDocument(doc.id)}
+                                title="Remover cardápio"
+                              >
+                                🗑️
+                              </Button>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </CardContent>
+                </Card>
             </div>
           </TabsContent>
         </Tabs>
+        
+
       </div>
     </div>
   );

@@ -115,6 +115,17 @@ app.use('/escala-images', express.static(path.join(__dirname, 'public', 'escala-
   }
 }));
 
+app.use('/cardapio-images', express.static(path.join(__dirname, 'public', 'cardapio-images'), {
+  setHeaders: (res, filePath) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control');
+    res.setHeader('Content-Type', 'image/jpeg');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    
+    console.log(`🍽️ Servindo cardápio cache: ${path.basename(filePath)}`);
+  }
+}));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Criar diretórios necessários
@@ -123,7 +134,8 @@ const createDirectories = () => {
     path.join(__dirname, 'public'),
     path.join(__dirname, 'public', 'uploads'),
     path.join(__dirname, 'public', 'plasa-pages'),
-    path.join(__dirname, 'public', 'escala-images'), // NOVO: para cache de escalas
+    path.join(__dirname, 'public', 'escala-images'), 
+    path.join(__dirname, 'public', 'cardapio-images'), // NOVO: para cache de escalas
     path.join(__dirname, 'data') // Para dados JSON
   ];
   
@@ -224,6 +236,37 @@ const escalaUpload = multer({
   }
 });
 
+const cardapioStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const cardapioImagesDir = path.join(__dirname, 'public', 'cardapio-images');
+    cb(null, cardapioImagesDir);
+  },
+  filename: (req, file, cb) => {
+    const documentId = req.body.documentId;
+    if (documentId) {
+      cb(null, `cardapio-${documentId}.jpg`);
+    } else {
+      cb(null, `cardapio-temp-${Date.now()}.jpg`);
+    }
+  }
+});
+
+const cardapioUpload = multer({ 
+  storage: cardapioStorage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB
+    fieldSize: 10 * 1024 * 1024
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Apenas imagens são permitidas para cardápios!'), false);
+    }
+  }
+});
+
+
 // Configurar multer para upload de documentos
 const documentStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -316,9 +359,12 @@ app.get('/api/status', (req, res) => {
       statistics: {
         uploadedDocuments: uploadFiles.length,
         convertedPages: plasaFiles.length,
-        cachedEscalas: escalaFiles.length,
+        cachedCardapios: fs.existsSync(path.join(__dirname, 'public', 'cardapio-images')) ? 
+          fs.readdirSync(path.join(__dirname, 'public', 'cardapio-images')).filter(f => f.startsWith('cardapio-')).length : 0,
         notices: notices.length,
-        totalFiles: uploadFiles.length + plasaFiles.length + escalaFiles.length
+        totalFiles: uploadFiles.length + plasaFiles.length + escalaFiles.length + 
+          (fs.existsSync(path.join(__dirname, 'public', 'cardapio-images')) ? 
+          fs.readdirSync(path.join(__dirname, 'public', 'cardapio-images')).filter(f => f.startsWith('cardapio-')).length : 0)
       }
     });
   } catch (error) {
@@ -615,6 +661,13 @@ app.post('/api/upload-pdf', documentUpload.single('pdf'), (req, res) => {
         code: 'MISSING_FIELDS'
       });
     }
+ if (!['plasa', 'escala', 'cardapio'].includes(documentType)) {
+      console.log('❌ Tipo de documento inválido');
+      return res.status(400).json({ 
+        error: 'Tipo de documento deve ser: plasa, escala ou cardapio',
+        code: 'INVALID_DOCUMENT_TYPE'
+      });
+    }
 
     const filePath = path.join(__dirname, 'public', 'uploads', req.file.filename);
     if (!fs.existsSync(filePath)) {
@@ -653,6 +706,175 @@ app.post('/api/upload-pdf', documentUpload.single('pdf'), (req, res) => {
     });
   }
 });
+
+// ================================
+// NOVAS ROTAS PARA CACHE DE CARDÁPIOS
+// ================================
+
+app.post('/api/upload-cardapio-image', cardapioUpload.single('file'), (req, res) => {
+  try {
+    console.log('🍽️ UPLOAD DE CARDÁPIO CACHE:');
+    console.log(`  Origin: ${req.get('Origin')}`);
+    console.log(`  File: ${req.file?.filename || 'none'}`);
+    console.log(`  DocumentId: ${req.body.documentId}`);
+
+    const { documentId } = req.body;
+    
+    if (!req.file || !documentId) {
+      return res.status(400).json({
+        error: 'Arquivo e documentId são obrigatórios',
+        code: 'MISSING_REQUIRED_FIELDS'
+      });
+    }
+
+    // Renomeamento: Do nome temporário para o nome correto
+    const tempFileName = req.file.filename;
+    const correctFileName = `cardapio-${documentId}.jpg`;
+    
+    const oldPath = path.join(__dirname, 'public', 'cardapio-images', tempFileName);
+    const newPath = path.join(__dirname, 'public', 'cardapio-images', correctFileName);
+    
+    console.log(`🔄 Renomeando arquivo de cardápio:`);
+    console.log(`   De: ${tempFileName}`);
+    console.log(`   Para: ${correctFileName}`);
+    
+    try {
+      if (!fs.existsSync(oldPath)) {
+        throw new Error(`Arquivo temporário não encontrado: ${oldPath}`);
+      }
+      
+      if (fs.existsSync(newPath)) {
+        console.log(`⚠️ Arquivo final já existe, removendo: ${correctFileName}`);
+        fs.unlinkSync(newPath);
+      }
+      
+      fs.renameSync(oldPath, newPath);
+      console.log(`✅ Cardápio renomeado com sucesso: ${correctFileName}`);
+      
+      if (!fs.existsSync(newPath)) {
+        throw new Error(`Falha na verificação: arquivo ${correctFileName} não existe após renomeamento`);
+      }
+      
+    } catch (renameError) {
+      console.error(`❌ Erro no renomeamento do cardápio: ${renameError.message}`);
+      return res.status(500).json({
+        error: 'Erro ao organizar arquivo no cache',
+        details: renameError.message,
+        code: 'RENAME_ERROR'
+      });
+    }
+
+    const finalUrl = `/cardapio-images/${correctFileName}`;
+    
+    console.log(`🍽️ Cardápio salvo no cache: ${finalUrl}`);
+
+    res.json({
+      success: true,
+      message: `Cardápio ${documentId} salvo no cache com sucesso`,
+      url: finalUrl,
+      documentId: documentId,
+      originalFile: tempFileName,
+      finalFile: correctFileName,
+      size: req.file.size,
+      savedAt: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao salvar cardápio no cache:', error);
+    res.status(500).json({ 
+      error: 'Erro ao salvar cardápio no cache',
+      details: error.message,
+      code: 'CARDAPIO_CACHE_ERROR'
+    });
+  }
+});
+
+// Verificar se cardápio já foi convertido e está no cache
+app.get('/api/check-cardapio-image/:documentId', (req, res) => {
+  try {
+    const { documentId } = req.params;
+    const fileName = `cardapio-${documentId}.jpg`;
+    const imagePath = path.join(__dirname, 'public', 'cardapio-images', fileName);
+    
+    if (fs.existsSync(imagePath)) {
+      const stats = fs.statSync(imagePath);
+      console.log(`🍽️ Cache encontrado para cardápio: ${documentId} (${stats.size} bytes)`);
+      
+      res.json({
+        success: true,
+        exists: true,
+        url: `/cardapio-images/${fileName}`,
+        documentId: documentId,
+        size: stats.size,
+        created: stats.birthtime,
+        modified: stats.mtime
+      });
+    } else {
+      console.log(`🆕 Cache não encontrado para cardápio: ${documentId}`);
+      
+      res.json({
+        success: true,
+        exists: false,
+        documentId: documentId
+      });
+    }
+  } catch (error) {
+    console.error('❌ Erro ao verificar cache de cardápio:', error);
+    res.status(500).json({ 
+      error: 'Erro ao verificar cache de cardápio',
+      details: error.message,
+      code: 'CHECK_CARDAPIO_CACHE_ERROR'
+    });
+  }
+});
+
+// Limpar cache de cardápios
+app.delete('/api/clear-cardapio-cache', (req, res) => {
+  try {
+    const cardapioImagesDir = path.join(__dirname, 'public', 'cardapio-images');
+    
+    if (!fs.existsSync(cardapioImagesDir)) {
+      return res.json({
+        success: true,
+        deletedCount: 0,
+        message: 'Diretório de cache de cardápios não existe'
+      });
+    }
+    
+    const files = fs.readdirSync(cardapioImagesDir);
+    let deletedCount = 0;
+    
+    files.forEach(file => {
+      if (file.startsWith('cardapio-') && file.endsWith('.jpg')) {
+        const filePath = path.join(cardapioImagesDir, file);
+        try {
+          fs.unlinkSync(filePath);
+          deletedCount++;
+          console.log(`🗑️ Cache de cardápio removido: ${file}`);
+        } catch (err) {
+          console.error(`❌ Erro ao remover cache ${file}:`, err);
+        }
+      }
+    });
+    
+    console.log(`🧹 LIMPEZA DE CACHE DE CARDÁPIOS CONCLUÍDA: ${deletedCount} cardápios removidos`);
+    
+    res.json({
+      success: true,
+      deletedCount: deletedCount,
+      message: `${deletedCount} cardápios removidos do cache com sucesso`
+    });
+
+  } catch (error) {
+    console.error('❌ ERRO AO LIMPAR CACHE DE CARDÁPIOS:', error);
+    res.status(500).json({ 
+      error: 'Erro ao limpar cache de cardápios',
+      details: error.message,
+      code: 'CLEAR_CARDAPIO_CACHE_ERROR'
+    });
+  }
+});
+
 
 // ================================
 // ROTAS PARA PÁGINAS PLASA
@@ -1035,10 +1257,11 @@ app.get('/api/list-pdfs', (req, res) => {
       total: documents.length,
       totalSize: documents.reduce((sum, doc) => sum + doc.size, 0),
       statistics: {
-        pdfs: documents.filter(d => d.isPDF).length,
+             pdfs: documents.filter(d => d.isPDF).length,
         images: documents.filter(d => d.isImage).length,
         plasa: documents.filter(d => d.type === 'plasa').length,
-        escala: documents.filter(d => d.type === 'escala').length
+        escala: documents.filter(d => d.type === 'escala').length,
+        cardapio: documents.filter(d => d.type === 'cardapio').length
       }
     });
     
@@ -1265,22 +1488,11 @@ app.use('/api/*', (req, res) => {
 // ================================
 
 app.listen(PORT, () => {
-  console.log(`🚀 SERVIDOR PLASA v2.4 INICIADO (CORS + AVISOS + CACHE ESCALAS)`);
-  console.log(`🌐 Porta: ${PORT}`);
-  console.log(`🔗 CORS totalmente habilitado para todas as origens`);
-  console.log(`📁 Uploads: ${path.join(__dirname, 'public', 'uploads')}`);
-  console.log(`🖼️ Páginas PLASA: ${path.join(__dirname, 'public', 'plasa-pages')}`);
-  console.log(`🖼️ Cache Escalas: ${path.join(__dirname, 'public', 'escala-images')}`);
-  console.log(`📢 Avisos: ${NOTICES_FILE}`);
-  console.log(`⚙️ Configurações: ${CONFIG_FILE}`);
-  console.log(`🔗 URLs de teste:`);
-  console.log(`   Status: http://localhost:${PORT}/api/status`);
-  console.log(`   Teste: http://localhost:${PORT}/api/test`);
-  console.log(`   Sistema: http://localhost:${PORT}/api/system-info`);
-  console.log(`   Documentos: http://localhost:${PORT}/api/list-pdfs`);
-  console.log(`   Avisos: http://localhost:${PORT}/api/notices`);
-  console.log(`   Cache Escalas: http://localhost:${PORT}/api/check-escala-image/[ID]`);
-  console.log(`✅ Servidor com CORS, avisos e cache de escalas completo!`);
+console.log(`🚀 SERVIDOR PLASA v2.5 INICIADO (CORS + AVISOS + CACHE ESCALAS + CARDÁPIOS)`);
+  console.log(`🍽️ Cache Cardápios: ${path.join(__dirname, 'public', 'cardapio-images')}`);
+  console.log(`   Cache Cardápios: http://localhost:${PORT}/api/check-cardapio-image/[ID]`);
+  console.log(`📋 Tipos de documento suportados: PLASA, Escalas, Cardápios`);
+
 });
 
 module.exports = app;

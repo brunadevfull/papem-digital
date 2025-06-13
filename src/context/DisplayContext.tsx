@@ -16,12 +16,11 @@ export interface PDFDocument {
   id: string;
   title: string;
   url: string;
-  type: "plasa" | "escala";
-  category?: "oficial" | "praca" | undefined;
-  uploadDate: Date;
+  type: "plasa" | "bono" | "escala" | "cardapio";
+  category?: "oficial" | "praca"; // Apenas para escalas
   active: boolean;
+  uploadDate: Date;
 }
-
 interface DisplayContextType {
   notices: Notice[];
   plasaDocuments: PDFDocument[];

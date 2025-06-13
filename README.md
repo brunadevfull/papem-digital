@@ -1,73 +1,230 @@
-# Welcome to your Lovable project
+# 📄 Sistema PAPEM Digital
 
-## Project info
+Sistema de visualização digital para a **Pagadoria de Pessoal da Marinha (PAPEM)**, desenvolvido para exibir documentos, escalas de serviço e avisos importantes em telas de forma automatizada.
 
-**URL**: https://lovable.dev/projects/c9204891-8318-4bfb-92c5-7dd65efb8180
+## ⚓ Sobre o Projeto
 
-## How can I edit this code?
+O sistema permite a visualização contínua e alternada de:
+- **PLASA** (Planos de Serviço) - Rolagem automática
+- **BONO** (Boletins de Ocorrências) - Rolagem automática  
+- **Escalas de Serviço** (Oficiais/Praças) - Alternância automática
+- **Cardápios Semanais** - Alternância automática
+- **Avisos Importantes** - Sistema de notificações
 
-There are several ways of editing your application.
+## 🏗️ Arquitetura
 
-**Use Lovable**
+### Frontend (React + TypeScript)
+- **Framework:** React 18 com TypeScript
+- **Estilização:** Tailwind CSS + shadcn/ui
+- **Roteamento:** React Router
+- **Estado:** Context API personalizado
+- **Build:** Vite
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/c9204891-8318-4bfb-92c5-7dd65efb8180) and start prompting.
+### Backend (Node.js + Express)
+- **Runtime:** Node.js
+- **Framework:** Express.js
+- **Upload:** Multer para arquivos
+- **CORS:** Configuração completa
+- **Conversão PDF:** PDF.js (client-side)
 
-Changes made via Lovable will be committed automatically to this repo.
+### Estrutura de Pastas
+```
+papem-digital/
+├── src/                    # Frontend React
+│   ├── components/         # Componentes UI
+│   ├── context/           # Context API (DisplayContext)
+│   ├── pages/             # Páginas (Display, Admin)
+│   └── hooks/             # Hooks customizados
+├── server.js              # Backend Express
+├── public/                # Arquivos estáticos
+│   ├── uploads/           # Documentos enviados
+│   ├── plasa-pages/       # Páginas PLASA convertidas
+│   ├── escala-images/     # Cache escalas
+│   └── cardapio-images/   # Cache cardápios
+└── data/                  # Dados persistidos
+    ├── notices.json       # Avisos salvos
+    └── config.json        # Configurações
+```
 
-**Use your preferred IDE**
+## 🚀 Como Executar
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Pré-requisitos
+- Node.js 18+ 
+- npm ou yarn
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Instalação
+```bash
+# Clonar repositório
+git clone [url-do-repo]
+cd papem-digital
 
-Follow these steps:
+# Instalar dependências
+npm install
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Executar backend
+node server.js
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Executar frontend (em outro terminal)
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### URLs
+- **Frontend:** http://localhost:5173
+- **Backend:** http://localhost:3001
+- **Admin:** http://localhost:5173/admin
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 📋 Funcionalidades
 
-**Use GitHub Codespaces**
+### 🖥️ Tela de Visualização
+- **Lado Esquerdo:** PLASA/BONO com rolagem contínua
+- **Lado Direito:** Escalas/Cardápios com alternância automática
+- **Rodapé:** Avisos importantes com rotação
+- **Responsivo:** Adapta-se a diferentes tamanhos de tela
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### ⚙️ Painel Administrativo
+- **Upload de Documentos:** PDF e imagens
+- **Conversão Automática:** PDF → Imagem para compatibilidade
+- **Gerenciamento de Avisos:** CRUD completo com servidor
+- **Configurações:** Velocidade, intervalos, comportamentos
+- **Cache Inteligente:** Evita reprocessamento desnecessário
 
-## What technologies are used for this project?
+### 🔄 Automação
+- **PLASA/BONO:** Rolagem vertical contínua
+- **Escalas:** Alternância entre Oficiais/Praças
+- **Cardápios:** Rotação automática
+- **Avisos:** Sistema de prioridades e validade
 
-This project is built with:
+## 🎯 Tipos de Documento
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
+| Tipo | Comportamento | Localização | Descrição |
+|------|---------------|-------------|-----------|
+| 📄 **PLASA** | Rolagem | Lado Esquerdo | Plano de Serviço |
+| 📋 **BONO** | Rolagem | Lado Esquerdo | Boletim de Ocorrências |
+| 📊 **Escala** | Alternância | Lado Direito | Escalas Oficiais/Praças |
+| 🍽️ **Cardápio** | Alternância | Lado Direito | Cardápios Semanais |
+
+## 🔧 Configurações
+
+### Velocidade de Rolagem
+- **Lenta:** 1px por frame
+- **Normal:** 3px por frame  
+- **Rápida:** 5px por frame
+
+### Intervalos
+- **Alternância:** 10-300 segundos (padrão: 30s)
+- **Reinício:** 2-10 segundos (padrão: 3s)
+
+### Cache
+- **PLASA:** `/plasa-pages/` (imagens convertidas)
+- **Escalas:** `/escala-images/` (cache por documento)
+- **Cardápios:** `/cardapio-images/` (cache por documento)
+
+## 📡 API Endpoints
+
+### Documentos
+```
+POST /api/upload-pdf          # Upload documento
+GET  /api/list-pdfs           # Listar documentos
+DELETE /api/delete-pdf/:id    # Deletar documento
+```
+
+### Páginas PLASA
+```
+POST /api/upload-plasa-page   # Salvar página convertida
+POST /api/check-plasa-pages   # Verificar páginas existentes
+DELETE /api/clear-plasa-pages # Limpar cache
+```
+
+### Cache Escalas/Cardápios
+```
+POST /api/upload-escala-image    # Cache escala
+GET  /api/check-escala-image/:id # Verificar cache escala
+POST /api/upload-cardapio-image  # Cache cardápio
+GET  /api/check-cardapio-image/:id # Verificar cache cardápio
+```
+
+### Avisos
+```
+GET    /api/notices           # Listar avisos
+POST   /api/notices           # Criar aviso
+PUT    /api/notices/:id       # Atualizar aviso
+DELETE /api/notices/:id       # Deletar aviso
+```
+
+### Sistema
+```
+GET /api/status               # Status do servidor
+GET /api/system-info          # Informações detalhadas
+```
+
+## 🛠️ Tecnologias Utilizadas
+
+### Frontend
+- React 18 + TypeScript
 - Tailwind CSS
+- shadcn/ui components
+- React Router DOM
+- PDF.js (conversão client-side)
+- Context API
 
-## How can I deploy this project?
+### Backend  
+- Node.js + Express
+- Multer (upload arquivos)
+- CORS (cross-origin)
+- File System (persistência)
 
-Simply open [Lovable](https://lovable.dev/projects/c9204891-8318-4bfb-92c5-7dd65efb8180) and click on Share -> Publish.
+## 📊 Fluxo de Conversão
 
-## Can I connect a custom domain to my Lovable project?
+```mermaid
+graph TD
+    A[Upload PDF] --> B[Validação]
+    B --> C[PDF.js Load]
+    C --> D[Renderizar Páginas]
+    D --> E[Canvas → JPG]
+    E --> F[Salvar no Servidor]
+    F --> G[Cache para Reuso]
+```
 
-Yes, you can!
+## 🔍 Debug e Monitoramento
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### URLs de Debug
+- `/api/status` - Status geral
+- `/api/system-info` - Informações detalhadas
+- Console do navegador (F12) - Logs detalhados
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+### Logs Importantes
+```javascript
+📄 PLASA: Conversão iniciada
+💾 Cache encontrado
+🔄 Alternância entre escalas
+📢 Aviso carregado do servidor
+```
+
+## 🚦 Estados do Sistema
+
+- **🟢 Online:** Sistema funcionando normalmente
+- **🟡 Cache:** Usando versões em cache
+- **🔴 Erro:** Problemas na conversão/carregamento
+- **⏸️ Pausado:** Automação pausada pelo usuário
+
+## 📝 Notas de Desenvolvimento
+
+### Conversão PDF
+- PDFs são convertidos para imagens JPG (qualidade 85%)
+- Cache inteligente evita reconversão
+- Fallback para dataURL se servidor falhar
+
+### CORS
+- Configuração completa para cross-origin
+- Headers manuais para compatibilidade
+- Suporte a blob URLs e data URLs
+
+### Persistência
+- Avisos salvos em `data/notices.json`
+- Documentos persistem no localStorage + servidor
+- Cache de imagens no servidor
+
+---
+
+**Desenvolvido para a Marinha do Brasil - PAPEM**  
+*"Ordem, Prontidão e Regularidade"* ⚓
