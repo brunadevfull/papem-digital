@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "wouter";
 import { 
   Tabs, 
   TabsContent, 
@@ -403,19 +403,21 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
     
     resetForm();
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('❌ Erro no upload:', error);
     
     let errorMessage = "Não foi possível enviar o arquivo. Tente novamente.";
     
-    if (error.message?.includes('FILE_TOO_LARGE')) {
-      errorMessage = "Arquivo muito grande. Máximo permitido: 50MB.";
-    } else if (error.message?.includes('INVALID_FILE')) {
-      errorMessage = "Tipo de arquivo não suportado. Use PDFs ou imagens.";
-    } else if (error.message?.includes('MISSING_FIELDS')) {
-      errorMessage = "Dados obrigatórios estão faltando.";
-    } else if (error.message?.includes('fetch')) {
-      errorMessage = "Erro de conexão. Verifique se o servidor está rodando.";
+    if (error instanceof Error) {
+      if (error.message?.includes('FILE_TOO_LARGE')) {
+        errorMessage = "Arquivo muito grande. Máximo permitido: 50MB.";
+      } else if (error.message?.includes('INVALID_FILE')) {
+        errorMessage = "Tipo de arquivo não suportado. Use PDFs ou imagens.";
+      } else if (error.message?.includes('MISSING_FIELDS')) {
+        errorMessage = "Dados obrigatórios estão faltando.";
+      } else if (error.message?.includes('fetch')) {
+        errorMessage = "Erro de conexão. Verifique se o servidor está rodando.";
+      }
     }
     
     toast({
