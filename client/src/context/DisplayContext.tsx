@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from "react";
 
 export interface Notice {
-  id: string;
+  id: number;
   title: string;
   content: string;
   priority: "high" | "medium" | "low";
@@ -13,7 +13,7 @@ export interface Notice {
 }
 
 export interface PDFDocument {
-  id: string;
+  id: number;
   title: string;
   url: string;
   type: "plasa" | "bono" | "escala" | "cardapio";
@@ -34,10 +34,10 @@ interface DisplayContextType {
   isLoading: boolean;
   addNotice: (notice: Omit<Notice, "id" | "createdAt" | "updatedAt">) => Promise<boolean>;
   updateNotice: (notice: Notice) => Promise<boolean>;
-  deleteNotice: (id: string) => Promise<boolean>;
-  addDocument: (document: Omit<PDFDocument, "id" | "uploadDate">) => void;
-  updateDocument: (document: PDFDocument) => void;
-  deleteDocument: (id: string) => void;
+  deleteNotice: (id: number) => Promise<boolean>;
+  addDocument: (document: Omit<PDFDocument, "id" | "uploadDate">) => Promise<boolean>;
+  updateDocument: (document: PDFDocument) => Promise<boolean>;
+  deleteDocument: (id: number) => Promise<boolean>;
   setDocumentAlternateInterval: (interval: number) => void;
   setScrollSpeed: (speed: "slow" | "normal" | "fast") => void;
   setAutoRestartDelay: (delay: number) => void;
@@ -73,22 +73,20 @@ export const DisplayProvider: React.FC<DisplayProviderProps> = ({ children }) =>
   const escalaTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isInitializingRef = useRef(true);
 
-  // CORREÇÃO: Função para obter URL completa do backend
-  const getBackendUrl = (path: string): string => {
+  // Use the same port as the server (port 5000)
+  const getApiUrl = (path: string): string => {
     if (path.startsWith('http') || path.startsWith('blob:') || path.startsWith('data:')) {
       return path;
     }
     
-    const backendPort = import.meta.env.VITE_BACKEND_PORT || '3001';
-    const backendHost = import.meta.env.VITE_BACKEND_HOST || 'localhost';
-    
-    console.log(`🌐 Backend URL: ${backendHost}:${backendPort}`);
+    // In Replit, everything runs on port 5000
+    const baseUrl = window.location.origin;
     
     if (path.startsWith('/')) {
-      return `http://${backendHost}:${backendPort}${path}`;
+      return `${baseUrl}${path}`;
     }
     
-    return `http://${backendHost}:${backendPort}/${path}`;
+    return `${baseUrl}/${path}`;
   };
 
   // Função para gerar ID único
@@ -129,8 +127,8 @@ export const DisplayProvider: React.FC<DisplayProviderProps> = ({ children }) =>
       console.log("📢 Carregando avisos do servidor...");
       setIsLoading(true);
       
-      const backendUrl = getBackendUrl('/api/notices');
-      console.log("📢 URL do backend:", backendUrl);
+      const apiUrl = getApiUrl('/api/notices');
+      console.log("📢 URL da API:", apiUrl);
       
       const response = await fetch(backendUrl, {
         method: 'GET',
