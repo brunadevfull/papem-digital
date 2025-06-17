@@ -1,7 +1,12 @@
 import React from "react";
 import PDFViewer from "@/components/PDFViewer";
 import NoticeDisplay from "@/components/NoticeDisplay";
+import RealtimeNotifications from "@/components/RealtimeNotifications";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useDisplay } from "@/context/DisplayContext";
+import { Link } from "wouter";
+import { Settings, BarChart3 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const Index = () => {
   const {
@@ -40,9 +45,9 @@ const Index = () => {
   const currentDate = getCurrentDate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-950 flex flex-col p-3">
+    <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-950 dark:from-slate-950 dark:via-blue-950 dark:to-slate-950 flex flex-col p-3 transition-colors duration-500">
       {/* Header Premium */}
-      <header className="relative flex items-center justify-between px-8 py-4 bg-gradient-to-r from-slate-800/90 via-blue-900/80 to-slate-800/90 backdrop-blur-3xl rounded-2xl mb-4 shadow-2xl border border-blue-400/30 hover:border-blue-400/50 transition-all duration-500">
+      <header className="relative flex items-center justify-between px-8 py-4 glass-effect rounded-2xl mb-4 shadow-2xl border border-blue-400/30 dark:border-blue-400/20 hover:border-blue-400/50 transition-all duration-500">
         {/* Efeito de brilho sutil */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-400/8 to-transparent rounded-2xl"></div>
         
@@ -71,30 +76,43 @@ const Index = () => {
 
           {/* Título com animação de gradiente */}
           <div className="space-y-1">
-            <h1 className="text-2xl font-display font-bold bg-gradient-to-r from-white via-blue-100 to-cyan-200 bg-clip-text text-transparent hover:from-cyan-200 hover:to-white transition-all duration-700">
+            <h1 className="text-2xl font-display font-bold bg-gradient-to-r from-white via-blue-100 to-cyan-200 dark:from-blue-100 dark:via-cyan-100 dark:to-white bg-clip-text text-transparent hover:from-cyan-200 hover:to-white transition-all duration-700">
               Marinha do Brasil - PAPEM
             </h1>
-            <p className="text-sm text-blue-300/90 font-medium tracking-wide">
+            <p className="text-sm text-blue-300/90 dark:text-blue-200/80 font-medium tracking-wide">
               Sistema de Visualização Operacional
             </p>
           </div>
         </div>
 
-        {/* Horário Digital Premium */}
+        {/* Controls and Status */}
         <div className="flex items-center space-x-4 relative z-10">
+          {/* Notifications */}
+          <RealtimeNotifications />
+          
+          {/* Theme Toggle */}
+          <ThemeToggle />
+
+          {/* Admin Access */}
+          <Link href="/admin">
+            <Button variant="outline" size="icon" className="hover:bg-blue-600/20">
+              <Settings className="h-4 w-4" />
+            </Button>
+          </Link>
+
           {/* Display de horário */}
-          <div className="px-4 py-2 bg-gradient-to-r from-blue-700/70 to-cyan-700/70 rounded-xl border border-blue-400/40 backdrop-blur-xl shadow-xl hover:shadow-blue-500/30 transition-all duration-300">
-            <div className="text-2xl font-mono font-bold text-cyan-100 tabular-nums tracking-widest drop-shadow-sm">
+          <div className="px-4 py-2 bg-gradient-to-r from-blue-700/70 to-cyan-700/70 dark:from-blue-800/70 dark:to-cyan-800/70 rounded-xl border border-blue-400/40 backdrop-blur-xl shadow-xl hover:shadow-blue-500/30 transition-all duration-300">
+            <div className="text-2xl font-mono font-bold text-cyan-100 dark:text-cyan-50 tabular-nums tracking-widest drop-shadow-sm">
               {getCurrentTime()}
             </div>
           </div>
 
           {/* Data */}
           <div className="text-right space-y-1">
-            <div className="text-xs text-blue-200/80 font-semibold uppercase tracking-widest">
+            <div className="text-xs text-blue-200/80 dark:text-blue-100/70 font-semibold uppercase tracking-widest">
               {currentDate.weekday}
             </div>
-            <div className="text-base text-blue-100 font-bold tabular-nums">
+            <div className="text-base text-blue-100 dark:text-blue-50 font-bold tabular-nums">
               {currentDate.day}/{currentDate.month}
             </div>
           </div>
