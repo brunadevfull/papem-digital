@@ -3,8 +3,91 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertNoticeSchema, insertDocumentSchema } from "@shared/schema";
 import { z } from "zod";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Create uploads directory if it doesn't exist
+  const uploadsDir = path.join(process.cwd(), 'uploads');
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+
+  // Multer configuration for file uploads
+  const storage_config = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, uploadsDir);
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      cb(null, 'document-' + uniqueSuffix + '-' + file.originalname);
+    }
+  });
+
+  const upload = multer({
+    storage: storage_config,
+    limits: {
+      fileSize: 50 * 1024 * 1024, // 50MB limit
+    },
+    fileFilter: (req, file, cb) => {
+      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+      if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('INVALID_FILE: Only PDF and image files are allowed'));
+      }
+    }
+  });
+
+  // File upload route
+  app.post('/api/upload-pdf', upload.single('file'), (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'MISSING_FILE: No file uploaded' 
+        });
+      }
+
+      const { title, type, category } = req.body;
+      
+      if (!title || !type) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'MISSING_FIELDS: Title and type are required' 
+        });
+      }
+
+      const fileUrl = `/uploads/${req.file.filename}`;
+      
+      res.json({
+        success: true,
+        data: {
+          filename: req.file.filename,
+          originalname: req.file.originalname,
+          size: req.file.size,
+          url: fileUrl,
+          title: title,
+          type: type,
+          category: category || undefined
+        }
+      });
+    } catch (error) {
+      console.error('Upload error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'SERVER_ERROR: Failed to process upload' 
+      });
+    }
+  });
+
+  // Serve uploaded files
+  app.use('/uploads', (req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    next();
+  });
+
   // Notice routes
   app.get('/api/notices', async (req, res) => {
     try {
