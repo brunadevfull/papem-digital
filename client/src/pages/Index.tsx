@@ -125,7 +125,7 @@ const Index = () => {
             <div className="text-blue-200 text-xs font-medium tracking-widest uppercase text-center mb-1">
               Hora Oficial
             </div>
-            <div className="text-white font-mono text-3xl font-bold tracking-wider text-center">
+            <div className="text-white font-mono font-bold tracking-wider text-center text-[28px]">
               {new Date().toLocaleTimeString('pt-BR', { 
                 hour: '2-digit', 
                 minute: '2-digit',
