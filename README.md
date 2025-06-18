@@ -274,9 +274,32 @@ Para suporte técnico ou dúvidas:
 - Consultar documentação da API
 - Verificar issues conhecidos
 
+## 📦 Instalação Offline
+
+Para ambientes sem acesso à internet, use o script de empacotamento:
+
+```bash
+# Criar pacote offline (com internet)
+./criar-pacote-offline.sh
+
+# No servidor Oracle Linux (sem internet)
+tar -xzf sistema-marinha-offline-*.tar.gz
+cd pacote-offline-marinha
+sudo ./instalar.sh
+```
+
+O pacote inclui:
+- Node.js 20.x para Oracle Linux
+- Todas as dependências npm
+- Scripts de instalação e configuração
+- Documentação completa
+
 ## 📄 Licença
 
 Sistema desenvolvido para uso interno da Marinha do Brasil.
+
+**Autora: 2SG Bruna Rocha**  
+**Marinha do Brasil**
 
 ---
 
