@@ -93,7 +93,8 @@ const Admin: React.FC = () => {
       return path;
     }
     
-    const backendPort = import.meta.env.VITE_BACKEND_PORT || '3001';
+    // CORRIGIDO: Usar porta 5000 como padrão (mesma do DisplayContext)
+    const backendPort = import.meta.env.VITE_BACKEND_PORT || '5000';
     const backendHost = import.meta.env.VITE_BACKEND_HOST || 'localhost';
     
     if (path.startsWith('/')) {
