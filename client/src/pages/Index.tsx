@@ -122,6 +122,9 @@ const Index = () => {
           
           {/* Horário Digital Melhorado */}
           <div className="bg-slate-900/60 backdrop-blur-sm rounded-xl px-6 py-3 border border-blue-400/30 shadow-inner">
+            <div className="text-blue-200 text-xs font-medium tracking-widest uppercase text-center mb-1">
+              Hora Oficial
+            </div>
             <div className="text-white font-mono text-3xl font-bold tracking-wider text-center">
               {new Date().toLocaleTimeString('pt-BR', { 
                 hour: '2-digit', 
@@ -130,7 +133,10 @@ const Index = () => {
                 hour12: false 
               })}
             </div>
-            
+            {/* Horário do Pôr do Sol */}
+            <div className="text-amber-300 text-xs font-medium text-center mt-2 opacity-90">
+              🌅 {sunsetTime}
+            </div>
           </div>
         </div>
       </header>
