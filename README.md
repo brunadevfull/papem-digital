@@ -327,6 +327,17 @@ O pacote inclui:
 
 **Consulte `INSTALACAO-OFFLINE.md` para instruções detalhadas e solução de problemas.**
 
+### Compatibilidade Ubuntu → Oracle Linux
+
+**SIM, é 100% compatível!** Você pode criar o pacote no Ubuntu e instalar no Oracle Linux sem problemas:
+
+- ✅ **Node.js**: Binário universal Linux x64
+- ✅ **Dependências npm**: Compatíveis entre distros Linux
+- ✅ **Bibliotecas**: glibc compatível em ambos sistemas
+- ✅ **RPMs**: Baixados especificamente para Oracle Linux
+
+**Consulte `COMPATIBILIDADE-LIBS.md` para detalhes técnicos completos.**
+
 ## 📄 Licença
 
 Sistema desenvolvido para uso interno da Marinha do Brasil.

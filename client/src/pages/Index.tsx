@@ -78,9 +78,7 @@ const Index = () => {
             <p className="text-sm text-blue-300/90 font-medium tracking-wide">
               Sistema de Visualização Operacional
             </p>
-            <p className="text-xs text-blue-400/70 font-light italic">
-              Desenvolvido por 2SG Bruna Rocha
-            </p>
+
           </div>
         </div>
 
