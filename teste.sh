@@ -57,7 +57,11 @@ log() {
     echo -e "${cor}${mensagem}${NC}"
 }
 
-# Função para executar um teste
+# Função para executar um teste individual
+# Parâmetros:
+#   $1 - Nome descritivo do teste
+#   $2 - Comando a ser executado
+#   $3 - Código de saída esperado (padrão: 0)
 executar_teste() {
     local nome_teste=$1
     local comando_teste=$2
@@ -67,6 +71,7 @@ executar_teste() {
     
     echo -n "Testando ${nome_teste}... "
     
+    # Executa o comando e captura o código de saída
     if eval "$comando_teste" >/dev/null 2>&1; then
         if [ $? -eq $status_esperado ]; then
             log $GREEN "PASSOU"
@@ -81,13 +86,20 @@ executar_teste() {
     fi
 }
 
-# Função para testar endpoint da API
+# Função para testar endpoints da API REST
+# Esta função automatiza testes de todos os métodos HTTP necessários
+# Parâmetros:
+#   $1 - Endpoint da API (ex: /health, /notices)
+#   $2 - Método HTTP (GET, POST, PUT, DELETE) - padrão: GET
+#   $3 - Código de status esperado (200, 404, etc.) - padrão: 200
+#   $4 - Dados JSON para envio (apenas POST/PUT)
 testar_api() {
     local endpoint=$1
     local metodo=${2:-GET}
     local status_esperado=${3:-200}
     local dados=${4:-""}
     
+    # Constrói comando curl baseado no método HTTP
     local curl_cmd="curl -s -w '%{http_code}' -o /dev/null"
     
     if [ "$metodo" = "POST" ] && [ -n "$dados" ]; then
@@ -98,8 +110,10 @@ testar_api() {
         curl_cmd="$curl_cmd -X DELETE"
     fi
     
+    # Executa requisição e captura código de resposta
     local codigo_resposta=$(eval "$curl_cmd http://localhost:5000/api$endpoint")
     
+    # Verifica se o código de resposta corresponde ao esperado
     if [ "$codigo_resposta" = "$status_esperado" ]; then
         return 0
     else
