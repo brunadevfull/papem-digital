@@ -276,23 +276,56 @@ Para suporte técnico ou dúvidas:
 
 ## 📦 Instalação Offline
 
-Para ambientes sem acesso à internet, use o script de empacotamento:
+### Passo-a-Passo Detalhado
 
+**PARTE 1: Na sua máquina (com internet)**
 ```bash
-# Criar pacote offline (com internet)
-./criar-pacote-offline.sh
+# 1. Preparar scripts
+chmod +x criar-pacote-offline.sh empacotamento-offline.sh
 
-# No servidor Oracle Linux (sem internet)
+# 2. Criar pacote (escolha uma opção)
+./criar-pacote-offline.sh     # Pacote simples
+# OU
+./empacotamento-offline.sh    # Pacote completo (recomendado)
+
+# 3. Verificar arquivo criado
+ls -lh sistema-marinha-offline-*.tar.gz
+```
+
+**PARTE 2: Transferir para Oracle Linux**
+```bash
+# Via SCP
+scp sistema-marinha-offline-*.tar.gz usuario@servidor:/tmp/
+# OU via pendrive/mídia física
+```
+
+**PARTE 3: No servidor Oracle Linux**
+```bash
+# 1. Extrair pacote
+cd /tmp
 tar -xzf sistema-marinha-offline-*.tar.gz
 cd pacote-offline-marinha
+
+# 2. Instalar (como root)
 sudo ./instalar.sh
+
+# 3. Iniciar serviço
+sudo systemctl start sistema-marinha
+sudo systemctl status sistema-marinha
+
+# 4. Acessar sistema
+# http://IP_SERVIDOR:5000
 ```
 
 O pacote inclui:
 - Node.js 20.x para Oracle Linux
-- Todas as dependências npm
-- Scripts de instalação e configuração
+- Todas as dependências npm empacotadas
+- RPMs do sistema (git, curl, nginx, etc.)
+- Chrome e ChromeDriver para testes
+- Scripts de instalação automática
 - Documentação completa
+
+**Consulte `INSTALACAO-OFFLINE.md` para instruções detalhadas e solução de problemas.**
 
 ## 📄 Licença
 

@@ -2,6 +2,7 @@ import React from "react";
 import PDFViewer from "@/components/PDFViewer";
 import NoticeDisplay from "@/components/NoticeDisplay";
 import { useDisplay } from "@/context/DisplayContext";
+import { getSunsetWithLabel } from "@/utils/sunsetUtils";
 
 const Index = () => {
   const {
@@ -114,6 +115,10 @@ const Index = () => {
                 second: '2-digit',
                 hour12: false 
               })}
+            </div>
+            {/* Horário do Pôr do Sol */}
+            <div className="text-amber-300 text-xs font-medium text-center mt-2 opacity-90">
+              🌅 {getSunsetWithLabel()}
             </div>
           </div>
         </div>
