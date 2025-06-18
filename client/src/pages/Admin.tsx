@@ -87,6 +87,21 @@ const Admin: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   
+  // Estados para status do sistema
+  const [serverStatus, setServerStatus] = useState<{
+    connected: boolean;
+    lastResponse: number | null;
+    lastCheck: Date | null;
+    notices: number;
+    documents: number;
+  }>({
+    connected: false,
+    lastResponse: null,
+    lastCheck: null,
+    notices: 0,
+    documents: 0
+  });
+  
   // Função para obter URL completa do backend
   const getBackendUrl = (path: string): string => {
     if (path.startsWith('http') || path.startsWith('blob:') || path.startsWith('data:')) {
@@ -104,6 +119,32 @@ const Admin: React.FC = () => {
     return `http://${backendHost}:${backendPort}/${path}`;
   };
   
+  // Função para verificar status do servidor
+  const checkServerStatus = async () => {
+    try {
+      const response = await fetch(getBackendUrl('/api/notices'));
+      setServerStatus(prev => ({
+        ...prev,
+        connected: response.ok,
+        lastResponse: response.status,
+        lastCheck: new Date(),
+        notices: notices.length,
+        documents: plasaDocuments.length + escalaDocuments.length
+      }));
+      console.log("📢 Resposta do servidor:", response.status, response.ok ? 'OK' : 'ERROR');
+    } catch (error) {
+      setServerStatus(prev => ({
+        ...prev,
+        connected: false,
+        lastResponse: null,
+        lastCheck: new Date(),
+        notices: notices.length,
+        documents: plasaDocuments.length + escalaDocuments.length
+      }));
+      console.error("❌ Erro de conexão com servidor:", error);
+    }
+  };
+
   // Função auxiliar para determinar categoria
   const determineCategory = (filename: string): "oficial" | "praca" | undefined => {
     const lowerFilename = filename.toLowerCase();
@@ -574,6 +615,106 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
     return date.toISOString().split("T")[0];
   };
 
+  // Effect para verificar status do servidor periodicamente
+  useEffect(() => {
+    checkServerStatus();
+    const interval = setInterval(checkServerStatus, 30000); // A cada 30 segundos
+    return () => clearInterval(interval);
+  }, [notices.length, plasaDocuments.length, escalaDocuments.length]);
+
+  // Componente de Status do Servidor
+  const ServerStatusIndicator = () => (
+    <Card className="mb-6">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg flex items-center gap-2">
+          🖥️ Status do Sistema
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={checkServerStatus}
+            className="ml-auto"
+          >
+            🔄 Verificar
+          </Button>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {/* Status de Conexão */}
+          <div className={`p-3 rounded-lg border ${
+            serverStatus.connected 
+              ? 'bg-green-50 border-green-200 text-green-800' 
+              : 'bg-red-50 border-red-200 text-red-800'
+          }`}>
+            <div className="flex items-center gap-2">
+              <div className={`w-3 h-3 rounded-full ${
+                serverStatus.connected ? 'bg-green-500' : 'bg-red-500'
+              }`}></div>
+              <span className="font-medium">
+                {serverStatus.connected ? 'Conectado' : 'Desconectado'}
+              </span>
+            </div>
+            <div className="text-sm mt-1">
+              {serverStatus.lastResponse ? `HTTP ${serverStatus.lastResponse}` : 'Sem resposta'}
+            </div>
+          </div>
+
+          {/* Avisos */}
+          <div className="p-3 rounded-lg border bg-blue-50 border-blue-200 text-blue-800">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">📢</span>
+              <span className="font-medium">Avisos</span>
+            </div>
+            <div className="text-sm mt-1">
+              {serverStatus.notices} cadastrados
+            </div>
+          </div>
+
+          {/* Documentos */}
+          <div className="p-3 rounded-lg border bg-purple-50 border-purple-200 text-purple-800">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">📁</span>
+              <span className="font-medium">Documentos</span>
+            </div>
+            <div className="text-sm mt-1">
+              {serverStatus.documents} carregados
+            </div>
+          </div>
+
+          {/* Última Verificação */}
+          <div className="p-3 rounded-lg border bg-gray-50 border-gray-200 text-gray-800">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">⏰</span>
+              <span className="font-medium">Última Check</span>
+            </div>
+            <div className="text-sm mt-1">
+              {serverStatus.lastCheck 
+                ? serverStatus.lastCheck.toLocaleTimeString('pt-BR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  })
+                : 'Nunca'
+              }
+            </div>
+          </div>
+        </div>
+
+        {/* Status detalhado */}
+        <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+          <div className="text-sm text-gray-600">
+            <strong>URL do Backend:</strong> {getBackendUrl('/api')} | 
+            <strong className="ml-2">Status:</strong> 
+            <span className={`ml-1 ${
+              serverStatus.connected ? 'text-green-600' : 'text-red-600'
+            }`}>
+              {serverStatus.connected ? '✅ Online' : '❌ Offline'}
+            </span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -605,6 +746,9 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
             </Button>
           </div>
         </header>
+        
+        {/* Status Panel */}
+        <ServerStatusIndicator />
         
         <Tabs defaultValue="avisos" className="w-full">
           <TabsList className="w-full mb-6">
