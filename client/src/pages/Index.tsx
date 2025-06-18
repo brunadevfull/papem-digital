@@ -1,17 +1,21 @@
-import React from "react";
+import React, { useEffect, useState, useRef } from "react";
 import PDFViewer from "@/components/PDFViewer";
 import NoticeDisplay from "@/components/NoticeDisplay";
-import RealtimeNotifications from "@/components/RealtimeNotifications";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useDisplay } from "@/context/DisplayContext";
-import { Link } from "wouter";
-import { Settings, BarChart3 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Activity, Wifi, WifiOff, Clock, Calendar } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 const Index = () => {
+  const [currentTime, setCurrentTime] = useState("");
+  const [currentDate, setCurrentDate] = useState({ day: "", month: "", weekday: "" });
+  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
+  const [systemHealth, setSystemHealth] = useState(100);
+  const wsRef = useRef<WebSocket | null>(null);
+  
   const {
     activePlasaDoc,
     activeEscalaDoc,
+    notices,
     scrollSpeed = "normal",
     autoRestartDelay = 3
   } = useDisplay();
@@ -24,30 +28,80 @@ const Index = () => {
   });
 
   // Função para obter horário atual
-  const getCurrentTime = () => {
+  const updateTime = () => {
     const now = new Date();
-    return now.toLocaleTimeString('pt-BR', { 
+    setCurrentTime(now.toLocaleTimeString('pt-BR', { 
       hour: '2-digit', 
       minute: '2-digit',
       hour12: false 
-    });
-  };
-
-  // Função para obter data atual
-  const getCurrentDate = () => {
-    const now = new Date();
+    }));
+    
     const day = now.getDate().toString().padStart(2, '0');
     const month = (now.getMonth() + 1).toString().padStart(2, '0');
     const weekday = now.toLocaleDateString('pt-BR', { weekday: 'short' }).toUpperCase();
-    return { day, month, weekday };
+    setCurrentDate({ day, month, weekday });
   };
 
-  const currentDate = getCurrentDate();
+  // WebSocket para notificações em tempo real
+  const connectWebSocket = () => {
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    
+    try {
+      const ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        setConnectionStatus('connected');
+        setSystemHealth(100);
+      };
+
+      ws.onclose = () => {
+        setConnectionStatus('disconnected');
+        setSystemHealth(75);
+        // Reconnect after 3 seconds
+        setTimeout(connectWebSocket, 3000);
+      };
+
+      ws.onerror = () => {
+        setConnectionStatus('disconnected');
+        setSystemHealth(50);
+      };
+
+    } catch (error) {
+      setConnectionStatus('disconnected');
+      setSystemHealth(25);
+    }
+  };
+
+  // Initialize
+  useEffect(() => {
+    updateTime();
+    connectWebSocket();
+    
+    const timeInterval = setInterval(updateTime, 1000);
+    
+    return () => {
+      clearInterval(timeInterval);
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+    };
+  }, []);
+
+  const activeNotices = notices.filter(n => n.active);
+  const getStatusColor = () => {
+    switch (connectionStatus) {
+      case 'connected': return 'text-green-400';
+      case 'connecting': return 'text-yellow-400';
+      case 'disconnected': return 'text-red-400';
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-950 dark:from-slate-950 dark:via-blue-950 dark:to-slate-950 flex flex-col p-3 transition-colors duration-500">
-      {/* Header Premium */}
-      <header className="relative flex items-center justify-between px-8 py-4 glass-effect rounded-2xl mb-4 shadow-2xl border border-blue-400/30 dark:border-blue-400/20 hover:border-blue-400/50 transition-all duration-500">
+    <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-950 dark:from-slate-950 dark:via-blue-950 dark:to-slate-950 flex flex-col p-4 transition-colors duration-500">
+      {/* Header Status Bar for TV Display */}
+      <header className="relative flex items-center justify-between px-8 py-6 glass-effect rounded-2xl mb-6 shadow-2xl border border-blue-400/30 dark:border-blue-400/20 transition-all duration-500">
         {/* Efeito de brilho sutil */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-400/8 to-transparent rounded-2xl"></div>
         

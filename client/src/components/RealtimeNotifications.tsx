@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Bell, X, AlertTriangle, Info, CheckCircle } from "lucide-react";
+import React, { useEffect, useState, useRef } from "react";
+import { Bell, X, AlertTriangle, Info, CheckCircle, Wifi, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,10 +15,21 @@ interface Notification {
   read: boolean;
 }
 
+interface WebSocketMessage {
+  type: string;
+  data?: any;
+  message?: string;
+  timestamp: string;
+}
+
 const RealtimeNotifications: React.FC = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isOpen, setIsOpen] = useState(false);
-  const { notices, plasaDocuments, escalaDocuments } = useDisplay();
+  const [isConnected, setIsConnected] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
+  const wsRef = useRef<WebSocket | null>(null);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { notices, plasaDocuments, escalaDocuments, refreshNotices } = useDisplay();
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -54,6 +65,148 @@ const RealtimeNotifications: React.FC = () => {
   const removeNotification = (id: string) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
+
+  // WebSocket connection management
+  const connectWebSocket = () => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      return;
+    }
+
+    setConnectionStatus('connecting');
+    
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    
+    try {
+      const ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        console.log('WebSocket connected');
+        setConnectionStatus('connected');
+        setIsConnected(true);
+        
+        addNotification({
+          title: "Sistema Conectado",
+          message: "Notificações em tempo real ativadas",
+          type: "success"
+        });
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const message: WebSocketMessage = JSON.parse(event.data);
+          handleWebSocketMessage(message);
+        } catch (error) {
+          console.error('Error parsing WebSocket message:', error);
+        }
+      };
+
+      ws.onclose = () => {
+        console.log('WebSocket disconnected');
+        setConnectionStatus('disconnected');
+        setIsConnected(false);
+        
+        // Attempt to reconnect after 3 seconds
+        reconnectTimeoutRef.current = setTimeout(() => {
+          connectWebSocket();
+        }, 3000);
+      };
+
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        setConnectionStatus('disconnected');
+        setIsConnected(false);
+      };
+
+    } catch (error) {
+      console.error('Failed to create WebSocket connection:', error);
+      setConnectionStatus('disconnected');
+    }
+  };
+
+  const handleWebSocketMessage = (message: WebSocketMessage) => {
+    switch (message.type) {
+      case 'connected':
+        addNotification({
+          title: "Conectado",
+          message: message.message || "Sistema conectado",
+          type: "success"
+        });
+        break;
+
+      case 'notice_created':
+        addNotification({
+          title: "Novo Aviso",
+          message: `Aviso criado: ${message.data?.title}`,
+          type: "info"
+        });
+        refreshNotices();
+        break;
+
+      case 'notice_updated':
+        addNotification({
+          title: "Aviso Atualizado",
+          message: `Aviso modificado: ${message.data?.title}`,
+          type: "info"
+        });
+        refreshNotices();
+        break;
+
+      case 'notice_deleted':
+        addNotification({
+          title: "Aviso Removido",
+          message: "Um aviso foi removido do sistema",
+          type: "warning"
+        });
+        refreshNotices();
+        break;
+
+      case 'document_created':
+        addNotification({
+          title: "Novo Documento",
+          message: `Documento adicionado: ${message.data?.title}`,
+          type: "info"
+        });
+        refreshNotices();
+        break;
+
+      case 'document_updated':
+        addNotification({
+          title: "Documento Atualizado",
+          message: `Documento modificado: ${message.data?.title}`,
+          type: "info"
+        });
+        refreshNotices();
+        break;
+
+      case 'document_deleted':
+        addNotification({
+          title: "Documento Removido",
+          message: "Um documento foi removido do sistema",
+          type: "warning"
+        });
+        refreshNotices();
+        break;
+
+      default:
+        console.log('Unknown message type:', message.type);
+    }
+  };
+
+  // Initialize WebSocket connection
+  useEffect(() => {
+    connectWebSocket();
+
+    return () => {
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+      }
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+    };
+  }, []);
 
   // Monitor system changes
   useEffect(() => {
