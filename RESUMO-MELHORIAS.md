@@ -50,14 +50,21 @@ sudo ./instalar.sh
 
 ---
 
-## ✅ 3. Interface de Data/Hora Melhorada
+## ✅ 3. Interface de Data/Hora Melhorada + Pôr do Sol
 
 ### Melhorias Implementadas:
 - **Data completa** em português (dia da semana + data completa)
 - **Horário oficial** com segundos em tempo real
+- **Horário do pôr do sol** preciso via API confiável
 - **Design aprimorado** com container estilizado
 - **Separador visual** elegante entre data e hora
 - **Responsividade** mantida para diferentes telas
+
+### API do Pôr do Sol:
+- **Fonte**: sunrise-sunset.org (API gratuita e precisa)
+- **Localização**: Rio de Janeiro (-22.9068, -43.1729)
+- **Atualização**: Automática diária com cache
+- **Fallback**: Cálculo local em caso de falha na API
 
 ### Componentes:
 ```jsx

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import PDFViewer from "@/components/PDFViewer";
 import NoticeDisplay from "@/components/NoticeDisplay";
 import { useDisplay } from "@/context/DisplayContext";
@@ -11,6 +11,27 @@ const Index = () => {
     scrollSpeed = "normal",
     autoRestartDelay = 3
   } = useDisplay();
+
+  const [sunsetTime, setSunsetTime] = useState<string>("--:--");
+
+  // Buscar horário do pôr do sol
+  useEffect(() => {
+    const fetchSunset = async () => {
+      try {
+        const sunset = await getSunsetWithLabel();
+        setSunsetTime(sunset);
+      } catch (error) {
+        console.error('Erro ao buscar pôr do sol:', error);
+        setSunsetTime("Pôr do sol: --:--");
+      }
+    };
+
+    fetchSunset();
+    
+    // Atualizar a cada hora
+    const interval = setInterval(fetchSunset, 60 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   console.log("🏠 Index: Renderizando página principal", {
     activePlasa: activePlasaDoc?.title || 'nenhum',
@@ -116,7 +137,7 @@ const Index = () => {
             </div>
             {/* Horário do Pôr do Sol */}
             <div className="text-amber-300 text-xs font-medium text-center mt-2 opacity-90">
-              🌅 {getSunsetWithLabel()}
+              🌅 {sunsetTime}
             </div>
           </div>
         </div>
