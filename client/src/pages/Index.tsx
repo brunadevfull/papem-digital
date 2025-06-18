@@ -63,14 +63,14 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-950 flex flex-col p-3">
-      {/* Header Premium */}
-      <header className="relative flex items-center justify-between px-8 py-4 bg-gradient-to-r from-slate-800/90 via-blue-900/80 to-slate-800/90 backdrop-blur-3xl rounded-2xl mb-4 shadow-2xl border border-blue-400/30 hover:border-blue-400/50 transition-all duration-500">
+      {/* Header Compacto */}
+      <header className="relative flex items-center justify-between px-6 py-2 bg-gradient-to-r from-slate-800/90 via-blue-900/80 to-slate-800/90 backdrop-blur-3xl rounded-xl mb-3 shadow-2xl border border-blue-400/30 hover:border-blue-400/50 transition-all duration-500">
         {/* Efeito de brilho sutil */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-400/8 to-transparent rounded-2xl"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-400/8 to-transparent rounded-xl"></div>
         
-        <div className="flex items-center space-x-5 relative z-10">
-          {/* Brasão da Marinha com fallback melhorado */}
-          <div className="w-14 h-14 flex items-center justify-center relative group">
+        <div className="flex items-center space-x-4 relative z-10">
+          {/* Brasão da Marinha compacto */}
+          <div className="w-10 h-10 flex items-center justify-center relative group">
             <img 
               src="/brasao-marinha.png" 
               alt="Brasão da Marinha do Brasil"
@@ -82,8 +82,8 @@ const Index = () => {
                 const parent = target.parentElement;
                 if (parent) {
                   parent.innerHTML = `
-                    <div class="w-14 h-14 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 flex items-center justify-center rounded-full shadow-2xl border-2 border-amber-400/60 hover:border-amber-400 transition-all duration-300 group-hover:scale-105">
-                      <div class="text-amber-300 text-lg font-bold tracking-wider drop-shadow-md">MB</div>
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 flex items-center justify-center rounded-full shadow-2xl border-2 border-amber-400/60 hover:border-amber-400 transition-all duration-300 group-hover:scale-105">
+                      <div class="text-amber-300 text-sm font-bold tracking-wider drop-shadow-md">MB</div>
                     </div>
                   `;
                 }
@@ -91,41 +91,40 @@ const Index = () => {
             />
           </div>
 
-          {/* Título com animação de gradiente */}
-          <div className="space-y-1">
-            <h1 className="text-2xl font-display font-bold bg-gradient-to-r from-white via-blue-100 to-cyan-200 bg-clip-text text-transparent hover:from-cyan-200 hover:to-white transition-all duration-700">
+          {/* Título compacto */}
+          <div className="space-y-0">
+            <h1 className="text-xl font-display font-bold bg-gradient-to-r from-white via-blue-100 to-cyan-200 bg-clip-text text-transparent hover:from-cyan-200 hover:to-white transition-all duration-700">
               Marinha do Brasil - PAPEM
             </h1>
-            <p className="text-sm text-blue-300/90 font-medium tracking-wide">Sistema de Visualização de Documentos</p>
-
+            <p className="text-xs text-blue-300/90 font-medium tracking-wide">Sistema de Visualização de Documentos</p>
           </div>
         </div>
 
-        {/* Data e Hora Melhorada */}
-        <div className="flex items-center space-x-6 relative z-10">
-          {/* Data Completa */}
+        {/* Data e Hora Compacta */}
+        <div className="flex items-center space-x-4 relative z-10">
+          {/* Data Compacta */}
           <div className="text-right">
             <div className="text-blue-200 text-xs font-medium tracking-widest uppercase">
-              {new Date().toLocaleDateString('pt-BR', { weekday: 'long' })}
+              {new Date().toLocaleDateString('pt-BR', { weekday: 'short' })}
             </div>
-            <div className="text-white text-lg font-semibold">
+            <div className="text-white text-sm font-semibold">
               {new Date().toLocaleDateString('pt-BR', { 
                 day: '2-digit', 
-                month: 'long', 
+                month: 'short', 
                 year: 'numeric' 
               })}
             </div>
           </div>
           
-          {/* Separador elegante */}
-          <div className="w-px h-16 bg-gradient-to-b from-transparent via-blue-400/60 to-transparent shadow-lg"></div>
+          {/* Separador compacto */}
+          <div className="w-px h-10 bg-gradient-to-b from-transparent via-blue-400/60 to-transparent shadow-lg"></div>
           
-          {/* Horário Digital Melhorado */}
-          <div className="bg-slate-900/60 backdrop-blur-sm rounded-xl px-6 py-3 border border-blue-400/30 shadow-inner">
-            <div className="text-blue-200 text-xs font-medium tracking-widest uppercase text-center mb-1">
+          {/* Horário Digital Compacto */}
+          <div className="bg-slate-900/60 backdrop-blur-sm rounded-lg px-4 py-2 border border-blue-400/30 shadow-inner">
+            <div className="text-blue-200 text-xs font-medium tracking-widest uppercase text-center">
               Hora Oficial
             </div>
-            <div className="text-white font-mono font-bold tracking-wider text-center text-[28px]">
+            <div className="text-white font-mono font-bold tracking-wider text-center text-xl">
               {new Date().toLocaleTimeString('pt-BR', { 
                 hour: '2-digit', 
                 minute: '2-digit',
@@ -134,7 +133,7 @@ const Index = () => {
               })}
             </div>
             {/* Horário do Pôr do Sol */}
-            <div className="text-amber-300 text-xs font-medium text-center mt-2 opacity-90">
+            <div className="text-amber-300 text-xs font-medium text-center mt-1 opacity-90">
               🌅 {sunsetTime}
             </div>
           </div>
