@@ -35,19 +35,23 @@ async function fetchSunsetFromAPI(): Promise<string> {
     const data = await response.json();
     
     if (data.status === 'OK' && data.results?.sunset) {
-      // Converter UTC para horário do Brasil (UTC-3)
+      // A API retorna em UTC, converter para horário do Brasil (UTC-3)
       const sunsetUTC = new Date(data.results.sunset);
-      const sunsetBR = new Date(sunsetUTC.getTime() - (3 * 60 * 60 * 1000));
       
-      const hours = sunsetBR.getHours().toString().padStart(2, '0');
-      const minutes = sunsetBR.getMinutes().toString().padStart(2, '0');
+      // Criar um novo objeto Date e subtrair 3 horas para GMT-3 (horário do Brasil)
+      const brasilOffset = 3 * 60 * 60 * 1000; // 3 horas em milissegundos
+      const sunsetBrasil = new Date(sunsetUTC.getTime() - brasilOffset);
+      
+      const hours = sunsetBrasil.getUTCHours().toString().padStart(2, '0');
+      const minutes = sunsetBrasil.getUTCMinutes().toString().padStart(2, '0');
       const sunset = `${hours}:${minutes}`;
       
       // Atualizar cache
       cachedSunset = sunset;
       lastFetchDate = today;
       
-      console.log('✅ Pôr do sol obtido com sucesso:', sunset);
+      console.log('✅ Pôr do sol UTC:', data.results.sunset);
+      console.log('✅ Pôr do sol Brasil:', sunset);
       return sunset;
     } else {
       throw new Error('API retornou dados inválidos');
