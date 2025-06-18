@@ -1096,30 +1096,61 @@ return (
   const currentEscala = getCurrentEscalaDoc();
 
   return (
-    <Card className="h-full overflow-hidden border-navy">
-      <CardHeader className="bg-navy text-white py-1.5">
-        <CardTitle className="text-center flex items-center justify-between text-sm">
-          <div className="flex items-center">
-            <span className="font-medium">{currentTitle}</span>
+    <Card className="h-full overflow-hidden border-0 shadow-none bg-transparent">
+      {/* Header Estilizado com Gradiente */}
+      <CardHeader className="relative bg-gradient-to-r from-slate-700 via-blue-800 to-slate-700 text-white py-3 px-4 border-b border-blue-400/30">
+        {/* Efeito de brilho */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-400/10 to-transparent"></div>
+        
+        <CardTitle className="relative z-10 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            {/* Ícone do tipo de documento */}
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+              {documentType === "plasa" ? (
+                <span className="text-white text-sm font-bold">📋</span>
+              ) : (
+                <span className="text-white text-sm font-bold">📅</span>
+              )}
+            </div>
+            
+            {/* Título principal */}
+            <div className="flex flex-col">
+              <span className="font-bold text-sm bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
+                {documentType === "plasa" ? (
+                  activePlasaDoc?.title || "PLASA - Plano de Serviço Semanal"
+                ) : (
+                  currentEscala?.title || "Escala de Serviço Semanal"
+                )}
+              </span>
+              
+              {/* Subtítulo com categoria (apenas para escala) */}
+              {documentType === "escala" && currentEscala?.category && (
+                <span className="text-xs text-blue-200/80 font-medium">
+                  {currentEscala.category === "oficial" ? "Oficiais" : "Praças"}
+                </span>
+              )}
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            {/* ❌ REMOVER: Status técnico do PLASA */}
-          {IS_DEV_MODE && documentType === "plasa" && (
-           
-              <div className="text-xs opacity-75">
-                {isAutomationPaused ? "⏸️" : isScrolling ? "📖" : "📄"}
-              </div>
-            )}
-         
-
-
+          
+          {/* Indicadores à direita */}
+          <div className="flex items-center space-x-3">
+            {/* Status de múltiplas escalas */}
             {documentType === "escala" && escalaDocuments.filter(d => d.active).length > 1 && (
-              <div className="text-xs opacity-75">
-                🔄 {currentEscalaIndex + 1}/{escalaDocuments.filter(d => d.active).length}
+              <div className="bg-blue-600/50 backdrop-blur-sm rounded-full px-3 py-1 border border-blue-400/30">
+                <span className="text-xs font-medium text-blue-100">
+                  {currentEscalaIndex + 1} de {escalaDocuments.filter(d => d.active).length}
+                </span>
               </div>
             )}
-
-
+            
+            {/* Indicador de status do PLASA */}
+            {documentType === "plasa" && savedPageUrls.length > 0 && (
+              <div className="bg-green-600/50 backdrop-blur-sm rounded-full px-3 py-1 border border-green-400/30">
+                <span className="text-xs font-medium text-green-100">
+                  {savedPageUrls.length} páginas
+                </span>
+              </div>
+            )}
           </div>
         </CardTitle>
       </CardHeader>
