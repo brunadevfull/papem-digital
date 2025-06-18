@@ -99,9 +99,9 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-950 dark:from-slate-950 dark:via-blue-950 dark:to-slate-950 flex flex-col p-4 transition-colors duration-500">
-      {/* Header Status Bar for TV Display */}
-      <header className="relative flex items-center justify-between px-8 py-6 glass-effect rounded-2xl mb-6 shadow-2xl border border-blue-400/30 dark:border-blue-400/20 transition-all duration-500">
+    <div className="min-h-screen bg-gradient-to-br from-blue-800 via-blue-900 to-blue-950 flex flex-col p-4">
+      {/* Header simplificado para TV */}
+      <header className="relative flex items-center justify-between px-8 py-6 bg-blue-900/40 backdrop-blur-md rounded-xl mb-6 border border-blue-600/30">
         {/* Efeito de brilho sutil */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-400/8 to-transparent rounded-2xl"></div>
         
@@ -139,49 +139,22 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Status Display for TV */}
+        {/* Data e Hora para TV */}
         <div className="flex items-center space-x-6 relative z-10">
-          {/* Connection Status */}
-          <div className="flex items-center space-x-2">
-            {connectionStatus === 'connected' ? 
-              <Wifi className="h-5 w-5 text-green-400" /> :
-              <WifiOff className="h-5 w-5 text-red-400" />
-            }
-            <span className={`text-sm font-medium ${getStatusColor()}`}>
-              {connectionStatus === 'connected' ? 'ONLINE' : 
-               connectionStatus === 'connecting' ? 'CONECTANDO' : 'OFFLINE'}
-            </span>
-          </div>
-
-          {/* System Health */}
-          <div className="flex items-center space-x-2">
-            <Activity className="h-4 w-4 text-blue-300" />
-            <span className="text-sm text-blue-200">
-              Sistema {systemHealth}%
-            </span>
-          </div>
-
-          {/* Active Notices Badge */}
-          {activeNotices.length > 0 && (
-            <Badge variant="destructive" className="animate-pulse">
-              {activeNotices.length} Aviso{activeNotices.length > 1 ? 's' : ''}
-            </Badge>
-          )}
-
-          {/* Display de horário */}
-          <div className="px-4 py-2 bg-gradient-to-r from-blue-700/70 to-cyan-700/70 dark:from-blue-800/70 dark:to-cyan-800/70 rounded-xl border border-blue-400/40 backdrop-blur-xl shadow-xl hover:shadow-blue-500/30 transition-all duration-300">
-            <div className="text-2xl font-mono font-bold text-cyan-100 dark:text-cyan-50 tabular-nums tracking-widest drop-shadow-sm">
-              {currentTime}
-            </div>
-          </div>
-
           {/* Data */}
-          <div className="text-right space-y-1">
-            <div className="text-xs text-blue-200/80 dark:text-blue-100/70 font-semibold uppercase tracking-widest">
+          <div className="text-center">
+            <div className="text-sm text-blue-200 font-medium uppercase tracking-wider">
               {currentDate.weekday}
             </div>
-            <div className="text-base text-blue-100 dark:text-blue-50 font-bold tabular-nums">
+            <div className="text-xl text-white font-bold">
               {currentDate.day}/{currentDate.month}
+            </div>
+          </div>
+
+          {/* Display de horário */}
+          <div className="px-6 py-3 bg-blue-800/60 rounded-lg border border-blue-600/40">
+            <div className="text-3xl font-mono font-bold text-white tabular-nums tracking-wider">
+              {currentTime}
             </div>
           </div>
         </div>
@@ -191,7 +164,7 @@ const Index = () => {
       <div className="flex-1 flex flex-col lg:flex-row gap-4 overflow-hidden">
         {/* PLASA - Lado esquerdo (60%) */}
         <div className="lg:w-3/5 h-[calc(100vh-9rem)] min-h-[650px]">
-          <div className="h-full bg-gradient-to-br from-white/5 via-blue-900/20 to-white/5 backdrop-blur-sm rounded-2xl border border-blue-400/25 shadow-2xl hover:border-blue-400/40 transition-all duration-500 overflow-hidden">
+          <div className="h-full bg-blue-800/30 backdrop-blur-sm rounded-xl border border-blue-600/30 overflow-hidden">
             <PDFViewer
               documentType="plasa"
               title={activePlasaDoc?.title || "PLASA - Plano de Serviço Semanal"}
@@ -205,7 +178,7 @@ const Index = () => {
         <div className="lg:w-2/5 h-[calc(100vh-9rem)] min-h-[650px] flex flex-col gap-4">
           {/* Escala de Serviço - 65% da altura */}
           <div className="h-[65%] min-h-[420px]">
-            <div className="h-full bg-gradient-to-br from-white/5 via-blue-900/20 to-white/5 backdrop-blur-sm rounded-2xl border border-blue-400/25 shadow-2xl hover:border-blue-400/40 transition-all duration-500 overflow-hidden">
+            <div className="h-full bg-blue-800/30 backdrop-blur-sm rounded-xl border border-blue-600/30 overflow-hidden">
               <PDFViewer
                 documentType="escala"
                 title={activeEscalaDoc?.title || "Escala de Serviço Semanal"}
@@ -215,7 +188,7 @@ const Index = () => {
 
           {/* Avisos Importantes - 35% da altura */}
           <div className="h-[35%] min-h-[200px]">
-            <div className="h-full bg-gradient-to-br from-amber-900/20 to-orange-900/20 backdrop-blur-sm rounded-2xl border border-amber-400/30 shadow-2xl hover:border-amber-400/50 transition-all duration-500 overflow-hidden">
+            <div className="h-full bg-blue-800/30 backdrop-blur-sm rounded-xl border border-blue-600/30 overflow-hidden">
               <NoticeDisplay />
             </div>
           </div>
