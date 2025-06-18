@@ -1,3 +1,11 @@
+/*
+ * Sistema de Visualização da Marinha do Brasil
+ * Painel Administrativo
+ * 
+ * Autor: 2SG Bruna Rocha
+ * Marinha do Brasil
+ */
+
 import React, { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { 

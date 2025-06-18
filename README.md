@@ -1,5 +1,8 @@
 # Sistema de Visualização da Marinha do Brasil
 
+**Autor: 2SG Bruna Rocha**  
+**Marinha do Brasil**
+
 Sistema completo de exibição automática de documentos PLASA e Escalas para unidades da Marinha do Brasil, com processamento de PDF, gerenciamento de avisos e painel administrativo.
 
 ## 📋 Funcionalidades

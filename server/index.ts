@@ -1,3 +1,11 @@
+/*
+ * Sistema de Visualização da Marinha do Brasil
+ * Servidor Principal
+ * 
+ * Autor: 2SG Bruna Rocha
+ * Marinha do Brasil
+ */
+
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";

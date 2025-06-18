@@ -77,25 +77,43 @@ const Index = () => {
             <p className="text-sm text-blue-300/90 font-medium tracking-wide">
               Sistema de Visualização Operacional
             </p>
+            <p className="text-xs text-blue-400/70 font-light italic">
+              Desenvolvido por 2SG Bruna Rocha
+            </p>
           </div>
         </div>
 
-        {/* Horário Digital Premium */}
-        <div className="flex items-center space-x-4 relative z-10">
-          {/* Display de horário */}
-          <div className="px-4 py-2 bg-gradient-to-r from-blue-700/70 to-cyan-700/70 rounded-xl border border-blue-400/40 backdrop-blur-xl shadow-xl hover:shadow-blue-500/30 transition-all duration-300">
-            <div className="text-2xl font-mono font-bold text-cyan-100 tabular-nums tracking-widest drop-shadow-sm">
-              {getCurrentTime()}
+        {/* Data e Hora Melhorada */}
+        <div className="flex items-center space-x-6 relative z-10">
+          {/* Data Completa */}
+          <div className="text-right">
+            <div className="text-blue-200 text-xs font-medium tracking-widest uppercase">
+              {new Date().toLocaleDateString('pt-BR', { weekday: 'long' })}
+            </div>
+            <div className="text-white text-lg font-semibold">
+              {new Date().toLocaleDateString('pt-BR', { 
+                day: '2-digit', 
+                month: 'long', 
+                year: 'numeric' 
+              })}
             </div>
           </div>
-
-          {/* Data */}
-          <div className="text-right space-y-1">
-            <div className="text-xs text-blue-200/80 font-semibold uppercase tracking-widest">
-              {currentDate.weekday}
+          
+          {/* Separador elegante */}
+          <div className="w-px h-16 bg-gradient-to-b from-transparent via-blue-400/60 to-transparent shadow-lg"></div>
+          
+          {/* Horário Digital Melhorado */}
+          <div className="bg-slate-900/60 backdrop-blur-sm rounded-xl px-6 py-3 border border-blue-400/30 shadow-inner">
+            <div className="text-blue-200 text-xs font-medium tracking-widest uppercase text-center mb-1">
+              Hora Oficial
             </div>
-            <div className="text-base text-blue-100 font-bold tabular-nums">
-              {currentDate.day}/{currentDate.month}
+            <div className="text-white font-mono text-3xl font-bold tracking-wider text-center">
+              {new Date().toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false 
+              })}
             </div>
           </div>
         </div>
