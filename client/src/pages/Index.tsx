@@ -96,7 +96,7 @@ const Index = () => {
             <h1 className="text-2xl font-display font-bold bg-gradient-to-r from-white via-blue-100 to-cyan-200 bg-clip-text text-transparent hover:from-cyan-200 hover:to-white transition-all duration-700">
               Marinha do Brasil - PAPEM
             </h1>
-            <p className="text-sm text-blue-300/90 font-medium tracking-wide">Sistema de Visualização</p>
+            <p className="text-sm text-blue-300/90 font-medium tracking-wide">Sistema de Visualização de Documentos</p>
 
           </div>
         </div>
