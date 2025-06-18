@@ -79,7 +79,8 @@ export const DisplayProvider: React.FC<DisplayProviderProps> = ({ children }) =>
       return path;
     }
     
-    const backendPort = import.meta.env.VITE_BACKEND_PORT || '3001';
+    // Para desenvolvimento local e produção no Replit, usar porta 5000
+    const backendPort = import.meta.env.VITE_BACKEND_PORT || '5000';
     const backendHost = import.meta.env.VITE_BACKEND_HOST || 'localhost';
     
     console.log(`🌐 Backend URL: ${backendHost}:${backendPort}`);
@@ -578,16 +579,23 @@ export const DisplayProvider: React.FC<DisplayProviderProps> = ({ children }) =>
             const data = JSON.parse(saved);
             console.log("📥 Dados encontrados no localStorage");
 
-            // Carregar documentos PLASA
+            // Carregar documentos PLASA com correção de URL
             if (data.plasaDocuments && Array.isArray(data.plasaDocuments)) {
               const validPlasaDocs = data.plasaDocuments
                 .filter((doc: any) => doc && doc.id && doc.title && doc.url)
-                .map((doc: any) => ({
-                  ...doc,
-                  url: getBackendUrl(doc.url),
-                  uploadDate: new Date(doc.uploadDate),
-                  active: doc.active !== false
-                }));
+                .map((doc: any) => {
+                  // Corrigir URLs que ainda estão com porta 3001
+                  let correctedUrl = doc.url;
+                  if (correctedUrl.includes(':3001')) {
+                    correctedUrl = correctedUrl.replace(':3001', ':5000');
+                  }
+                  return {
+                    ...doc,
+                    url: getBackendUrl(correctedUrl),
+                    uploadDate: new Date(doc.uploadDate),
+                    active: doc.active !== false
+                  };
+                });
               
               if (validPlasaDocs.length > 0) {
                 setPlasaDocuments(validPlasaDocs);
@@ -595,16 +603,23 @@ export const DisplayProvider: React.FC<DisplayProviderProps> = ({ children }) =>
               }
             }
 
-            // Carregar documentos Escala
+            // Carregar documentos Escala com correção de URL
             if (data.escalaDocuments && Array.isArray(data.escalaDocuments)) {
               const validEscalaDocs = data.escalaDocuments
                 .filter((doc: any) => doc && doc.id && doc.title && doc.url)
-                .map((doc: any) => ({
-                  ...doc,
-                  url: getBackendUrl(doc.url),
-                  uploadDate: new Date(doc.uploadDate),
-                  active: doc.active !== false
-                }));
+                .map((doc: any) => {
+                  // Corrigir URLs que ainda estão com porta 3001
+                  let correctedUrl = doc.url;
+                  if (correctedUrl.includes(':3001')) {
+                    correctedUrl = correctedUrl.replace(':3001', ':5000');
+                  }
+                  return {
+                    ...doc,
+                    url: getBackendUrl(correctedUrl),
+                    uploadDate: new Date(doc.uploadDate),
+                    active: doc.active !== false
+                  };
+                });
               
               if (validEscalaDocs.length > 0) {
                 setEscalaDocuments(validEscalaDocs);
