@@ -67,15 +67,10 @@ export class MemStorage implements IStorage {
     const id = this.currentNoticeId++;
     const now = new Date();
     const notice: Notice = { 
-      id,
-      title: insertNotice.title,
-      content: insertNotice.content,
-      priority: insertNotice.priority as "high" | "medium" | "low",
-      startDate: insertNotice.startDate,
-      endDate: insertNotice.endDate,
-      active: insertNotice.active ?? true,
+      ...insertNotice, 
+      id, 
       createdAt: now, 
-      updatedAt: now
+      updatedAt: now 
     };
     this.notices.set(id, notice);
     return notice;
@@ -103,13 +98,9 @@ export class MemStorage implements IStorage {
   async createDocument(insertDocument: InsertDocument): Promise<PDFDocument> {
     const id = this.currentDocumentId++;
     const document: PDFDocument = { 
-      id,
-      title: insertDocument.title,
-      url: insertDocument.url,
-      type: insertDocument.type as "plasa" | "bono" | "escala" | "cardapio",
-      category: insertDocument.category as "oficial" | "praca" | null,
-      active: insertDocument.active ?? true,
-      uploadDate: new Date()
+      ...insertDocument, 
+      id, 
+      uploadDate: new Date() 
     };
     this.documents.set(id, document);
     return document;

@@ -27,8 +27,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useDisplay, Notice, PDFDocument } from "@/context/DisplayContext";
 import { useToast } from "@/hooks/use-toast";
-import RealtimeNotifications from "@/components/RealtimeNotifications";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { 
   Sheet, 
   SheetContent, 
@@ -583,11 +581,7 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
             <h1 className="text-2xl font-bold">Painel Administrativo</h1>
             <p className="text-gray-200">Gerencie documentos e avisos do sistema de visualização</p>
           </div>
-          <div className="flex gap-2 items-center">
-            <RealtimeNotifications />
-            <div className="h-8 w-px bg-blue-400/30"></div>
-            <ThemeToggle />
-            <div className="h-8 w-px bg-blue-400/30"></div>
+          <div className="flex gap-2">
             <Link to="/">
               <Button variant="secondary">
                 📺 Visualizar Sistema
