@@ -96,9 +96,7 @@ const Index = () => {
             <h1 className="text-2xl font-display font-bold bg-gradient-to-r from-white via-blue-100 to-cyan-200 bg-clip-text text-transparent hover:from-cyan-200 hover:to-white transition-all duration-700">
               Marinha do Brasil - PAPEM
             </h1>
-            <p className="text-sm text-blue-300/90 font-medium tracking-wide">
-              Sistema de Visualização Operacional
-            </p>
+            <p className="text-sm text-blue-300/90 font-medium tracking-wide">Sistema de Visualização</p>
 
           </div>
         </div>
@@ -142,7 +140,6 @@ const Index = () => {
           </div>
         </div>
       </header>
-
       {/* Main Content com layout melhorado */}
       <div className="flex-1 flex flex-col lg:flex-row gap-4 overflow-hidden">
         {/* PLASA - Lado esquerdo (60%) */}
@@ -177,7 +174,6 @@ const Index = () => {
           </div>
         </div>
       </div>
-
       {/* Footer Premium */}
       <footer className="mt-4 bg-gradient-to-r from-slate-800/70 to-blue-900/70 backdrop-blur-xl rounded-xl shadow-xl border border-blue-400/25 py-2 px-4 text-center">
         <p className="text-xs text-blue-200/80 font-medium">
