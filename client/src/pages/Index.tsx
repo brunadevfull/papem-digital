@@ -139,25 +139,39 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Controls and Status */}
-        <div className="flex items-center space-x-4 relative z-10">
-          {/* Notifications */}
-          <RealtimeNotifications />
-          
-          {/* Theme Toggle */}
-          <ThemeToggle />
+        {/* Status Display for TV */}
+        <div className="flex items-center space-x-6 relative z-10">
+          {/* Connection Status */}
+          <div className="flex items-center space-x-2">
+            {connectionStatus === 'connected' ? 
+              <Wifi className="h-5 w-5 text-green-400" /> :
+              <WifiOff className="h-5 w-5 text-red-400" />
+            }
+            <span className={`text-sm font-medium ${getStatusColor()}`}>
+              {connectionStatus === 'connected' ? 'ONLINE' : 
+               connectionStatus === 'connecting' ? 'CONECTANDO' : 'OFFLINE'}
+            </span>
+          </div>
 
-          {/* Admin Access */}
-          <Link href="/admin">
-            <Button variant="outline" size="icon" className="hover:bg-blue-600/20">
-              <Settings className="h-4 w-4" />
-            </Button>
-          </Link>
+          {/* System Health */}
+          <div className="flex items-center space-x-2">
+            <Activity className="h-4 w-4 text-blue-300" />
+            <span className="text-sm text-blue-200">
+              Sistema {systemHealth}%
+            </span>
+          </div>
+
+          {/* Active Notices Badge */}
+          {activeNotices.length > 0 && (
+            <Badge variant="destructive" className="animate-pulse">
+              {activeNotices.length} Aviso{activeNotices.length > 1 ? 's' : ''}
+            </Badge>
+          )}
 
           {/* Display de horário */}
           <div className="px-4 py-2 bg-gradient-to-r from-blue-700/70 to-cyan-700/70 dark:from-blue-800/70 dark:to-cyan-800/70 rounded-xl border border-blue-400/40 backdrop-blur-xl shadow-xl hover:shadow-blue-500/30 transition-all duration-300">
             <div className="text-2xl font-mono font-bold text-cyan-100 dark:text-cyan-50 tabular-nums tracking-widest drop-shadow-sm">
-              {getCurrentTime()}
+              {currentTime}
             </div>
           </div>
 
