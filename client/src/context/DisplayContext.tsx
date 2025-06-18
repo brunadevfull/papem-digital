@@ -565,72 +565,93 @@ export const DisplayProvider: React.FC<DisplayProviderProps> = ({ children }) =>
     }
   };
 
-  // CORREÇÃO: Carregar do localStorage e servidor na inicialização
+  // CORREÇÃO: Inicialização robusta com fallback para erros de documento
   useEffect(() => {
     const initializeContext = async () => {
+      console.log("🚀 Inicializando DisplayContext...");
+      
       try {
-        // Carregar documentos do localStorage
+        // Carregar configurações do localStorage
         const saved = localStorage.getItem('display-context');
         if (saved) {
-          const data = JSON.parse(saved);
-          console.log("📥 Carregando contexto do localStorage:", {
-            plasa: Array.isArray(data.plasaDocuments) ? data.plasaDocuments.length : 'inválido',
-            escala: Array.isArray(data.escalaDocuments) ? data.escalaDocuments.length : 'inválido',
-            escalaIndex: data.currentEscalaIndex || 0,
-            version: data.version || 'legacy'
-          });
+          try {
+            const data = JSON.parse(saved);
+            console.log("📥 Dados encontrados no localStorage");
 
-          // Carregar documentos PLASA
-          if (data.plasaDocuments && Array.isArray(data.plasaDocuments)) {
-            const validPlasaDocs = data.plasaDocuments.map((doc: any) => ({
-              ...doc,
-              url: getBackendUrl(doc.url),
-              uploadDate: new Date(doc.uploadDate)
-            }));
-            setPlasaDocuments(validPlasaDocs);
-          }
+            // Carregar documentos PLASA
+            if (data.plasaDocuments && Array.isArray(data.plasaDocuments)) {
+              const validPlasaDocs = data.plasaDocuments
+                .filter((doc: any) => doc && doc.id && doc.title && doc.url)
+                .map((doc: any) => ({
+                  ...doc,
+                  url: getBackendUrl(doc.url),
+                  uploadDate: new Date(doc.uploadDate),
+                  active: doc.active !== false
+                }));
+              
+              if (validPlasaDocs.length > 0) {
+                setPlasaDocuments(validPlasaDocs);
+                console.log(`✅ ${validPlasaDocs.length} documentos PLASA carregados`);
+              }
+            }
 
-          // Carregar documentos Escala
-          if (data.escalaDocuments && Array.isArray(data.escalaDocuments)) {
-            const validEscalaDocs = data.escalaDocuments.map((doc: any) => ({
-              ...doc,
-              url: getBackendUrl(doc.url),
-              uploadDate: new Date(doc.uploadDate)
-            }));
-            setEscalaDocuments(validEscalaDocs);
-          }
+            // Carregar documentos Escala
+            if (data.escalaDocuments && Array.isArray(data.escalaDocuments)) {
+              const validEscalaDocs = data.escalaDocuments
+                .filter((doc: any) => doc && doc.id && doc.title && doc.url)
+                .map((doc: any) => ({
+                  ...doc,
+                  url: getBackendUrl(doc.url),
+                  uploadDate: new Date(doc.uploadDate),
+                  active: doc.active !== false
+                }));
+              
+              if (validEscalaDocs.length > 0) {
+                setEscalaDocuments(validEscalaDocs);
+                console.log(`✅ ${validEscalaDocs.length} documentos Escala carregados`);
+              }
+            }
 
-          // Carregar outras configurações
-          if (typeof data.currentEscalaIndex === 'number') {
-            setCurrentEscalaIndex(data.currentEscalaIndex);
+            // Carregar configurações
+            if (typeof data.currentEscalaIndex === 'number') {
+              setCurrentEscalaIndex(data.currentEscalaIndex);
+            }
+            if (data.documentAlternateInterval) setDocumentAlternateInterval(data.documentAlternateInterval);
+            if (data.scrollSpeed) setScrollSpeed(data.scrollSpeed);
+            if (data.autoRestartDelay) setAutoRestartDelay(data.autoRestartDelay);
+          } catch (parseError) {
+            console.warn("⚠️ Erro ao processar localStorage:", parseError);
+            localStorage.removeItem('display-context');
           }
-          if (data.documentAlternateInterval) setDocumentAlternateInterval(data.documentAlternateInterval);
-          if (data.scrollSpeed) setScrollSpeed(data.scrollSpeed);
-          if (data.autoRestartDelay) setAutoRestartDelay(data.autoRestartDelay);
+        }
+
+        // Carregar avisos do servidor
+        try {
+          await loadNoticesFromServer();
+        } catch (noticeError) {
+          console.warn("⚠️ Falha ao carregar avisos do servidor:", noticeError);
         }
         
-        // NOVO: Carregar avisos do servidor
-        await loadNoticesFromServer();
-        
-        // Carregar documentos do servidor
+        // Carregar documentos do servidor (não bloqueante)
         setTimeout(() => {
-          loadDocumentsFromServer();
+          loadDocumentsFromServer().catch(error => {
+            console.warn("⚠️ Falha ao carregar documentos do servidor:", error);
+          });
         }, 1000);
         
       } catch (error) {
-        console.error("❌ Erro ao carregar contexto:", error);
-        localStorage.removeItem('display-context');
+        console.error("❌ Erro na inicialização:", error);
         
-        // Mesmo com erro, tentar carregar avisos do servidor
-        await loadNoticesFromServer();
-        
-        setTimeout(() => {
-          loadDocumentsFromServer();
-        }, 500);
+        // Fallback: tentar carregar apenas avisos
+        try {
+          await loadNoticesFromServer();
+        } catch (fallbackError) {
+          console.error("❌ Falha total na inicialização:", fallbackError);
+        }
       } finally {
         setTimeout(() => {
           isInitializingRef.current = false;
-          console.log("✅ Inicialização completa");
+          console.log("✅ DisplayContext inicializado");
         }, 2000);
       }
     };
