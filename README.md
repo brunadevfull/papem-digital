@@ -1,387 +1,280 @@
-# Navy Display System (Sistema de Visualização da Marinha)
+# Sistema de Visualização da Marinha do Brasil
 
-A comprehensive digital display system for the Brazilian Navy (Marinha do Brasil) featuring real-time document viewing, notice management, and automated PDF processing.
+Sistema completo de exibição automática de documentos PLASA e Escalas para unidades da Marinha do Brasil, com processamento de PDF, gerenciamento de avisos e painel administrativo.
 
-## 🚀 Features
+## 📋 Funcionalidades
 
-- **Real-time Document Display**: Automatic cycling between PLASA and Escala documents
-- **Notice Management**: Create, update, and manage operational notices
-- **PDF Processing**: Automatic conversion of PDF documents to optimized images
-- **Auto-scroll System**: Configurable scrolling speeds for document viewing
-- **Admin Panel**: Complete administrative interface for content management
-- **Responsive Design**: Works on various screen sizes and devices
-- **Naval Theme**: Professional styling with Brazilian Navy branding
+### Sistema Principal
+- **Exibição Automática**: Cicla entre documentos PLASA e Escalas com intervalos configuráveis
+- **Processamento de PDF**: Converte PDFs para imagens otimizadas para exibição
+- **Scroll Automático**: Navegação automática com velocidade configurável
+- **Sistema de Avisos**: Exibe avisos importantes com prioridades e períodos definidos
+- **Responsivo**: Interface adaptável para diferentes tamanhos de tela
 
-## 📋 System Requirements
+### Painel Administrativo
+- **Gerenciamento de Documentos**: Upload, edição e exclusão de PLASAs e Escalas
+- **Sistema de Avisos**: Criação e gerenciamento de avisos com períodos de validade
+- **Configurações**: Controle de velocidade de scroll, intervalos de alternância
+- **Categorização**: Organização de escalas por categoria (Oficial/Praça)
 
-- Node.js 20 or higher
-- Modern web browser with JavaScript enabled
-- PDF.js library for document processing
-- 2GB+ RAM recommended for PDF processing
+## 🚀 Instalação
 
-## 🛠️ Installation & Setup
+### Pré-requisitos
+- Node.js 18+ 
+- npm ou yarn
+- Chrome/Chromium (para testes automatizados)
 
-### Quick Start
-
-1. **Clone and Install Dependencies**
-   ```bash
-   git clone <repository-url>
-   cd navy-display-system
-   npm install
-   ```
-
-2. **Start the Application**
-   ```bash
-   npm run dev
-   ```
-
-3. **Access the System**
-   - Main Display: http://localhost:5000
-   - Admin Panel: http://localhost:5000/admin
-
-### Environment Variables
-
-Create a `.env` file in the root directory:
-
-```env
-# Backend Configuration
-VITE_BACKEND_HOST=localhost
-VITE_BACKEND_PORT=5000
-
-# Development Settings
-NODE_ENV=development
-```
-
-## 🏗️ Architecture
-
-### Tech Stack
-
-- **Frontend**: React 18, TypeScript, Tailwind CSS
-- **Backend**: Express.js, Node.js
-- **Routing**: Wouter (lightweight React router)
-- **Data Fetching**: TanStack Query (React Query)
-- **UI Components**: Radix UI + shadcn/ui
-- **PDF Processing**: PDF.js
-- **Storage**: In-memory storage (easily replaceable with database)
-
-### Project Structure
-
-```
-navy-display-system/
-├── client/                 # Frontend React application
-│   ├── src/
-│   │   ├── components/     # Reusable UI components
-│   │   ├── pages/          # Main application pages
-│   │   ├── context/        # React context providers
-│   │   ├── hooks/          # Custom React hooks
-│   │   └── utils/          # Utility functions
-├── server/                 # Backend Express application
-│   ├── routes.ts           # API route definitions
-│   ├── storage.ts          # Data storage interface
-│   └── index.ts            # Server entry point
-├── shared/                 # Shared TypeScript types
-│   └── schema.ts           # Data schemas and validation
-├── test.js                 # Automated test suite
-└── README.md              # This documentation
-```
-
-## 📚 API Documentation
-
-### Health Check
-```
-GET /api/health
-```
-Returns system status and timestamp.
-
-### Notices Management
-
-#### Get All Notices
-```
-GET /api/notices
-```
-Returns array of all notices.
-
-#### Create Notice
-```
-POST /api/notices
-Content-Type: application/json
-
-{
-  "title": "Notice Title",
-  "content": "Notice content text",
-  "priority": "high|medium|low",
-  "startDate": "2025-01-01T00:00:00.000Z",
-  "endDate": "2025-01-02T00:00:00.000Z",
-  "active": true
-}
-```
-
-#### Update Notice
-```
-PUT /api/notices/:id
-Content-Type: application/json
-
-{
-  "title": "Updated Title",
-  "active": false
-}
-```
-
-#### Delete Notice
-```
-DELETE /api/notices/:id
-```
-
-### Documents Management
-
-#### Get All Documents
-```
-GET /api/documents
-```
-Returns array of all documents.
-
-#### Create Document
-```
-POST /api/documents
-Content-Type: application/json
-
-{
-  "title": "Document Title",
-  "url": "/path/to/document.pdf",
-  "type": "plasa|bono|escala|cardapio",
-  "category": "oficial|praca", // Optional, for escala type
-  "active": true
-}
-```
-
-#### Update Document
-```
-PUT /api/documents/:id
-```
-
-#### Delete Document
-```
-DELETE /api/documents/:id
-```
-
-## 🧪 Testing
-
-### Automated Test Suite
-
-Run the comprehensive test suite:
+### Instalação Local
 
 ```bash
-node test.js
+# Clonar o repositório
+git clone <url-do-repositorio>
+cd sistema-visualizacao-marinha
+
+# Instalar dependências
+npm install
+
+# Iniciar servidor de desenvolvimento
+npm run dev
 ```
 
-The test suite includes:
+O sistema estará disponível em `http://localhost:5000`
 
-- **Health Check Tests**: Verify server connectivity
-- **CRUD Operations**: Test all Create, Read, Update, Delete operations
-- **Data Validation**: Verify input validation and error handling
-- **Frontend Accessibility**: Check page loading and navigation
-- **Error Handling**: Test 404 responses and invalid requests
+### Instalação em Oracle Linux
 
-### Test Coverage
+Para instalação completa em ambiente de produção Oracle Linux:
 
-- ✅ API endpoint functionality
-- ✅ Data validation and schema compliance
-- ✅ Error handling and status codes
-- ✅ Frontend page accessibility
-- ✅ CRUD operations for notices and documents
+```bash
+# Executar script de configuração (como root)
+sudo ./setup-oracle-linux.sh
 
-### Manual Testing
-
-1. **Display System**:
-   - Visit main page and verify document cycling
-   - Check auto-scroll functionality
-   - Verify notice display rotation
-
-2. **Admin Panel**:
-   - Access `/admin` and test notice creation
-   - Upload test documents
-   - Verify document management functions
-
-## 🎮 Usage Guide
-
-### Main Display Page
-
-The main display automatically:
-- Cycles between active PLASA and Escala documents
-- Shows current notices in rotation
-- Auto-scrolls through multi-page documents
-- Displays current time and date
-
-### Admin Panel Features
-
-#### Notice Management
-1. Navigate to `/admin`
-2. Use the "Avisos" tab
-3. Create new notices with title, content, priority
-4. Set start/end dates for automatic scheduling
-5. Toggle active status to show/hide notices
-
-#### Document Management
-1. Use the "Documentos" tab
-2. Upload PDF files or provide URLs
-3. Set document type (PLASA, Escala, etc.)
-4. Configure document category if applicable
-5. Activate/deactivate documents for display
-
-#### Display Settings
-- **Document Interval**: Time between document switches
-- **Scroll Speed**: Slow, Normal, or Fast scrolling
-- **Auto-restart Delay**: Pause time before restarting scroll
-
-## 🔧 Configuration
-
-### Display Settings
-
-Modify these settings in the admin panel:
-
-- **Document Alternate Interval**: 10-60 seconds
-- **Scroll Speed**: 
-  - Slow: 0.5x speed
-  - Normal: 1x speed  
-  - Fast: 2x speed
-- **Auto Restart Delay**: 1-10 seconds
-
-### PDF Processing
-
-The system automatically:
-- Converts PDF pages to optimized JPEG images
-- Scales images to fit display dimensions
-- Caches converted images for performance
-- Handles multi-page documents with auto-scroll
-
-## 🛡️ Security Features
-
-- **Input Validation**: All API inputs validated with Zod schemas
-- **Type Safety**: Full TypeScript implementation
-- **Error Handling**: Comprehensive error catching and logging
-- **Client/Server Separation**: Clear separation of concerns
-- **CORS Protection**: Configured for secure cross-origin requests
-
-## 🔍 Troubleshooting
-
-### Common Issues
-
-1. **Server Won't Start**
-   ```bash
-   # Check if port 5000 is available
-   lsof -i :5000
-   
-   # Kill any conflicting processes
-   kill -9 <PID>
-   ```
-
-2. **PDF Not Loading**
-   - Verify PDF file is accessible
-   - Check browser console for PDF.js errors
-   - Ensure file size is under 50MB
-
-3. **Notice Not Appearing**
-   - Check notice is marked as active
-   - Verify start/end dates are current
-   - Check browser console for API errors
-
-### Debug Mode
-
-Enable detailed logging by setting:
-```javascript
-localStorage.setItem('debug', 'true');
+# Fazer deploy da aplicação
+sudo /usr/local/bin/deploy-navy-display <url-do-repositorio-git>
 ```
 
-### Log Files
+## 🖥️ Interface do Sistema
 
-Check browser console for:
-- PDF processing status
-- API request/response logs
-- Component rendering information
-- Error messages and stack traces
+### Página Principal (`/`)
+- Exibição em tela cheia de documentos PLASA e Escalas
+- Horário atual no canto superior direito
+- Brasão da Marinha como identificação visual
+- Alternância automática entre documentos
 
-## 📈 Performance Optimization
+### Painel Administrativo (`/admin`)
+- **Aba Avisos**: Criar, editar e gerenciar avisos
+- **Aba Documentos**: Upload e gerenciamento de PDFs
+- **Configurações**: Ajustes de velocidade e intervalos
 
-### PDF Processing
-- Images cached in browser localStorage
-- Progressive loading for large documents
-- Optimized JPEG compression (85% quality)
-- Maximum image dimensions: 1024px width
+## ⚙️ Configuração
 
-### Memory Management
-- Automatic cleanup of blob URLs
-- Canvas memory recycling
-- Efficient image caching strategy
-
-## 🔄 Deployment
-
-### Production Build
-
-1. **Build the application**:
-   ```bash
-   npm run build
-   ```
-
-2. **Start production server**:
-   ```bash
-   NODE_ENV=production npm start
-   ```
-
-3. **Configure reverse proxy** (nginx example):
-   ```nginx
-   server {
-       listen 80;
-       server_name your-domain.com;
-       
-       location / {
-           proxy_pass http://localhost:5000;
-           proxy_set_header Host $host;
-           proxy_set_header X-Real-IP $remote_addr;
-       }
-   }
-   ```
-
-### Environment Configuration
-
-Production environment variables:
-```env
-NODE_ENV=production
-PORT=5000
-VITE_BACKEND_HOST=your-domain.com
-VITE_BACKEND_PORT=80
+### Variáveis de Ambiente
+```bash
+NODE_ENV=production          # Ambiente de execução
+PORT=5000                   # Porta do servidor
+VITE_BACKEND_HOST=localhost # Host do backend
+VITE_BACKEND_PORT=5000      # Porta do backend
 ```
 
-## 🤝 Contributing
+### Configurações do Sistema
+- **Intervalo de Alternância**: Tempo entre documentos (padrão: 30s)
+- **Velocidade de Scroll**: Lenta, Normal ou Rápida
+- **Delay de Reinício**: Tempo antes de reiniciar scroll (padrão: 3s)
 
-1. Fork the repository
-2. Create feature branch: `git checkout -b feature-name`
-3. Run tests: `node test.js`
-4. Commit changes: `git commit -am 'Add feature'`
-5. Push branch: `git push origin feature-name`
-6. Submit pull request
+## 🧪 Testes
 
-### Code Standards
+### Testes Rápidos
+```bash
+# Executar testes básicos
+./teste.sh
 
-- Use TypeScript for all new code
-- Follow existing naming conventions
-- Add JSDoc comments for public functions
-- Ensure all tests pass before submitting
-- Follow Prettier formatting rules
+# Executar testes completos com Selenium
+python3 teste_selenium.py
+```
 
-## 📞 Support
+### Testes Disponíveis
 
-For technical support or questions:
+#### Script Bash (`teste.sh`)
+- Verificação de saúde da API
+- Testes CRUD de avisos e documentos
+- Validação de páginas do frontend
+- Testes de tratamento de erro
 
-1. Check this documentation first
-2. Run the automated test suite
-3. Check browser console for errors
-4. Review server logs for API issues
+#### Script Python (`teste_selenium.py`)
+- Automação completa do navegador
+- Testes de interface responsiva
+- Validação de funcionalidades de exibição
+- Testes de navegação entre páginas
 
-## 📄 License
+### Monitoramento Automático
 
-This project is developed for the Brazilian Navy (Marinha do Brasil) internal use.
+Em ambiente de produção, o sistema inclui:
+- Script de monitoramento a cada 5 minutos
+- Reinicialização automática em caso de falha
+- Logs estruturados para diagnóstico
+
+```bash
+# Verificar status do serviço
+systemctl status navy-display
+
+# Ver logs em tempo real
+journalctl -u navy-display -f
+
+# Executar monitor manual
+/usr/local/bin/monitor-navy-display
+```
+
+## 📁 Estrutura do Projeto
+
+```
+sistema-visualizacao-marinha/
+├── client/                 # Frontend React
+│   ├── src/
+│   │   ├── components/    # Componentes reutilizáveis
+│   │   ├── pages/         # Páginas da aplicação
+│   │   ├── context/       # Contextos React
+│   │   └── lib/           # Utilitários
+│   └── public/            # Arquivos estáticos
+├── server/                # Backend Express
+│   ├── index.ts          # Servidor principal
+│   ├── routes.ts         # Rotas da API
+│   └── storage.ts        # Interface de dados
+├── shared/               # Esquemas compartilhados
+│   └── schema.ts         # Definições de tipos
+├── teste.sh             # Testes automatizados (Bash)
+├── teste_selenium.py    # Testes UI (Python/Selenium)
+└── setup-oracle-linux.sh # Instalação produção
+```
+
+## 🔧 API Endpoints
+
+### Avisos
+- `GET /api/notices` - Listar avisos
+- `POST /api/notices` - Criar aviso
+- `PUT /api/notices/:id` - Atualizar aviso
+- `DELETE /api/notices/:id` - Excluir aviso
+
+### Documentos
+- `GET /api/documents` - Listar documentos
+- `POST /api/documents` - Adicionar documento
+- `PUT /api/documents/:id` - Atualizar documento
+- `DELETE /api/documents/:id` - Excluir documento
+
+### Sistema
+- `GET /api/health` - Verificação de saúde
+- `POST /api/upload-plasa-page` - Upload página PLASA
+- `POST /api/upload-escala-image` - Upload imagem Escala
+
+## 🎨 Personalização
+
+### Cores e Temas
+As cores podem ser personalizadas no arquivo `client/src/index.css`:
+
+```css
+:root {
+  --navy-blue: #1e3a8a;      /* Azul Marinha principal */
+  --navy-gold: #fbbf24;      /* Dourado dos detalhes */
+  --navy-dark: #0f172a;      /* Azul escuro de fundo */
+}
+```
+
+### Configurações de Exibição
+Ajustáveis através do painel administrativo:
+- Velocidade de scroll (slow/normal/fast)
+- Intervalo entre documentos (segundos)
+- Delay para reinício automático
+
+## 🔒 Segurança
+
+### Em Produção
+- Firewall configurado (portas 80, 443, SSH)
+- SELinux habilitado e configurado
+- Nginx como proxy reverso
+- Logs estruturados e rotacionados
+- Monitoramento automático de serviços
+
+### Backup Automático
+O script de deploy cria backups antes de atualizações:
+```bash
+# Backups armazenados em:
+/var/backups/navy-display/
+```
+
+## 📱 Compatibilidade
+
+### Navegadores Suportados
+- Chrome/Chromium 90+
+- Firefox 88+
+- Safari 14+
+- Edge 90+
+
+### Sistemas Operacionais
+- **Desenvolvimento**: Windows, macOS, Linux
+- **Produção**: Oracle Linux 8+, RHEL 8+, CentOS 8+
+
+## 🆘 Solução de Problemas
+
+### Problemas Comuns
+
+#### Servidor não inicia
+```bash
+# Verificar porta ocupada
+netstat -tulpn | grep :5000
+
+# Verificar logs
+npm run dev
+```
+
+#### PDFs não carregam
+- Verificar permissões de arquivos
+- Confirmar URLs dos documentos
+- Checar logs do navegador (F12)
+
+#### Tela branca no admin
+```bash
+# Limpar cache do navegador
+# Verificar console de erros (F12)
+# Reiniciar servidor
+```
+
+### Logs Importantes
+```bash
+# Logs do sistema (produção)
+journalctl -u navy-display -f
+
+# Logs de desenvolvimento
+tail -f servidor.log
+
+# Logs do Nginx
+tail -f /var/log/nginx/error.log
+```
+
+## 🤝 Contribuição
+
+### Desenvolvimento Local
+1. Fork do repositório
+2. Criar branch para feature: `git checkout -b nova-funcionalidade`
+3. Commit das mudanças: `git commit -m 'Adiciona nova funcionalidade'`
+4. Push para branch: `git push origin nova-funcionalidade`
+5. Abrir Pull Request
+
+### Padrões de Código
+- TypeScript para toda lógica
+- React com hooks para frontend
+- Express para backend
+- Tailwind CSS para estilos
+
+## 📞 Suporte
+
+Para suporte técnico ou dúvidas:
+- Verificar logs do sistema
+- Executar testes automatizados
+- Consultar documentação da API
+- Verificar issues conhecidos
+
+## 📄 Licença
+
+Sistema desenvolvido para uso interno da Marinha do Brasil.
 
 ---
 
-**Marinha do Brasil - Sistema de Visualização Operacional**
-*Professional digital display solution for naval operations*
+**Marinha do Brasil** - Sistema de Visualização Oficial

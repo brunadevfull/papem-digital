@@ -13,7 +13,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 220 47% 18%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -30,7 +30,7 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 220 47% 18%;
 
     --radius: 0.5rem;
 
@@ -87,6 +87,41 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+/* Cores da Marinha do Brasil */
+:root {
+  --navy-blue: 220 47% 18%;
+  --navy-light: 220 47% 28%;
+  --navy-dark: 220 47% 8%;
+  --navy-gold: 45 93% 58%;
+}
+
+/* Classes personalizadas da Marinha */
+@layer utilities {
+  .bg-navy {
+    background-color: hsl(var(--navy-blue));
+  }
+  
+  .bg-navy-light {
+    background-color: hsl(var(--navy-light));
+  }
+  
+  .bg-navy-dark {
+    background-color: hsl(var(--navy-dark));
+  }
+  
+  .text-navy {
+    color: hsl(var(--navy-blue));
+  }
+  
+  .border-navy {
+    border-color: hsl(var(--navy-blue));
+  }
+  
+  .hover\:bg-navy-light:hover {
+    background-color: hsl(var(--navy-light));
   }
 }
 

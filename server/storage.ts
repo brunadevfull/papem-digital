@@ -70,7 +70,7 @@ export class MemStorage implements IStorage {
       id,
       title: insertNotice.title,
       content: insertNotice.content,
-      priority: insertNotice.priority,
+      priority: insertNotice.priority as "high" | "medium" | "low",
       startDate: insertNotice.startDate,
       endDate: insertNotice.endDate,
       active: insertNotice.active ?? true,
@@ -106,8 +106,8 @@ export class MemStorage implements IStorage {
       id,
       title: insertDocument.title,
       url: insertDocument.url,
-      type: insertDocument.type,
-      category: insertDocument.category ?? null,
+      type: insertDocument.type as "plasa" | "bono" | "escala" | "cardapio",
+      category: insertDocument.category as "oficial" | "praca" | null,
       active: insertDocument.active ?? true,
       uploadDate: new Date()
     };

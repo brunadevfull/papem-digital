@@ -1,7 +1,40 @@
 #!/bin/bash
 
-# Sistema de Visualização da Marinha - Script de Teste Automatizado
-# Suite de testes abrangente para Oracle Linux e outros ambientes
+# =============================================================================
+# SISTEMA DE VISUALIZAÇÃO DA MARINHA DO BRASIL - TESTES AUTOMATIZADOS
+# =============================================================================
+# 
+# Este script executa uma bateria completa de testes para verificar se o
+# sistema está funcionando corretamente. Os testes incluem:
+#
+# 1. VERIFICAÇÃO DE PRÉ-REQUISITOS
+#    - Node.js versão 18 ou superior
+#    - npm para gerenciamento de pacotes
+#    - curl para testes de API
+#
+# 2. TESTES DE API (Backend)
+#    - Endpoint de saúde do sistema (/api/health)
+#    - CRUD completo de avisos (Create, Read, Update, Delete)
+#    - CRUD completo de documentos
+#    - Tratamento adequado de erros
+#
+# 3. TESTES DE FRONTEND
+#    - Carregamento correto da página principal
+#    - Acesso à interface administrativa
+#    - Presença de elementos da Marinha do Brasil
+#
+# 4. TESTES DE INTEGRAÇÃO
+#    - Comunicação entre frontend e backend
+#    - Persistência de dados
+#    - Funcionalidades específicas do sistema naval
+#
+# USO:
+#   ./teste.sh           - Executa todos os testes
+#   ./teste.sh --rapido  - Executa apenas testes essenciais
+#   ./teste.sh --verboso - Mostra todos os comandos executados
+#   ./teste.sh --help    - Mostra ajuda detalhada
+#
+# =============================================================================
 
 set -e
 
