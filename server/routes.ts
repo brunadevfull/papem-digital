@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import express, { type Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertNoticeSchema, insertDocumentSchema } from "@shared/schema";
@@ -41,7 +41,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // File upload route
-  app.post('/api/upload-pdf', upload.single('file'), (req, res) => {
+  app.post('/api/upload-pdf', upload.single('pdf'), (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ 
@@ -82,11 +82,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Serve uploaded files
+  // Serve uploaded files with comprehensive CORS headers
   app.use('/uploads', (req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
-    next();
+    res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Range');
+    res.header('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges');
+    
+    if (req.method === 'OPTIONS') {
+      res.sendStatus(200);
+    } else {
+      next();
+    }
   });
+  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
   // Notice routes
   app.get('/api/notices', async (req, res) => {
