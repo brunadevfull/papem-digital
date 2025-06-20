@@ -617,14 +617,9 @@ export const DisplayProvider: React.FC<DisplayProviderProps> = ({ children }) =>
               const validPlasaDocs = data.plasaDocuments
                 .filter((doc: any) => doc && doc.id && doc.title && doc.url)
                 .map((doc: any) => {
-                  // Corrigir URLs que ainda estão com porta 3001
-                  let correctedUrl = doc.url;
-                  if (correctedUrl.includes(':3001')) {
-                    correctedUrl = correctedUrl.replace(':3001', ':5000');
-                  }
                   return {
                     ...doc,
-                    url: getBackendUrl(correctedUrl),
+                    url: normalizeDocumentUrl(doc.url),
                     uploadDate: new Date(doc.uploadDate),
                     active: doc.active !== false
                   };
@@ -641,14 +636,9 @@ export const DisplayProvider: React.FC<DisplayProviderProps> = ({ children }) =>
               const validEscalaDocs = data.escalaDocuments
                 .filter((doc: any) => doc && doc.id && doc.title && doc.url)
                 .map((doc: any) => {
-                  // Corrigir URLs que ainda estão com porta 3001
-                  let correctedUrl = doc.url;
-                  if (correctedUrl.includes(':3001')) {
-                    correctedUrl = correctedUrl.replace(':3001', ':5000');
-                  }
                   return {
                     ...doc,
-                    url: getBackendUrl(correctedUrl),
+                    url: normalizeDocumentUrl(doc.url),
                     uploadDate: new Date(doc.uploadDate),
                     active: doc.active !== false
                   };
