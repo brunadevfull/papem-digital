@@ -73,23 +73,36 @@ export const DisplayProvider: React.FC<DisplayProviderProps> = ({ children }) =>
   const escalaTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isInitializingRef = useRef(true);
 
-  // CORREÇÃO: Função para obter URL completa do backend - FORÇAR PORTA 5000
+  // CORREÇÃO: Função para obter URL completa do backend - DETECTAR AMBIENTE
   const getBackendUrl = (path: string): string => {
     if (path.startsWith('http') || path.startsWith('blob:') || path.startsWith('data:')) {
       return path;
     }
     
-    // FORÇAR porta 5000 para evitar problemas de configuração
-    const backendPort = '5000';
-    const backendHost = 'localhost';
+    // Detectar se estamos no Replit ou desenvolvimento local
+    const isReplit = window.location.hostname.includes('replit.dev') || window.location.hostname.includes('replit.co');
     
-    console.log(`🌐 Backend URL: ${backendHost}:${backendPort}`);
-    
-    if (path.startsWith('/')) {
-      return `http://${backendHost}:${backendPort}${path}`;
+    if (isReplit) {
+      // No Replit, usar o mesmo domínio atual
+      const currentOrigin = window.location.origin;
+      console.log(`🌐 Backend URL (Replit): ${currentOrigin}`);
+      
+      if (path.startsWith('/')) {
+        return `${currentOrigin}${path}`;
+      }
+      return `${currentOrigin}/${path}`;
+    } else {
+      // Desenvolvimento local - usar localhost:5000
+      const backendPort = '5000';
+      const backendHost = 'localhost';
+      
+      console.log(`🌐 Backend URL (Local): ${backendHost}:${backendPort}`);
+      
+      if (path.startsWith('/')) {
+        return `http://${backendHost}:${backendPort}${path}`;
+      }
+      return `http://${backendHost}:${backendPort}/${path}`;
     }
-    
-    return `http://${backendHost}:${backendPort}/${path}`;
   };
 
   // Função para gerar ID único

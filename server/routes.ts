@@ -92,9 +92,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/notices', async (req, res) => {
     try {
       const notices = await storage.getNotices();
-      res.json(notices);
+      res.json({ success: true, notices });
     } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch notices' });
+      res.status(500).json({ success: false, error: 'Failed to fetch notices' });
     }
   });
 
@@ -102,12 +102,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertNoticeSchema.parse(req.body);
       const notice = await storage.createNotice(validatedData);
-      res.json(notice);
+      res.json({ success: true, notice });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ error: 'Invalid data', details: error.errors });
+        res.status(400).json({ success: false, error: 'Invalid data', details: error.errors });
       } else {
-        res.status(500).json({ error: 'Failed to create notice' });
+        res.status(500).json({ success: false, error: 'Failed to create notice' });
       }
     }
   });
