@@ -73,15 +73,15 @@ export const DisplayProvider: React.FC<DisplayProviderProps> = ({ children }) =>
   const escalaTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isInitializingRef = useRef(true);
 
-  // CORREÇÃO: Função para obter URL completa do backend
+  // CORREÇÃO: Função para obter URL completa do backend - FORÇAR PORTA 5000
   const getBackendUrl = (path: string): string => {
     if (path.startsWith('http') || path.startsWith('blob:') || path.startsWith('data:')) {
       return path;
     }
     
-    // Para desenvolvimento local e produção no Replit, usar porta 5000
-    const backendPort = import.meta.env.VITE_BACKEND_PORT || '5000';
-    const backendHost = import.meta.env.VITE_BACKEND_HOST || 'localhost';
+    // FORÇAR porta 5000 para evitar problemas de configuração
+    const backendPort = '5000';
+    const backendHost = 'localhost';
     
     console.log(`🌐 Backend URL: ${backendHost}:${backendPort}`);
     

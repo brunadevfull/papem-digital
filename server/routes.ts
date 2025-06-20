@@ -198,6 +198,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // List uploaded PDFs route
+  app.get('/api/list-pdfs', (req, res) => {
+    try {
+      const uploadsDir = path.join(process.cwd(), 'uploads');
+      
+      if (!fs.existsSync(uploadsDir)) {
+        return res.json({ documents: [] });
+      }
+
+      const files = fs.readdirSync(uploadsDir);
+      const documents = files
+        .filter(file => file.endsWith('.pdf') || file.endsWith('.jpg') || file.endsWith('.png'))
+        .map(file => {
+          const filePath = path.join(uploadsDir, file);
+          const stats = fs.statSync(filePath);
+          
+          return {
+            filename: file,
+            url: `/uploads/${file}`,
+            created: stats.birthtime,
+            size: stats.size,
+            type: file.toLowerCase().includes('plasa') ? 'plasa' : 'escala'
+          };
+        })
+        .sort((a, b) => b.created.getTime() - a.created.getTime());
+
+      res.json({ documents });
+    } catch (error) {
+      console.error('Error listing PDFs:', error);
+      res.status(500).json({ error: 'Failed to list documents' });
+    }
+  });
+
+  // Check escala image cache route
+  app.get('/api/check-escala-image/:id', (req, res) => {
+    try {
+      const { id } = req.params;
+      // For now, just return that cache doesn't exist
+      // This can be enhanced later with actual cache checking
+      res.json({ exists: false, id });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to check cache' });
+    }
+  });
+
   // Health check
   app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });

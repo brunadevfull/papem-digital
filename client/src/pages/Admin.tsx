@@ -102,15 +102,15 @@ const Admin: React.FC = () => {
     documents: 0
   });
   
-  // Função para obter URL completa do backend
+  // Função para obter URL completa do backend - FORÇAR PORTA 5000
   const getBackendUrl = (path: string): string => {
     if (path.startsWith('http') || path.startsWith('blob:') || path.startsWith('data:')) {
       return path;
     }
     
-    // CORRIGIDO: Usar porta 5000 como padrão (mesma do DisplayContext)
-    const backendPort = import.meta.env.VITE_BACKEND_PORT || '5000';
-    const backendHost = import.meta.env.VITE_BACKEND_HOST || 'localhost';
+    // FORÇAR porta 5000 para evitar problemas de configuração
+    const backendPort = '5000';
+    const backendHost = 'localhost';
     
     if (path.startsWith('/')) {
       return `http://${backendHost}:${backendPort}${path}`;
