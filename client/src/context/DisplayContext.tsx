@@ -162,7 +162,12 @@ export const DisplayProvider: React.FC<DisplayProviderProps> = ({ children }) =>
         // Manter avisos locais se servidor falhar
       }
     } catch (error) {
-      console.error("❌ Erro na comunicação com servidor:", error);
+      console.error("❌ Erro de conexão com servidor:", error);
+      console.error("❌ Detalhes do erro:", {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
       // Manter avisos locais se servidor falhar
     } finally {
       setIsLoading(false);

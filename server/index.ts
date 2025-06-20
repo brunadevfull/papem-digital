@@ -12,13 +12,18 @@ import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 
-// CORS configuration for local development
+// CORS configuration for local development with detailed logging
 app.use((req, res, next) => {
+  const origin = req.get('Origin') || req.get('Referer') || 'unknown';
+  console.log(`🌐 CORS Request: ${req.method} ${req.url} from ${origin}`);
+  
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
   
   if (req.method === 'OPTIONS') {
+    console.log(`✅ CORS Preflight handled for ${req.url}`);
     res.sendStatus(200);
   } else {
     next();
