@@ -780,7 +780,9 @@ const checkIfImageFile = async (url: string): Promise<boolean> => {
       
       if (!header.startsWith('%PDF')) {
         console.log("⚠️ ESCALA: Não é PDF válido, usando como imagem");
+        setEscalaImageUrl(pdfUrl);
         setLoading(false);
+        console.log("✅ Escala carregada com sucesso:", pdfUrl);
         return;
       }
       

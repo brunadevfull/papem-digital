@@ -252,6 +252,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete uploaded file route
+  app.delete('/api/delete-pdf/:filename', (req, res) => {
+    try {
+      const { filename } = req.params;
+      const filePath = path.join(process.cwd(), 'uploads', filename);
+      
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+        console.log(`🗑️ Arquivo deletado: ${filename}`);
+        res.json({ success: true, message: 'File deleted successfully' });
+      } else {
+        res.status(404).json({ success: false, error: 'File not found' });
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      res.status(500).json({ success: false, error: 'Failed to delete file' });
+    }
+  });
+
   // Health check
   app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
