@@ -13,6 +13,7 @@ const RIO_LONGITUDE = -43.1729;
 // Cache para evitar muitas requisições
 let cachedSunset: string | null = null;
 let lastFetchDate: string | null = null;
+let midnightUpdateTimer: NodeJS.Timeout | null = null;
 
 /**
  * Busca horário do pôr do sol via API confiável
@@ -102,9 +103,61 @@ export async function getTodaySunset(): Promise<string> {
 }
 
 /**
+ * Configura timer para atualizar horário do pôr do sol à meia-noite
+ */
+function setupMidnightUpdate(): void {
+  // Cancelar timer existente se houver
+  if (midnightUpdateTimer) {
+    clearTimeout(midnightUpdateTimer);
+  }
+
+  const now = new Date();
+  const tomorrow = new Date(now);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(0, 0, 0, 0); // Meia-noite
+
+  const msUntilMidnight = tomorrow.getTime() - now.getTime();
+
+  console.log(`🌅 Timer configurado para atualizar pôr do sol em ${Math.round(msUntilMidnight / 1000 / 60)} minutos`);
+
+  midnightUpdateTimer = setTimeout(async () => {
+    console.log('🌅 Meia-noite! Atualizando horário do pôr do sol...');
+    
+    // Limpar cache para forçar nova consulta
+    cachedSunset = null;
+    lastFetchDate = null;
+    
+    // Buscar novo horário
+    try {
+      await fetchSunsetFromAPI();
+      console.log('✅ Horário do pôr do sol atualizado para o novo dia');
+    } catch (error) {
+      console.error('❌ Erro ao atualizar pôr do sol à meia-noite:', error);
+    }
+    
+    // Configurar próximo timer para amanhã
+    setupMidnightUpdate();
+  }, msUntilMidnight);
+}
+
+/**
  * Obtém o horário do pôr do sol formatado com texto
  */
 export async function getSunsetWithLabel(): Promise<string> {
+  // Configurar timer na primeira chamada
+  if (!midnightUpdateTimer) {
+    setupMidnightUpdate();
+  }
+  
   const sunsetTime = await getTodaySunset();
   return `Pôr do sol: ${sunsetTime}`;
+}
+
+/**
+ * Força atualização manual do horário do pôr do sol
+ */
+export async function forceUpdateSunset(): Promise<string> {
+  cachedSunset = null;
+  lastFetchDate = null;
+  return await getTodaySunset();
 }
