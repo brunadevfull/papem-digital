@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * Automated Test Suite for Navy Display System
- * Tests API endpoints, data validation, and system functionality
+ * Automated Test Suite for Navy Display System v2.0
+ * Tests API endpoints, data validation, system functionality, and new features
+ * Last updated: 20/06/2025
  */
 
 import { spawn } from 'child_process';
@@ -113,8 +114,8 @@ async function testNoticesCRUD() {
 
   // Test POST notice
   const newNotice = {
-    title: 'Test Notice',
-    content: 'This is a test notice for automated testing',
+    title: 'Test Notice - Sistema v2.0',
+    content: 'Teste automatizado do sistema atualizado com pôr do sol e layout responsivo',
     priority: 'high',
     startDate: new Date().toISOString(),
     endDate: new Date(Date.now() + 86400000).toISOString(),
