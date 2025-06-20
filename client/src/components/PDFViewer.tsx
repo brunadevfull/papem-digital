@@ -138,19 +138,33 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   const RESTART_DELAY = autoRestartDelay * 1000;
   const PDF_SCALE = 1.5;
 
-  // Função para obter a URL completa do servidor backend
+  // Função para obter a URL completa do servidor backend - DETECTAR AMBIENTE
   const getBackendUrl = (path: string): string => {
     if (path.startsWith('http') || path.startsWith('blob:') || path.startsWith('data:')) {
       return path;
     }
     
-    if (path.startsWith('/uploads/') || path.startsWith('/plasa-pages/') || path.startsWith('/escala-images/')) {
-      const backendPort = import.meta.env.VITE_BACKEND_PORT || '3001';
-      const backendHost = import.meta.env.VITE_BACKEND_HOST || 'localhost';
-      return `http://${backendHost}:${backendPort}${path}`;
-    }
+    // Detectar se estamos no Replit ou desenvolvimento local
+    const isReplit = window.location.hostname.includes('replit.dev') || window.location.hostname.includes('replit.co');
     
-    return path;
+    if (isReplit) {
+      // No Replit, usar o mesmo domínio atual
+      const currentOrigin = window.location.origin;
+      
+      if (path.startsWith('/')) {
+        return `${currentOrigin}${path}`;
+      }
+      return `${currentOrigin}/${path}`;
+    } else {
+      // Desenvolvimento local - usar localhost:5000
+      const backendPort = '5000';
+      const backendHost = 'localhost';
+      
+      if (path.startsWith('/')) {
+        return `http://${backendHost}:${backendPort}${path}`;
+      }
+      return `http://${backendHost}:${backendPort}/${path}`;
+    }
   };
 
   // CORREÇÃO: Função para determinar a URL do documento com alternância

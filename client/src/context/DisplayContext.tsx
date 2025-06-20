@@ -110,6 +110,21 @@ export const DisplayProvider: React.FC<DisplayProviderProps> = ({ children }) =>
     return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   };
 
+  // Função para normalizar URLs existentes para o ambiente atual
+  const normalizeDocumentUrl = (url: string): string => {
+    if (!url) return url;
+    
+    // Se é uma URL local incorreta (localhost), corrigir para o ambiente atual
+    if (url.includes('localhost:')) {
+      const pathMatch = url.match(/\/uploads\/.*$/);
+      if (pathMatch) {
+        return getBackendUrl(pathMatch[0]);
+      }
+    }
+    
+    return url;
+  };
+
   // CORREÇÃO: Conversão de aviso do servidor para local
   const convertServerNoticeToLocal = (serverNotice: any): Notice => {
     return {

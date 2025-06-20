@@ -381,7 +381,7 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
 
       const formData = new FormData();
       formData.append('pdf', selectedFile);
-      formData.append('documentType', selectedDocType);
+      formData.append('type', selectedDocType);
       formData.append('title', docTitle);
       
       if (selectedDocType === "escala" && docCategory) {
