@@ -62,9 +62,9 @@ const Index = () => {
   const currentDate = getCurrentDate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-950 flex flex-col p-3">
-      {/* Header Compacto */}
-      <header className="relative flex items-center justify-between px-6 py-2 bg-gradient-to-r from-slate-800/90 via-blue-900/80 to-slate-800/90 backdrop-blur-3xl rounded-xl mb-3 shadow-2xl border border-blue-400/30 hover:border-blue-400/50 transition-all duration-500">
+    <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-950 flex flex-col p-2 sm:p-3 lg:p-4">
+      {/* Header Responsivo */}
+      <header className="relative flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-slate-800/90 via-blue-900/80 to-slate-800/90 backdrop-blur-3xl rounded-xl mb-2 sm:mb-3 shadow-2xl border border-blue-400/30 hover:border-blue-400/50 transition-all duration-500">
         {/* Efeito de brilho sutil */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-400/8 to-transparent rounded-xl"></div>
         
@@ -139,11 +139,11 @@ const Index = () => {
           </div>
         </div>
       </header>
-      {/* Main Content com layout melhorado */}
-      <div className="flex-1 flex flex-col lg:flex-row gap-4 overflow-hidden">
-        {/* PLASA - Lado esquerdo (60%) */}
-        <div className="lg:w-3/5 h-[calc(100vh-9rem)] min-h-[650px]">
-          <div className="h-full bg-gradient-to-br from-white/5 via-blue-900/20 to-white/5 backdrop-blur-sm rounded-2xl border border-blue-400/25 shadow-2xl hover:border-blue-400/40 transition-all duration-500 overflow-hidden">
+      {/* Main Content Responsivo */}
+      <div className="flex-1 flex flex-col xl:flex-row gap-2 sm:gap-3 lg:gap-4 overflow-hidden">
+        {/* PLASA - Adaptativo por tamanho de tela */}
+        <div className="xl:w-3/5 w-full h-[45vh] xl:h-[calc(100vh-8rem)] min-h-[300px] xl:min-h-[500px]">
+          <div className="h-full bg-gradient-to-br from-white/5 via-blue-900/20 to-white/5 backdrop-blur-sm rounded-xl lg:rounded-2xl border border-blue-400/25 shadow-2xl hover:border-blue-400/40 transition-all duration-500 overflow-hidden">
             <PDFViewer
               documentType="plasa"
               title={activePlasaDoc?.title || "PLASA - Plano de Serviço Semanal"}
@@ -153,11 +153,11 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Lado direito - Escala e Avisos (40%) */}
-        <div className="lg:w-2/5 h-[calc(100vh-9rem)] min-h-[650px] flex flex-col gap-4">
-          {/* Escala de Serviço - 65% da altura */}
-          <div className="h-[65%] min-h-[420px]">
-            <div className="h-full bg-gradient-to-br from-white/5 via-blue-900/20 to-white/5 backdrop-blur-sm rounded-2xl border border-blue-400/25 shadow-2xl hover:border-blue-400/40 transition-all duration-500 overflow-hidden">
+        {/* Lado direito - Escala e Avisos */}
+        <div className="xl:w-2/5 w-full h-[50vh] xl:h-[calc(100vh-8rem)] flex flex-col gap-2 sm:gap-3 lg:gap-4">
+          {/* Escala de Serviço */}
+          <div className="h-[65%] min-h-[200px] xl:min-h-[320px]">
+            <div className="h-full bg-gradient-to-br from-white/5 via-blue-900/20 to-white/5 backdrop-blur-sm rounded-xl lg:rounded-2xl border border-blue-400/25 shadow-2xl hover:border-blue-400/40 transition-all duration-500 overflow-hidden">
               <PDFViewer
                 documentType="escala"
                 title={activeEscalaDoc?.title || "Escala de Serviço Semanal"}
@@ -165,9 +165,9 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Avisos Importantes - 35% da altura */}
-          <div className="h-[35%] min-h-[200px]">
-            <div className="h-full bg-gradient-to-br from-amber-900/20 to-orange-900/20 backdrop-blur-sm rounded-2xl border border-amber-400/30 shadow-2xl hover:border-amber-400/50 transition-all duration-500 overflow-hidden">
+          {/* Avisos Importantes */}
+          <div className="h-[35%] min-h-[120px] xl:min-h-[180px]">
+            <div className="h-full bg-gradient-to-br from-amber-900/20 to-orange-900/20 backdrop-blur-sm rounded-xl lg:rounded-2xl border border-amber-400/30 shadow-2xl hover:border-amber-400/50 transition-all duration-500 overflow-hidden">
               <NoticeDisplay />
             </div>
           </div>

@@ -36,16 +36,18 @@ async function fetchSunsetFromAPI(): Promise<string> {
     const data = await response.json();
     
     if (data.status === 'OK' && data.results?.sunset) {
-      // A API retorna em UTC, converter para horário do Brasil (UTC-3)
+      // A API retorna em UTC, convertemos diretamente para timezone do Rio de Janeiro
       const sunsetUTC = new Date(data.results.sunset);
       
-      // Criar um novo objeto Date e subtrair 3 horas para GMT-3 (horário do Brasil)
-      const brasilOffset = 3 * 60 * 60 * 1000; // 3 horas em milissegundos
-      const sunsetBrasil = new Date(sunsetUTC.getTime() - brasilOffset);
+      // Converter diretamente para timezone do Rio de Janeiro/São Paulo
+      const sunsetRio = sunsetUTC.toLocaleString("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
       
-      const hours = sunsetBrasil.getUTCHours().toString().padStart(2, '0');
-      const minutes = sunsetBrasil.getUTCMinutes().toString().padStart(2, '0');
-      const sunset = `${hours}:${minutes}`;
+      const sunset = sunsetRio;
       
       // Atualizar cache
       cachedSunset = sunset;
@@ -159,5 +161,15 @@ export async function getSunsetWithLabel(): Promise<string> {
 export async function forceUpdateSunset(): Promise<string> {
   cachedSunset = null;
   lastFetchDate = null;
+  console.log('🔄 Forçando atualização manual do pôr do sol...');
   return await getTodaySunset();
+}
+
+/**
+ * Limpa cache e força nova busca (para debug)
+ */
+export function clearSunsetCache(): void {
+  cachedSunset = null;
+  lastFetchDate = null;
+  console.log('🧹 Cache do pôr do sol limpo');
 }
