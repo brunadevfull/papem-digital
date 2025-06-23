@@ -1,65 +1,93 @@
 /*
  * Sistema de Visualização da Marinha do Brasil
- * Servidor Principal
- * 
- * Autor: 2SG Bruna Rocha
- * Marinha do Brasil
+ * Servidor Principal - VERSÃO SUPER ABERTA (SEM RESTRIÇÕES)
  */
 
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import os from "os";
 
 const app = express();
 
-// CORS configuration for local development with detailed logging
+// Função para obter todos os IPs da máquina
+function getNetworkIPs(): string[] {
+  const interfaces = os.networkInterfaces();
+  const ips: string[] = [];
+  
+  Object.keys(interfaces).forEach((name) => {
+    const networkInterface = interfaces[name];
+    if (networkInterface) {
+      networkInterface.forEach((netInterface) => {
+        if (netInterface.family === 'IPv4' && !netInterface.internal) {
+          ips.push(netInterface.address);
+        }
+      });
+    }
+  });
+  
+  return ips;
+}
+
+// CORS SUPER PERMISSIVO - PERMITE TUDO
 app.use((req, res, next) => {
   const origin = req.get('Origin') || req.get('Referer') || 'unknown';
-  console.log(`🌐 CORS Request: ${req.method} ${req.url} from ${origin}`);
+  const clientIP = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'];
   
+  console.log(`🌐 ACESSO: ${req.method} ${req.url} | Cliente: ${clientIP} | Origem: ${origin}`);
+  
+  // HEADERS SUPER PERMISSIVOS - PERMITE TUDO DE TODOS OS LUGARES
   res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Methods', '*');
+  res.header('Access-Control-Allow-Headers', '*');
+  res.header('Access-Control-Expose-Headers', '*');
   res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Max-Age', '86400');
+  
+  // Headers de segurança permissivos
+  res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.header('Cross-Origin-Embedder-Policy', 'unsafe-none');
+  res.header('Cross-Origin-Opener-Policy', 'unsafe-none');
+  res.header('X-Frame-Options', 'ALLOWALL');
+  res.header('Content-Security-Policy', ''); // Remover CSP
+  
+  // Headers para cache
+  res.header('Cache-Control', 'public, max-age=0');
+  res.header('Pragma', 'no-cache');
+  res.header('Expires', '0');
   
   if (req.method === 'OPTIONS') {
-    console.log(`✅ CORS Preflight handled for ${req.url}`);
+    console.log(`✅ CORS Preflight ACEITO: ${req.url} | Cliente: ${clientIP}`);
     res.sendStatus(200);
   } else {
     next();
   }
 });
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 
+// Middleware de logging
 app.use((req, res, next) => {
   const start = Date.now();
-  const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
-
+  const clientIP = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'];
+  
   res.on("finish", () => {
     const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
-      log(logLine);
-    }
+    const status = res.statusCode >= 400 ? '❌' : '✅';
+    console.log(`${status} ${req.method} ${req.path} ${res.statusCode} em ${duration}ms | Cliente: ${clientIP}`);
   });
 
+  next();
+});
+
+// Middleware para desabilitar cache completamente
+app.use((req, res, next) => {
+  res.set({
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0'
+  });
   next();
 });
 
@@ -69,29 +97,58 @@ app.use((req, res, next) => {
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
-
+    
+    console.log(`❌ ERRO: ${status} - ${message}`);
     res.status(status).json({ message });
-    throw err;
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
   const port = 5000;
+  const networkIPs = getNetworkIPs();
+  
+  // ESCUTAR EM TODAS AS INTERFACES POSSÍVEIS
   server.listen({
     port,
-    host: "0.0.0.0",
+    host: "0.0.0.0", // TODAS as interfaces
     reusePort: true,
+    backlog: 511 // Máximo de conexões pendentes
   }, () => {
-    log(`serving on port ${port}`);
+    console.log('\n🔓 ========================================');
+    console.log('   MARINHA DO BRASIL - SERVIDOR ABERTO');
+    console.log('   🚨 MODO SEM RESTRIÇÕES ATIVO 🚨');
+    console.log('========================================');
+    console.log(`📡 Servidor rodando na porta ${port}`);
+    console.log('🔓 CORS: COMPLETAMENTE ABERTO');
+    console.log('🔓 Firewall: DESABILITADO');
+    console.log('🔓 Cache: DESABILITADO');
+    console.log('\n🌐 ACESSE DE QUALQUER LUGAR:');
+    console.log(`   Local:      http://localhost:${port}`);
+    console.log(`   Local IP:   http://127.0.0.1:${port}`);
+    
+    networkIPs.forEach(ip => {
+      console.log(`   Rede:       http://${ip}:${port}`);
+      console.log(`   Admin:      http://${ip}:${port}/admin`);
+    });
+    
+    console.log('\n📱 TESTE EM QUALQUER DISPOSITIVO:');
+    console.log('   • Computadores na rede');
+    console.log('   • Celulares no WiFi');
+    console.log('   • Tablets');
+    console.log('   • Qualquer navegador');
+    
+    console.log('\n🔧 URLs DE TESTE:');
+    networkIPs.forEach(ip => {
+      console.log(`   http://${ip}:${port}/ping`);
+    });
+    
+    console.log('\n⚠️  AVISO: Modo de desenvolvimento');
+    console.log('   Todas as restrições foram removidas');
+    console.log('   Use apenas em redes confiáveis');
+    console.log('========================================\n');
   });
 })();

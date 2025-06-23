@@ -83,20 +83,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Serve uploaded files with comprehensive CORS headers
+// Serve uploaded files with comprehensive CORS headers
   app.use('/uploads', (req, res, next) => {
+    console.log(`📁 Serving file: ${req.path} to ${req.get('Origin') || 'direct'}`);
+    
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Range');
-    res.header('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Pragma, Expires, If-Modified-Since, If-None-Match, Range');
+    res.header('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges, Content-Type, Cache-Control, Last-Modified, ETag, Accept-Ranges');
+    res.header('Cache-Control', 'public, max-age=31536000');
+    res.header('Access-Control-Max-Age', '86400');
     
     if (req.method === 'OPTIONS') {
+      console.log(`✅ CORS Preflight for file: ${req.path}`);
       res.sendStatus(200);
     } else {
       next();
     }
   });
-  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
-
+  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads'), {
+    setHeaders: (res, filePath) => {
+      console.log(`📄 Setting headers for: ${path.basename(filePath)}`);
+      res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+      res.set('Cross-Origin-Embedder-Policy', 'unsafe-none');
+    }
+  }));
   // Notice routes
   app.get('/api/notices', async (req, res) => {
     try {
@@ -272,8 +283,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Health check
+// PDF Proxy route to handle CORS issues
+  app.get('/api/proxy-pdf', async (req, res) => {
+    try {
+      const { url } = req.query;
+      
+      if (!url || typeof url !== 'string') {
+        return res.status(400).json({ error: 'URL parameter is required' });
+      }
+      
+      console.log(`🔄 Proxying PDF request: ${url}`);
+      
+      if (url.includes('/uploads/')) {
+        const filename = url.split('/uploads/')[1];
+        const filePath = path.join(process.cwd(), 'uploads', filename);
+        
+        if (fs.existsSync(filePath)) {
+          console.log(`📁 Serving local file via proxy: ${filename}`);
+          
+          res.setHeader('Access-Control-Allow-Origin', '*');
+          res.setHeader('Content-Type', 'application/pdf');
+          res.setHeader('Cache-Control', 'public, max-age=31536000');
+          
+          return res.sendFile(filePath);
+        }
+      }
+      
+      res.status(404).json({ error: 'File not found' });
+      
+    } catch (error) {
+      console.error('Proxy error:', error);
+      res.status(500).json({ error: 'Proxy request failed' });
+    }
+  });
+
+  // Network status and system info
+  app.get('/api/status', (req, res) => {
+    const clientIP = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'];
+    res.json({ 
+      status: 'online', 
+      timestamp: new Date().toISOString(),
+      version: '2.0',
+      clientIP: clientIP,
+      serverHost: req.get('host'),
+      origin: req.get('origin') || 'direct',
+      userAgent: req.get('user-agent'),
+      method: req.method,
+      cors: 'enabled',
+      environment: process.env.NODE_ENV || 'development'
+    });
+  });
+
   app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+    res.json({ 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      message: 'Marinha do Brasil - Sistema funcionando corretamente'
+    });
   });
 
   const httpServer = createServer(app);

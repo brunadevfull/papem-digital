@@ -11,15 +11,6 @@ declare global {
   }
 }
 
-// Interface para debug info
-interface DebugInfo {
-  error?: string;
-  suggestion?: string;
-  details?: string;
-  timestamp?: string;
-  troubleshooting?: string[];
-}
-
 interface PDFViewerProps {
   documentType: "plasa" | "escala";
   title: string;
@@ -127,7 +118,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   const [isAutomationPaused, setIsAutomationPaused] = useState(false);
   const [savedPageUrls, setSavedPageUrls] = useState<string[]>([]);
   const [loadingProgress, setLoadingProgress] = useState(0);
-  const [debugInfo, setDebugInfo] = useState<DebugInfo>({});
+  const [debugInfo, setDebugInfo] = useState<any>({});
   const [escalaImageUrl, setEscalaImageUrl] = useState<string | null>(null);
 
   const scrollerRef = useRef<ContinuousAutoScroller | null>(null);
@@ -148,42 +139,33 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   const PDF_SCALE = 1.5;
 
   // Função para obter a URL completa do servidor backend - DETECTAR AMBIENTE
- const getBackendUrl = (path: string): string => {
-  if (path.startsWith('http') || path.startsWith('blob:') || path.startsWith('data:')) {
-    return path;
-  }
-  
-  // 🚨 CORREÇÃO: Usar IP real do servidor para acesso em rede
-  const currentHost = window.location.hostname;
-  const currentPort = window.location.port;
-  
-  // Se estamos acessando via IP da rede, usar o mesmo IP para backend
-  if (currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
-    console.log(`🌐 PDFViewer: Detectado acesso via rede: ${currentHost}`);
+  const getBackendUrl = (path: string): string => {
+    if (path.startsWith('http') || path.startsWith('blob:') || path.startsWith('data:')) {
+      return path;
+    }
     
-    if (path.startsWith('/')) {
-      return `http://${currentHost}:5000${path}`;
+    // Detectar se estamos no Replit ou desenvolvimento local
+    const isReplit = window.location.hostname.includes('replit.dev') || window.location.hostname.includes('replit.co');
+    
+    if (isReplit) {
+      // No Replit, usar o mesmo domínio atual
+      const currentOrigin = window.location.origin;
+      
+      if (path.startsWith('/')) {
+        return `${currentOrigin}${path}`;
+      }
+      return `${currentOrigin}/${path}`;
+    } else {
+      // Desenvolvimento local - usar localhost:5000
+      const backendPort = '5000';
+      const backendHost = 'localhost';
+      
+      if (path.startsWith('/')) {
+        return `http://${backendHost}:${backendPort}${path}`;
+      }
+      return `http://${backendHost}:${backendPort}/${path}`;
     }
-    return `http://${currentHost}:5000/${path}`;
-  }
-  
-  // Detectar se estamos no Replit
-  const isReplit = currentHost.includes('replit.dev') || currentHost.includes('replit.co');
-  
-  if (isReplit) {
-    const currentOrigin = window.location.origin;
-    if (path.startsWith('/')) {
-      return `${currentOrigin}${path}`;
-    }
-    return `${currentOrigin}/${path}`;
-  } else {
-    // Desenvolvimento local
-    if (path.startsWith('/')) {
-      return `http://localhost:5000${path}`;
-    }
-    return `http://localhost:5000/${path}`;
-  }
-};
+  };
 
   // CORREÇÃO: Função para determinar a URL do documento com alternância
   const getDocumentUrl = () => {
@@ -235,8 +217,9 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       /\.(jpg|jpeg|png|gif|webp)$/i.test(url)
     );
   };
+   
 
-  // Carregar PDF.js APENAS quando necessário
+0  // Carregar PDF.js APENAS quando necessário
   const loadPDFJS = async () => {
     if (window.pdfjsLib) return window.pdfjsLib;
 
@@ -259,7 +242,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     });
   };
 
-  // Função melhorada para obter dados do PDF com tratamento de CORS
+  // Função melhorada para obter dados do PDF
+// Função melhorada para obter dados do PDF com tratamento de CORS
   const getPDFData = async (url: string): Promise<ArrayBuffer | Uint8Array> => {
     console.log("📥 Obtendo dados do PDF:", url);
     
@@ -539,29 +523,26 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
 
       pdf.destroy();
       
-    } catch (error: unknown) {
+    } catch (error) {
       console.error('❌ ERRO CRÍTICO NA CONVERSÃO:', error);
       setLoading(false);
       
-      // FIX: Properly declare variables with explicit types
-      let errorMessage: string = "Erro ao processar o documento";
-      let suggestion: string = "Tente as seguintes soluções:";
-      let details: string = error instanceof Error ? error.message : String(error);
+      let errorMessage = "Erro ao processar o documento";
+      let suggestion = "Tente as seguintes soluções:";
+      let details = error.message;
       
-      if (error instanceof Error) {
-        if (error.message?.includes("Invalid PDF")) {
-          errorMessage = "Arquivo PDF inválido ou corrompido";
-          suggestion = "• Verifique se o arquivo não está corrompido\n• Tente salvar o PDF novamente\n• Use uma imagem (JPG/PNG) como alternativa";
-        } else if (error.message?.includes("fetch") || error.message?.includes("HTTP") || error.message?.includes("NetworkError")) {
-          errorMessage = "Erro de conexão ou arquivo não encontrado";
-          suggestion = "• Verifique se o servidor backend está rodando\n• Confirme se o arquivo foi enviado corretamente\n• Tente fazer upload novamente";
-        } else if (error.message?.includes("Timeout")) {
-          errorMessage = "Tempo limite excedido na conversão";
-          suggestion = "• O PDF pode ser muito complexo\n• Tente um PDF mais simples\n• Use uma imagem como alternativa";
-        } else if (error.message?.includes("ArrayBuffer")) {
-          errorMessage = "Erro ao ler o arquivo";
-          suggestion = "• O arquivo pode estar corrompido\n• Verifique se é um PDF válido\n• Tente outro arquivo";
-        }
+      if (error.message?.includes("Invalid PDF")) {
+        errorMessage = "Arquivo PDF inválido ou corrompido";
+        suggestion = "• Verifique se o arquivo não está corrompido\n• Tente salvar o PDF novamente\n• Use uma imagem (JPG/PNG) como alternativa";
+      } else if (error.message?.includes("fetch") || error.message?.includes("HTTP") || error.message?.includes("NetworkError")) {
+        errorMessage = "Erro de conexão ou arquivo não encontrado";
+        suggestion = "• Verifique se o servidor backend está rodando\n• Confirme se o arquivo foi enviado corretamente\n• Tente fazer upload novamente";
+      } else if (error.message?.includes("Timeout")) {
+        errorMessage = "Tempo limite excedido na conversão";
+        suggestion = "• O PDF pode ser muito complexo\n• Tente um PDF mais simples\n• Use uma imagem como alternativa";
+      } else if (error.message?.includes("ArrayBuffer")) {
+        errorMessage = "Erro ao ler o arquivo";
+        suggestion = "• O arquivo pode estar corrompido\n• Verifique se é um PDF válido\n• Tente outro arquivo";
       }
       
       setDebugInfo({ 
@@ -646,6 +627,24 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       }
     }, 1000);
   }, [documentType, savedPageUrls.length, isAutomationPaused, handleScrollComplete, SCROLL_SPEED]);
+
+  // Controles
+  const toggleAutomation = () => {
+    setIsAutomationPaused(!isAutomationPaused);
+    if (!isAutomationPaused) {
+      clearAllTimers();
+    } else {
+      setTimeout(startContinuousScroll, 500);
+    }
+  };
+
+  const restartScroll = () => {
+    clearAllTimers();
+    if (containerRef.current) {
+      containerRef.current.scrollTop = 0;
+    }
+    setTimeout(startContinuousScroll, 1000);
+  };
 
   // CORREÇÃO: INICIALIZAR PLASA com melhor verificação
   useEffect(() => {
@@ -732,17 +731,16 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     }
   }, [documentType, currentEscalaIndex, escalaDocuments]);
 
-  // ✅ FUNÇÃO: Verificar se URL é imagem
-  const checkIfImageFile = async (url: string): Promise<boolean> => {
-    try {
-      const response = await fetch(url, { method: 'HEAD' });
-      const contentType = response.headers.get('content-type');
-      return contentType?.startsWith('image/') || false;
-    } catch {
-      return false;
-    }
-  };
-  
+// ✅ FUNÇÃO: Verificar se URL é imagem (só adicione se não existir)
+const checkIfImageFile = async (url: string): Promise<boolean> => {
+  try {
+    const response = await fetch(url, { method: 'HEAD' });
+    const contentType = response.headers.get('content-type');
+    return contentType?.startsWith('image/') || false;
+  } catch {
+    return false;
+  }
+};
   // NOVA FUNÇÃO: Converter PDF da escala para imagem
   const convertEscalaPDFToImage = async (pdfUrl: string) => {
     try {
@@ -974,12 +972,20 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
         currentEscala: currentEscala?.title
       });
       
-      return (
-        <div className="w-full h-full flex items-center justify-center p-4">
-          {escalaImageUrl && escalaImageUrl !== 'convertida' && escalaImageUrl !== 'nenhuma' ? (
+      // ✅ DEBUG: Verificar valor real
+console.log('🎯 ESCALA renderContent DEBUG:', {
+  escalaImageUrl,
+  typeof: typeof escalaImageUrl,
+  length: escalaImageUrl?.length,
+  isValid: !!escalaImageUrl && escalaImageUrl !== 'convertida' && escalaImageUrl !== 'nenhuma'
+});
+
+return (
+  <div className="w-full h-full flex items-center justify-center p-4">
+    {escalaImageUrl && escalaImageUrl !== 'convertida' && escalaImageUrl !== 'nenhuma' ? (
             <img
               src={escalaImageUrl}
-              alt="Escala de Serviço Convertida"
+              
               className="max-w-full max-h-full object-contain shadow-lg"
               onLoad={() => {
                 console.log(`✅ Escala convertida carregada com sucesso`);
@@ -1029,7 +1035,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                 <details className="text-xs text-blue-600 mb-4">
                   <summary className="cursor-pointer hover:text-blue-800">Guia de solução</summary>
                   <div className="mt-2 text-left">
-                    {debugInfo.troubleshooting.map((step: string, index: number) => (
+                    {debugInfo.troubleshooting.map((step, index) => (
                       <div key={index} className="mb-1">{step}</div>
                     ))}
                   </div>
@@ -1115,6 +1121,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     return title;
   };
 
+  const currentTitle = getCurrentTitle();
   const currentEscala = getCurrentEscalaDoc();
 
   return (
@@ -1178,25 +1185,31 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       </CardHeader>
       
       <CardContent className="p-0 h-[calc(100%-2.5rem)] bg-white">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center h-full">
-            <div className="w-16 h-16 border-4 border-navy border-t-transparent rounded-full animate-spin"></div>
-            <p className="mt-4 text-navy text-sm font-medium">
-              {documentType === "plasa" ? "Processando documento..." : "Carregando..."}
-            </p>
-          </div>
-        ) : (
-          <div
-            className="relative w-full h-full overflow-y-auto"
-            ref={containerRef}
-            style={{ scrollBehavior: "auto" }}
-          >
-            {renderContent()}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
+  {loading ? (
+    <div className="flex flex-col items-center justify-center h-full">
+      <div className="w-16 h-16 border-4 border-navy border-t-transparent rounded-full animate-spin"></div>
+      <p className="mt-4 text-navy text-sm font-medium">
+        {documentType === "plasa" ? "Processando documento..." : "Carregando..."}
+      </p>
+    </div>
+  ) : (
+    <div
+      className="relative w-full h-full overflow-y-auto"
+      ref={containerRef}
+      style={{ scrollBehavior: "auto" }}
+    >
+      {renderContent()}
+    </div>
+  )}
+</CardContent>
+  </Card>
+);
+// ❌ REMOVER/CONDICIONAR estes logs:
+const log = (message: string, ...args: any[]) => {
+  if (IS_DEV_MODE) {
+    console.log(message, ...args);
+  
+}
 };
-
+};
 export default PDFViewer;

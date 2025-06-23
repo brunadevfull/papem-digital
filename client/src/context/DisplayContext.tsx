@@ -74,36 +74,46 @@ export const DisplayProvider: React.FC<DisplayProviderProps> = ({ children }) =>
   const isInitializingRef = useRef(true);
 
   // CORREÇÃO: Função para obter URL completa do backend - DETECTAR AMBIENTE
-  const getBackendUrl = (path: string): string => {
-    if (path.startsWith('http') || path.startsWith('blob:') || path.startsWith('data:')) {
-      return path;
-    }
+ const getBackendUrl = (path: string): string => {
+  if (path.startsWith('http') || path.startsWith('blob:') || path.startsWith('data:')) {
+    return path;
+  }
+  
+  // 🚨 CORREÇÃO: Usar IP real do servidor para acesso em rede
+  const currentHost = window.location.hostname;
+  const currentPort = window.location.port;
+  
+  // Se estamos acessando via IP da rede, usar o mesmo IP para backend
+  if (currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
+    console.log(`🌐 DisplayContext: Detectado acesso via rede: ${currentHost}`);
     
-    // Detectar se estamos no Replit ou desenvolvimento local
-    const isReplit = window.location.hostname.includes('replit.dev') || window.location.hostname.includes('replit.co');
-    
-    if (isReplit) {
-      // No Replit, usar o mesmo domínio atual
-      const currentOrigin = window.location.origin;
-      console.log(`🌐 Backend URL (Replit): ${currentOrigin}`);
-      
-      if (path.startsWith('/')) {
-        return `${currentOrigin}${path}`;
-      }
-      return `${currentOrigin}/${path}`;
-    } else {
-      // Desenvolvimento local - usar localhost:5000
-      const backendPort = '5000';
-      const backendHost = 'localhost';
-      
-      console.log(`🌐 Backend URL (Local): ${backendHost}:${backendPort}`);
-      
-      if (path.startsWith('/')) {
-        return `http://${backendHost}:${backendPort}${path}`;
-      }
-      return `http://${backendHost}:${backendPort}/${path}`;
+    if (path.startsWith('/')) {
+      return `http://${currentHost}:5000${path}`;
     }
-  };
+    return `http://${currentHost}:5000/${path}`;
+  }
+  
+  // Detectar se estamos no Replit
+  const isReplit = currentHost.includes('replit.dev') || currentHost.includes('replit.co');
+  
+  if (isReplit) {
+    const currentOrigin = window.location.origin;
+    console.log(`🌐 DisplayContext Backend URL (Replit): ${currentOrigin}`);
+    
+    if (path.startsWith('/')) {
+      return `${currentOrigin}${path}`;
+    }
+    return `${currentOrigin}/${path}`;
+  } else {
+    // Desenvolvimento local
+    console.log(`🌐 DisplayContext Backend URL (Local): localhost:5000`);
+    
+    if (path.startsWith('/')) {
+      return `http://localhost:5000${path}`;
+    }
+    return `http://localhost:5000/${path}`;
+  }
+};
 
   // Função para gerar ID único
   const generateUniqueId = (): string => {
