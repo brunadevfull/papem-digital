@@ -591,8 +591,8 @@ const deleteNotice = async (id: string): Promise<boolean> => {
         activeEscalaCategory: activeEscalaDoc?.category || 'sem categoria',
         noticesTotal: notices.length,
         noticesAtivos: notices.filter(n => n.active).length,
-        noticesFromServer: notices.filter(n => !n.String(id).startsWith('local-')).length,
-        noticesLocal: notices.filter(n => n.String(id).startsWith('local-')).length
+        noticesFromServer: notices.filter(n => !String(n.id).startsWith('local-')).length,
+        noticesLocal: notices.filter(n => String(n.id).startsWith('local-')).length
       });
     }
   }, [plasaDocuments, escalaDocuments, activePlasaDoc, activeEscalaDoc, currentEscalaIndex, notices]);

@@ -1891,8 +1891,8 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                       <div className="font-medium text-yellow-800">📢 Avisos</div>
                       <div>Total: {notices.length}</div>
                       <div>Ativos: {notices.filter(n => n.active).length}</div>
-                      <div>Do Servidor: {notices.filter(n => !String(n.id).startsWith('local-')).length}</div>
-                      <div>Locais: {notices.filter(n => String(n.id).startsWith('local-')).length}</div>
+                      <div>Do Servidor: {notices.filter(n => !n.String(id).startsWith('local-')).length}</div>
+                      <div>Locais: {notices.filter(n => n.String(id).startsWith('local-')).length}</div>
                       <div>Carregando: {isLoading ? "Sim" : "Não"}</div>
                     </div>
                   </div>
