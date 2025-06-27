@@ -6,6 +6,15 @@ import { z } from "zod";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { promisify } from "util";
+
+// Promisify fs functions for async/await
+const writeFile = promisify(fs.writeFile);
+const readFile = promisify(fs.readFile);
+const mkdir = promisify(fs.mkdir);
+const readdir = promisify(fs.readdir);
+const unlink = promisify(fs.unlink);
+const access = promisify(fs.access);
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Create uploads directory if it doesn't exist
@@ -13,6 +22,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
   }
+
+  // 🔥 NOVO: Criar diretórios de cache
+  const plasaPagesDir = path.join(uploadsDir, 'plasa-pages');
+  const escalaCacheDir = path.join(uploadsDir, 'escala-cache');
+  
+  [plasaPagesDir, escalaCacheDir].forEach(dir => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+      console.log(`📁 Diretório criado: ${dir}`);
+    }
+  });
 
   // Multer configuration for file uploads
   const storage_config = multer.diskStorage({
@@ -36,6 +56,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         cb(null, true);
       } else {
         cb(new Error('INVALID_FILE: Only PDF and image files are allowed'));
+      }
+    }
+  });
+
+  // 🔥 NOVO: Multer para cache (memória)
+  const cacheUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+      fileSize: 10 * 1024 * 1024, // 10MB limit para imagens de cache
+    },
+    fileFilter: (req, file, cb) => {
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+      if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('INVALID_CACHE_FILE: Only image files are allowed for cache'));
       }
     }
   });
@@ -82,8 +118,295 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 🔥 NOVO: 1. ENDPOINT - Upload de página do PLASA
+  app.post('/api/upload-plasa-page', cacheUpload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Nenhum arquivo enviado' 
+        });
+      }
+
+      const pageNumber = req.body.pageNumber;
+      const documentId = req.body.documentId || 'default';
+      
+      // Criar nome do arquivo baseado no documento e página
+      const filename = `${documentId}-page-${pageNumber}.jpg`;
+      const filePath = path.join(plasaPagesDir, filename);
+      const fileUrl = `/uploads/plasa-pages/${filename}`;
+
+      // Salvar arquivo
+      await writeFile(filePath, req.file.buffer);
+
+      console.log(`💾 Página PLASA ${pageNumber} salva: ${filename}`);
+
+      res.json({
+        success: true,
+        data: {
+          url: fileUrl,
+          filename: filename,
+          pageNumber: parseInt(pageNumber),
+          documentId: documentId
+        }
+      });
+
+    } catch (error) {
+      console.error('❌ Erro ao salvar página PLASA:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Erro ao salvar página no servidor' 
+      });
+    }
+  });
+
+  // 🔥 NOVO: 2. ENDPOINT - Verificar páginas existentes do PLASA
+  app.post('/api/check-plasa-pages', async (req, res) => {
+    try {
+      const { totalPages, documentId } = req.body;
+      
+      if (!totalPages || !documentId) {
+        return res.status(400).json({
+          success: false,
+          error: 'totalPages e documentId são obrigatórios'
+        });
+      }
+
+      // Verificar se todas as páginas existem
+      const pageUrls = [];
+      let allExist = true;
+
+      for (let i = 1; i <= totalPages; i++) {
+        const filename = `${documentId}-page-${i}.jpg`;
+        const filePath = path.join(plasaPagesDir, filename);
+        
+        try {
+          await access(filePath);
+          pageUrls.push(`/uploads/plasa-pages/${filename}`);
+        } catch {
+          allExist = false;
+          break;
+        }
+      }
+
+      console.log(`🔍 Verificação PLASA ${documentId}: ${allExist ? 'todas' : 'algumas'} páginas existem`);
+
+      res.json({
+        success: true,
+        allPagesExist: allExist,
+        pageUrls: allExist ? pageUrls : [],
+        totalPages: allExist ? totalPages : 0,
+        documentId: documentId
+      });
+
+    } catch (error) {
+      console.error('❌ Erro ao verificar páginas PLASA:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Erro ao verificar páginas' 
+      });
+    }
+  });
+
+  // 🔥 NOVO: 3. ENDPOINT - Salvar cache de escala
+  app.post('/api/save-escala-cache', async (req, res) => {
+    try {
+      const { escalId, imageData } = req.body;
+      
+      if (!escalId || !imageData) {
+        return res.status(400).json({
+          success: false,
+          error: 'escalId e imageData são obrigatórios'
+        });
+      }
+
+      // Converter base64 para arquivo
+      const base64Data = imageData.replace(/^data:image\/\w+;base64,/, '');
+      const buffer = Buffer.from(base64Data, 'base64');
+      
+      const filename = `${escalId}.jpg`;
+      const filePath = path.join(escalaCacheDir, filename);
+      const fileUrl = `/uploads/escala-cache/${filename}`;
+
+      await writeFile(filePath, buffer);
+
+      console.log(`💾 Cache de escala salvo: ${filename}`);
+
+      res.json({
+        success: true,
+        data: {
+          url: fileUrl,
+          filename: filename,
+          escalId: escalId
+        }
+      });
+
+    } catch (error) {
+      console.error('❌ Erro ao salvar cache de escala:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Erro ao salvar cache de escala' 
+      });
+    }
+  });
+
+  // 🔥 NOVO: 4. ENDPOINT - Verificar cache de escala
+  app.get('/api/check-escala-cache/:escalId', async (req, res) => {
+    try {
+      const { escalId } = req.params;
+      
+      const filename = `${escalId}.jpg`;
+      const filePath = path.join(escalaCacheDir, filename);
+      const fileUrl = `/uploads/escala-cache/${filename}`;
+
+      try {
+        await access(filePath);
+        
+        console.log(`✅ Cache de escala encontrado: ${filename}`);
+        
+        res.json({
+          success: true,
+          cached: true,
+          url: fileUrl,
+          escalId: escalId
+        });
+      } catch {
+        res.json({
+          success: true,
+          cached: false,
+          escalId: escalId
+        });
+      }
+
+    } catch (error) {
+      console.error('❌ Erro ao verificar cache de escala:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Erro ao verificar cache' 
+      });
+    }
+  });
+
+  // 🔥 NOVO: 5. ENDPOINT - Limpar cache do PLASA
+  app.delete('/api/clear-plasa-pages', async (req, res) => {
+    try {
+      let deletedCount = 0;
+      
+      try {
+        const files = await readdir(plasaPagesDir);
+        
+        for (const file of files) {
+          if (file.endsWith('.jpg')) {
+            const filePath = path.join(plasaPagesDir, file);
+            await unlink(filePath);
+            deletedCount++;
+          }
+        }
+      } catch (err) {
+        // Diretório não existe ou está vazio
+      }
+
+      console.log(`🧹 Cache PLASA limpo: ${deletedCount} arquivos removidos`);
+
+      res.json({
+        success: true,
+        deletedCount: deletedCount,
+        message: `${deletedCount} páginas PLASA removidas do cache`
+      });
+
+    } catch (error) {
+      console.error('❌ Erro ao limpar cache PLASA:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Erro ao limpar cache' 
+      });
+    }
+  });
+
+  // 🔥 NOVO: 6. ENDPOINT - Limpar cache de escalas
+  app.delete('/api/clear-escala-cache', async (req, res) => {
+    try {
+      let deletedCount = 0;
+      
+      try {
+        const files = await readdir(escalaCacheDir);
+        
+        for (const file of files) {
+          if (file.endsWith('.jpg')) {
+            const filePath = path.join(escalaCacheDir, file);
+            await unlink(filePath);
+            deletedCount++;
+          }
+        }
+      } catch (err) {
+        // Diretório não existe ou está vazio
+      }
+
+      console.log(`🧹 Cache de escalas limpo: ${deletedCount} arquivos removidos`);
+
+      res.json({
+        success: true,
+        deletedCount: deletedCount,
+        message: `${deletedCount} caches de escala removidos`
+      });
+
+    } catch (error) {
+      console.error('❌ Erro ao limpar cache de escalas:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Erro ao limpar cache de escalas' 
+      });
+    }
+  });
+
+  // 🔥 NOVO: 7. ENDPOINT - Status do cache
+  app.get('/api/cache-status', async (req, res) => {
+    try {
+      let plasaCount = 0;
+      let escalaCount = 0;
+
+      // Contar arquivos PLASA
+      try {
+        const plasaFiles = await readdir(plasaPagesDir);
+        plasaCount = plasaFiles.filter(f => f.endsWith('.jpg')).length;
+      } catch {
+        // Diretório não existe
+      }
+
+      // Contar arquivos de escala
+      try {
+        const escalaFiles = await readdir(escalaCacheDir);
+        escalaCount = escalaFiles.filter(f => f.endsWith('.jpg')).length;
+      } catch {
+        // Diretório não existe
+      }
+
+      res.json({
+        success: true,
+        cache: {
+          plasa: {
+            count: plasaCount,
+            directory: '/uploads/plasa-pages/'
+          },
+          escala: {
+            count: escalaCount,
+            directory: '/uploads/escala-cache/'
+          },
+          total: plasaCount + escalaCount
+        },
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      console.error('❌ Erro ao verificar status do cache:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Erro ao verificar status do cache' 
+      });
+    }
+  });
+
   // Serve uploaded files with comprehensive CORS headers
-// Serve uploaded files with comprehensive CORS headers
   app.use('/uploads', (req, res, next) => {
     console.log(`📁 Serving file: ${req.path} to ${req.get('Origin') || 'direct'}`);
     
@@ -101,6 +424,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       next();
     }
   });
+
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads'), {
     setHeaders: (res, filePath) => {
       console.log(`📄 Setting headers for: ${path.basename(filePath)}`);
@@ -108,58 +432,246 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.set('Cross-Origin-Embedder-Policy', 'unsafe-none');
     }
   }));
-  // Notice routes
+
+  /// ✅ CORREÇÃO: Notice routes com melhor tratamento de erro
   app.get('/api/notices', async (req, res) => {
     try {
+      console.log('📢 GET /api/notices - Buscando avisos...');
       const notices = await storage.getNotices();
-      res.json({ success: true, notices });
+      console.log(`📢 Encontrados ${notices.length} avisos`);
+      
+      res.json({ 
+        success: true, 
+        notices: notices,
+        count: notices.length,
+        timestamp: new Date().toISOString()
+      });
     } catch (error) {
-      res.status(500).json({ success: false, error: 'Failed to fetch notices' });
+      console.error('❌ Erro ao buscar avisos:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to fetch notices',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 
+ // ✅ CORREÇÃO: POST notices com validação melhorada
   app.post('/api/notices', async (req, res) => {
     try {
-      const validatedData = insertNoticeSchema.parse(req.body);
+      console.log('📢 POST /api/notices - Dados recebidos:', req.body);
+      
+      // ✅ Validação manual dos campos obrigatórios primeiro
+      const { title, content, priority, startDate, endDate, active } = req.body;
+      
+      if (!title || typeof title !== 'string' || title.trim() === '') {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'VALIDATION_ERROR: Title is required and must be a non-empty string',
+          field: 'title',
+          received: title
+        });
+      }
+      
+      if (!content || typeof content !== 'string' || content.trim() === '') {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'VALIDATION_ERROR: Content is required and must be a non-empty string',
+          field: 'content',
+          received: content
+        });
+      }
+      
+      if (!priority || !['high', 'medium', 'low'].includes(priority)) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'VALIDATION_ERROR: Priority must be high, medium, or low',
+          field: 'priority',
+          received: priority
+        });
+      }
+      
+      // ✅ Validação de datas melhorada
+      let parsedStartDate: Date;
+      let parsedEndDate: Date;
+      
+      try {
+        parsedStartDate = new Date(startDate);
+        if (isNaN(parsedStartDate.getTime())) {
+          throw new Error('Invalid start date');
+        }
+      } catch (error) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'VALIDATION_ERROR: Invalid start date format',
+          field: 'startDate',
+          received: startDate
+        });
+      }
+      
+      try {
+        parsedEndDate = new Date(endDate);
+        if (isNaN(parsedEndDate.getTime())) {
+          throw new Error('Invalid end date');
+        }
+      } catch (error) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'VALIDATION_ERROR: Invalid end date format',
+          field: 'endDate',
+          received: endDate
+        });
+      }
+      
+      // ✅ Verificar se a data de início é anterior à data de fim
+      if (parsedStartDate >= parsedEndDate) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'VALIDATION_ERROR: Start date must be before end date',
+          startDate: parsedStartDate.toISOString(),
+          endDate: parsedEndDate.toISOString()
+        });
+      }
+      
+      // ✅ Criar objeto validado manualmente
+      const validatedData = {
+        title: title.trim(),
+        content: content.trim(),
+        priority: priority as "high" | "medium" | "low",
+        startDate: parsedStartDate,
+        endDate: parsedEndDate,
+        active: active !== false // Default para true se não especificado
+      };
+      
+      console.log('📢 Dados validados:', validatedData);
+      
+      // ✅ Tentar criar o aviso
       const notice = await storage.createNotice(validatedData);
-      res.json({ success: true, notice });
+      console.log('✅ Aviso criado com sucesso:', notice);
+      
+      res.json({ 
+        success: true, 
+        notice: notice,
+        message: 'Notice created successfully'
+      });
+      
     } catch (error) {
+      console.error('❌ Erro ao criar aviso:', error);
+      
       if (error instanceof z.ZodError) {
-        res.status(400).json({ success: false, error: 'Invalid data', details: error.errors });
+        console.error('❌ Erro de validação Zod:', error.errors);
+        res.status(400).json({ 
+          success: false, 
+          error: 'VALIDATION_ERROR: Invalid data format', 
+          details: error.errors,
+          zodError: true
+        });
       } else {
-        res.status(500).json({ success: false, error: 'Failed to create notice' });
+        res.status(500).json({ 
+          success: false, 
+          error: 'SERVER_ERROR: Failed to create notice',
+          details: error instanceof Error ? error.message : 'Unknown error'
+        });
       }
     }
   });
 
+// ✅ CORREÇÃO: PUT notices com validação
   app.put('/api/notices/:id', async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      console.log(`📝 PUT /api/notices/${id} - Atualizando aviso...`);
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'VALIDATION_ERROR: Invalid notice ID',
+          receivedId: req.params.id
+        });
+      }
+      
       const existingNotice = await storage.getNotice(id);
       
       if (!existingNotice) {
-        return res.status(404).json({ error: 'Notice not found' });
+        return res.status(404).json({ 
+          success: false,
+          error: 'NOT_FOUND: Notice not found',
+          id: id
+        });
       }
 
-      const updatedNotice = await storage.updateNotice({ ...existingNotice, ...req.body });
-      res.json(updatedNotice);
+      // ✅ Validar dados de atualização
+      const updateData = { ...req.body };
+      
+      // Converter datas se necessário
+      if (updateData.startDate) {
+        updateData.startDate = new Date(updateData.startDate);
+      }
+      if (updateData.endDate) {
+        updateData.endDate = new Date(updateData.endDate);
+      }
+
+      const updatedNotice = await storage.updateNotice({ 
+        ...existingNotice, 
+        ...updateData,
+        id: id // Garantir que o ID não mude
+      });
+      
+      console.log('✅ Aviso atualizado:', updatedNotice);
+      
+      res.json({
+        success: true,
+        notice: updatedNotice,
+        message: 'Notice updated successfully'
+      });
     } catch (error) {
-      res.status(500).json({ error: 'Failed to update notice' });
+      console.error(`❌ Erro ao atualizar aviso ${req.params.id}:`, error);
+      res.status(500).json({ 
+        success: false,
+        error: 'SERVER_ERROR: Failed to update notice',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 
+  // ✅ CORREÇÃO: DELETE notices
   app.delete('/api/notices/:id', async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      console.log(`🗑️ DELETE /api/notices/${id} - Deletando aviso...`);
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'VALIDATION_ERROR: Invalid notice ID',
+          receivedId: req.params.id
+        });
+      }
+      
       const deleted = await storage.deleteNotice(id);
       
       if (!deleted) {
-        return res.status(404).json({ error: 'Notice not found' });
+        return res.status(404).json({ 
+          success: false,
+          error: 'NOT_FOUND: Notice not found',
+          id: id
+        });
       }
 
-      res.json({ success: true });
+      console.log(`✅ Aviso ${id} deletado com sucesso`);
+      
+      res.json({ 
+        success: true,
+        message: 'Notice deleted successfully',
+        deletedId: id
+      });
     } catch (error) {
-      res.status(500).json({ error: 'Failed to delete notice' });
+      console.error(`❌ Erro ao deletar aviso ${req.params.id}:`, error);
+      res.status(500).json({ 
+        success: false,
+        error: 'SERVER_ERROR: Failed to delete notice',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 
@@ -251,13 +763,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Check escala image cache route
-  app.get('/api/check-escala-image/:id', (req, res) => {
+  // ✅ ATUALIZADO: Check escala image cache route (agora funcional)
+  app.get('/api/check-escala-image/:id', async (req, res) => {
     try {
       const { id } = req.params;
-      // For now, just return that cache doesn't exist
-      // This can be enhanced later with actual cache checking
-      res.json({ exists: false, id });
+      
+      const filename = `${id}.jpg`;
+      const filePath = path.join(escalaCacheDir, filename);
+      const fileUrl = `/uploads/escala-cache/${filename}`;
+
+      try {
+        await access(filePath);
+        res.json({ 
+          exists: true, 
+          id, 
+          url: fileUrl,
+          cached: true
+        });
+      } catch {
+        res.json({ 
+          exists: false, 
+          id,
+          cached: false
+        });
+      }
     } catch (error) {
       res.status(500).json({ error: 'Failed to check cache' });
     }
@@ -282,8 +811,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Health check
-// PDF Proxy route to handle CORS issues
+  // PDF Proxy route to handle CORS issues
   app.get('/api/proxy-pdf', async (req, res) => {
     try {
       const { url } = req.query;
@@ -340,6 +868,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
       timestamp: new Date().toISOString(),
       message: 'Marinha do Brasil - Sistema funcionando corretamente'
     });
+  });
+
+  // 🔥 NOVO: System info com informações de cache
+  app.get('/api/system-info', async (req, res) => {
+    try {
+      const uploadsDir = path.join(process.cwd(), 'uploads');
+      
+      // Contar arquivos por tipo
+      let totalUploads = 0;
+      let pdfCount = 0;
+      let imageCount = 0;
+      let totalSize = 0;
+      
+      try {
+        const files = fs.readdirSync(uploadsDir);
+        
+        for (const file of files) {
+          const filePath = path.join(uploadsDir, file);
+          const stats = fs.statSync(filePath);
+          
+          if (fs.statSync(filePath).isFile()) {
+            totalUploads++;
+            totalSize += stats.size;
+            
+            if (file.endsWith('.pdf')) pdfCount++;
+            if (file.endsWith('.jpg') || file.endsWith('.png') || file.endsWith('.jpeg')) imageCount++;
+          }
+        }
+      } catch (err) {
+        // Diretório não existe
+      }
+
+      // Informações de cache
+      let plasaCacheCount = 0;
+      let escalaCacheCount = 0;
+      
+      try {
+        const plasaFiles = await readdir(plasaPagesDir);
+        plasaCacheCount = plasaFiles.filter(f => f.endsWith('.jpg')).length;
+      } catch {}
+      
+      try {
+        const escalaFiles = await readdir(escalaCacheDir);
+        escalaCacheCount = escalaFiles.filter(f => f.endsWith('.jpg')).length;
+      } catch {}
+
+      const systemInfo = {
+        server: {
+          status: 'online',
+          version: '2.0-cache',
+          timestamp: new Date().toISOString(),
+          uptime: process.uptime(),
+          nodeVersion: process.version,
+          platform: process.platform
+        },
+        storage: {
+          uploads: {
+            total: totalUploads,
+            pdfs: pdfCount,
+            images: imageCount,
+            totalSizeMB: Math.round(totalSize / 1024 / 1024 * 100) / 100
+          },
+          cache: {
+            plasa: {
+              pages: plasaCacheCount,
+              directory: 'uploads/plasa-pages/'
+            },
+            escala: {
+              cached: escalaCacheCount,
+              directory: 'uploads/escala-cache/'
+            },
+            total: plasaCacheCount + escalaCacheCount
+          }
+        },
+        features: {
+          notices: 'enabled',
+          documents: 'enabled',
+          cache: 'enabled',
+          cors: 'enabled',
+          upload: 'enabled'
+        }
+      };
+
+      res.json(systemInfo);
+
+    } catch (error) {
+      console.error('❌ Erro ao obter informações do sistema:', error);
+      res.status(500).json({ 
+        error: 'Failed to get system info',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
   });
 
   const httpServer = createServer(app);

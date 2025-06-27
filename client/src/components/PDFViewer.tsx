@@ -149,6 +149,17 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
 
   // Função para obter a URL completa do servidor backend - DETECTAR AMBIENTE
  const getBackendUrl = (path: string): string => {
+
+  // Função para gerar ID do documento
+  const generateDocumentId = (url: string): string => {
+    const urlParts = url.split("/");
+    const filename = urlParts[urlParts.length - 1];
+    const cleanName = filename
+      .replace(/\.[^/.]+$/, "")
+      .replace(/[^a-zA-Z0-9]/g, "-")
+      .toLowerCase();
+    return cleanName;
+  };
   if (path.startsWith('http') || path.startsWith('blob:') || path.startsWith('data:')) {
     return path;
   }
@@ -313,7 +324,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   };
 
   // Função para salvar página como imagem no servidor
-  const savePageAsImage = async (canvas: HTMLCanvasElement, pageNum: number): Promise<string> => {
+  const savePageAsImage = async (canvas: HTMLCanvasElement, pageNum: number, documentId: string): Promise<string> => {
     return new Promise((resolve) => {
       canvas.toBlob(async (blob) => {
         if (!blob) {
@@ -326,6 +337,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
           const formData = new FormData();
           formData.append('file', blob, `plasa-page-${pageNum}.jpg`);
           formData.append('pageNumber', String(pageNum));
+          formData.append('documentId', documentId);
           
           const uploadUrl = getBackendUrl('/api/upload-plasa-page');
           
@@ -353,7 +365,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   };
 
   // Verificar se páginas já existem no servidor
-  const checkExistingPages = async (totalPages: number): Promise<string[]> => {
+  const checkExistingPages = async (totalPages: number, documentId: string): Promise<string[]> => {
     try {
       const checkUrl = getBackendUrl('/api/check-plasa-pages');
       
@@ -362,7 +374,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ totalPages }),
+        body: JSON.stringify({ totalPages, documentId }),
       });
 
       if (response.ok) {
@@ -428,7 +440,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       console.log(`📄 PDF carregado com sucesso: ${pdf.numPages} páginas`);
       setTotalPages(pdf.numPages);
       
-      const existingPages = await checkExistingPages(pdf.numPages);
+      const docId = generateDocumentId(pdfUrl);
+      const existingPages = await checkExistingPages(pdf.numPages, docId);
       if (existingPages.length === pdf.numPages) {
         console.log(`💾 Usando ${pdf.numPages} páginas já convertidas`);
         setSavedPageUrls(existingPages);
@@ -482,7 +495,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
           
           console.log(`✅ Página ${pageNum} renderizada com sucesso`);
           
-          const imageUrl = await savePageAsImage(canvas, pageNum);
+          const imageUrl = await savePageAsImage(canvas, pageNum, docId);
           imageUrls.push(imageUrl);
           
           console.log(`💾 Página ${pageNum} salva: ${imageUrl}`);
@@ -523,7 +536,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
           ctx.font = '120px Arial, sans-serif';
           ctx.fillText('⚠️', errorCanvas.width/2, 450);
           
-          const errorUrl = await savePageAsImage(errorCanvas, pageNum);
+          const errorUrl = await savePageAsImage(errorCanvas, pageNum, docId);
           imageUrls.push(errorUrl);
         }
       }
@@ -764,7 +777,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       console.log(`🔍 Verificando cache para escala: ${documentId}`);
       
       try {
-        const cacheResponse = await fetch(getBackendUrl(`/api/check-escala-image/${documentId}`));
+        const cacheResponse = await fetch(getBackendUrl(`/api/check-escala-cache/${documentId}`));
         const cacheResult = await cacheResponse.json();
         
         if (cacheResult.success && cacheResult.exists) {
@@ -877,9 +890,17 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
         formData.append('file', imageBlob, `escala-${documentId}.jpg`);
         formData.append('documentId', documentId);
         
-        const saveResponse = await fetch(getBackendUrl('/api/upload-escala-image'), {
+        const imageDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        
+        const saveResponse = await fetch(getBackendUrl('/api/save-escala-cache'), {
           method: 'POST',
-          body: formData
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            escalId: documentId,
+            imageData: imageDataUrl
+          })
         });
         
         if (saveResponse.ok) {

@@ -138,7 +138,7 @@ export const DisplayProvider: React.FC<DisplayProviderProps> = ({ children }) =>
   // CORREÇÃO: Conversão de aviso do servidor para local
   const convertServerNoticeToLocal = (serverNotice: any): Notice => {
     return {
-      id: serverNotice.id,
+      id: String(serverNotice.id), 
       title: serverNotice.title,
       content: serverNotice.content,
       priority: serverNotice.priority,
@@ -150,17 +150,21 @@ export const DisplayProvider: React.FC<DisplayProviderProps> = ({ children }) =>
     };
   };
 
-  // CORREÇÃO: Conversão de aviso local para servidor (ESTAVA INCOMPLETA)
-  const convertLocalNoticeToServer = (localNotice: Omit<Notice, "id" | "createdAt" | "updatedAt">): any => {
-    return {
-      title: localNotice.title,
-      content: localNotice.content,
-      priority: localNotice.priority,
-      startDate: localNotice.startDate.toISOString(),
-      endDate: localNotice.endDate.toISOString(),
-      active: localNotice.active
-    };
+// ✅ DEPOIS (completo):
+const convertLocalNoticeToServer = (localNotice: Omit<Notice, "id" | "createdAt" | "updatedAt">): any => {
+  console.log("🔄 Convertendo aviso para formato do servidor:", localNotice);
+  
+  return {
+    title: localNotice.title.trim(),
+    content: localNotice.content.trim(),
+    priority: localNotice.priority,
+    startDate: localNotice.startDate.toISOString(),
+    endDate: localNotice.endDate.toISOString(),
+    active: localNotice.active !== false // Garantir que seja boolean
   };
+};
+
+
 
   // CORREÇÃO: Carregar avisos do servidor com melhor tratamento de erro
   const loadNoticesFromServer = async (): Promise<void> => {
@@ -225,9 +229,29 @@ export const DisplayProvider: React.FC<DisplayProviderProps> = ({ children }) =>
       
       const serverData = convertLocalNoticeToServer(noticeData);
       console.log("📢 Dados para enviar:", serverData);
-      
+  // ✅ ADICIONAR ESTE DEBUG TEMPORÁRIO:
+    console.log("🔍 DEBUG - Dados originais:", {
+      title: noticeData.title,
+      content: noticeData.content,
+      priority: noticeData.priority,
+      startDate: noticeData.startDate,
+      startDateType: typeof noticeData.startDate,
+      startDateValid: noticeData.startDate instanceof Date,
+      endDate: noticeData.endDate,
+      endDateType: typeof noticeData.endDate,
+      endDateValid: noticeData.endDate instanceof Date,
+      active: noticeData.active
+    });
+    
+    console.log("🔍 DEBUG - Dados convertidos:", {
+      ...serverData,
+      startDateLength: serverData.startDate?.length,
+      endDateLength: serverData.endDate?.length
+    });
+    
       const backendUrl = getBackendUrl('/api/notices');
       console.log("📢 Enviando para:", backendUrl);
+
       
       const response = await fetch(backendUrl, {
         method: 'POST',
@@ -239,6 +263,17 @@ export const DisplayProvider: React.FC<DisplayProviderProps> = ({ children }) =>
       });
       
       console.log("📢 Resposta:", response.status, response.statusText);
+
+      // ✅ ADICIONAR ESTE DEBUG PARA VER O ERRO:
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
+      console.error("❌ Erro HTTP detalhado:", {
+        status: response.status,
+        statusText: response.statusText,
+        errorData: errorData
+      });
+      throw new Error(errorData.error || `Erro HTTP: ${response.status}`);
+    }
       
       if (response.ok) {
         const result = await response.json();
@@ -279,108 +314,117 @@ export const DisplayProvider: React.FC<DisplayProviderProps> = ({ children }) =>
   };
 
   // CORREÇÃO: Atualizar aviso no servidor
-  const updateNotice = async (updatedNotice: Notice): Promise<boolean> => {
-    try {
-      console.log("📝 Atualizando aviso no servidor:", updatedNotice.id);
-      setIsLoading(true);
-      
-      // Se é um aviso local, não tentar atualizar no servidor
-      if (updatedNotice.id.startsWith('local-')) {
-        setNotices(prev => prev.map(notice => 
-          notice.id === updatedNotice.id ? updatedNotice : notice
-        ));
-        console.log("📝 Aviso local atualizado");
-        return true;
-      }
-      
-      const serverData = convertLocalNoticeToServer(updatedNotice);
-      
-      const response = await fetch(getBackendUrl(`/api/notices/${updatedNotice.id}`), {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(serverData)
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        
-        if (result.success && result.notice) {
-          const updated = convertServerNoticeToLocal(result.notice);
-          setNotices(prev => prev.map(notice => 
-            notice.id === updated.id ? updated : notice
-          ));
-          
-          console.log(`✅ Aviso atualizado no servidor: ${updated.id}`);
-          return true;
-        } else {
-          throw new Error(result.error || 'Resposta inválida do servidor');
-        }
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Erro HTTP: ${response.status}`);
-      }
-    } catch (error) {
-      console.error("❌ Erro ao atualizar aviso:", error);
-      
-      // Fallback: atualizar localmente se servidor falhar
+ // CORREÇÃO: Atualizar aviso no servidor
+const updateNotice = async (updatedNotice: Notice): Promise<boolean> => {
+  try {
+    console.log("📝 Atualizando aviso no servidor:", updatedNotice.id);
+    setIsLoading(true);
+    
+    // 🔥 CORREÇÃO: Garantir que ID seja string antes de usar .startsWith()
+    const stringId = String(updatedNotice.id);
+    
+    // Se é um aviso local, não tentar atualizar no servidor
+    if (stringId.startsWith('local-')) {
       setNotices(prev => prev.map(notice => 
         notice.id === updatedNotice.id ? updatedNotice : notice
       ));
-      console.log("⚠️ Aviso atualizado apenas localmente devido a erro no servidor");
-      
-      return false;
-    } finally {
-      setIsLoading(false);
+      console.log("📝 Aviso local atualizado");
+      return true;
     }
-  };
+    
+    const serverData = convertLocalNoticeToServer(updatedNotice);
+    
+    const response = await fetch(getBackendUrl(`/api/notices/${updatedNotice.id}`), {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(serverData)
+    });
+    
+    if (response.ok) {
+      const result = await response.json();
+      
+      if (result.success && result.notice) {
+        const updated = convertServerNoticeToLocal(result.notice);
+        setNotices(prev => prev.map(notice => 
+          notice.id === updated.id ? updated : notice
+        ));
+        
+        console.log(`✅ Aviso atualizado no servidor: ${updated.id}`);
+        return true;
+      } else {
+        throw new Error(result.error || 'Resposta inválida do servidor');
+      }
+    } else {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `Erro HTTP: ${response.status}`);
+    }
+  } catch (error) {
+    console.error("❌ Erro ao atualizar aviso:", error);
+    
+    // Fallback: atualizar localmente se servidor falhar
+    setNotices(prev => prev.map(notice => 
+      notice.id === updatedNotice.id ? updatedNotice : notice
+    ));
+    console.log("⚠️ Aviso atualizado apenas localmente devido a erro no servidor");
+    
+    return false;
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   // CORREÇÃO: Deletar aviso do servidor
-  const deleteNotice = async (id: string): Promise<boolean> => {
-    try {
-      console.log("🗑️ Deletando aviso do servidor:", id);
-      setIsLoading(true);
-      
-      // Se é um aviso local, apenas remover localmente
-      if (id.startsWith('local-')) {
-        setNotices(prev => prev.filter(notice => notice.id !== id));
-        console.log("🗑️ Aviso local removido");
-        return true;
-      }
-      
-      const response = await fetch(getBackendUrl(`/api/notices/${id}`), {
-        method: 'DELETE'
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        
-        if (result.success) {
-          setNotices(prev => prev.filter(notice => notice.id !== id));
-          
-          console.log(`✅ Aviso deletado do servidor: ${id}`);
-          return true;
-        } else {
-          throw new Error(result.error || 'Resposta inválida do servidor');
-        }
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Erro HTTP: ${response.status}`);
-      }
-    } catch (error) {
-      console.error("❌ Erro ao deletar aviso:", error);
-      
-      // Fallback: remover localmente se servidor falhar
-      setNotices(prev => prev.filter(notice => notice.id !== id));
-      console.log("⚠️ Aviso removido apenas localmente devido a erro no servidor");
-      
-      return false;
-    } finally {
-      setIsLoading(false);
+ // CORREÇÃO: Deletar aviso do servidor
+const deleteNotice = async (id: string): Promise<boolean> => {
+  try {
+    console.log("🗑️ Deletando aviso do servidor:", id);
+    setIsLoading(true);
+    
+    // 🔥 CORREÇÃO: Garantir que ID seja string antes de usar .startsWith()
+    const stringId = String(id);
+    
+    // Se é um aviso local, apenas remover localmente
+    if (stringId.startsWith('local-')) {
+      setNotices(prev => prev.filter(notice => String(notice.id) !== stringId));
+      console.log("🗑️ Aviso local removido");
+      return true;
     }
-  };
+    
+    const response = await fetch(getBackendUrl(`/api/notices/${id}`), {
+      method: 'DELETE'
+    });
+    
+    if (response.ok) {
+      const result = await response.json();
+      
+      if (result.success) {
+        setNotices(prev => prev.filter(notice => String(notice.id) !== stringId));
+        
+        console.log(`✅ Aviso deletado do servidor: ${id}`);
+        return true;
+      } else {
+        throw new Error(result.error || 'Resposta inválida do servidor');
+      }
+    } else {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `Erro HTTP: ${response.status}`);
+    }
+  } catch (error) {
+    console.error("❌ Erro ao deletar aviso:", error);
+    
+    // Fallback: remover localmente se servidor falhar
+    const stringId = String(id);
+    setNotices(prev => prev.filter(notice => String(notice.id) !== stringId));
+    console.log("⚠️ Aviso removido apenas localmente devido a erro no servidor");
+    
+    return false;
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   // Função addDocument (mantida igual)
   const addDocument = (docData: Omit<PDFDocument, "id" | "uploadDate">) => {
@@ -547,8 +591,8 @@ export const DisplayProvider: React.FC<DisplayProviderProps> = ({ children }) =>
         activeEscalaCategory: activeEscalaDoc?.category || 'sem categoria',
         noticesTotal: notices.length,
         noticesAtivos: notices.filter(n => n.active).length,
-        noticesFromServer: notices.filter(n => !n.id.startsWith('local-')).length,
-        noticesLocal: notices.filter(n => n.id.startsWith('local-')).length
+        noticesFromServer: notices.filter(n => !n.String(id).startsWith('local-')).length,
+        noticesLocal: notices.filter(n => n.String(id).startsWith('local-')).length
       });
     }
   }, [plasaDocuments, escalaDocuments, activePlasaDoc, activeEscalaDoc, currentEscalaIndex, notices]);

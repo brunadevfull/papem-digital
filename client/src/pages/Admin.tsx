@@ -540,7 +540,7 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
   const removeNotice = async (id: string) => {
     if (confirm("Tem certeza que deseja remover este aviso?")) {
       try {
-        const success = await deleteNotice(id);
+        const success = await deleteNotice(String(id));
         
         toast({
           title: success ? "Aviso removido" : "Aviso removido localmente",
@@ -927,7 +927,7 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                   ) : (
                     <ul className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
                       {notices.map((notice) => (
-                        <li key={notice.id} className={`border-l-4 ${
+                        <li key={String(notice.id)} className={`border-l-4 ${
                           notice.priority === "high" ? "border-red-500" :
                           notice.priority === "medium" ? "border-yellow-500" :
                           "border-green-500"
@@ -937,7 +937,7 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                               {notice.priority === "high" ? "🔴" :
                                notice.priority === "medium" ? "🟡" : "🟢"}
                               {notice.title}
-                              {notice.id.startsWith('local-') && (
+                              {String(notice.id).startsWith('local-') && (
                                 <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full">
                                   Local
                                 </span>
@@ -955,7 +955,7 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                               <Button 
                                 variant="destructive" 
                                 size="sm"
-                                onClick={() => removeNotice(notice.id)}
+                                onClick={() => removeNotice(String(notice.id))}
                                 disabled={isLoading}
                               >
                                 🗑️
@@ -1891,8 +1891,8 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                       <div className="font-medium text-yellow-800">📢 Avisos</div>
                       <div>Total: {notices.length}</div>
                       <div>Ativos: {notices.filter(n => n.active).length}</div>
-                      <div>Do Servidor: {notices.filter(n => !n.id.startsWith('local-')).length}</div>
-                      <div>Locais: {notices.filter(n => n.id.startsWith('local-')).length}</div>
+                      <div>Do Servidor: {notices.filter(n => !n.String(id).startsWith('local-')).length}</div>
+                      <div>Locais: {notices.filter(n => n.String(id).startsWith('local-')).length}</div>
                       <div>Carregando: {isLoading ? "Sim" : "Não"}</div>
                     </div>
                   </div>
