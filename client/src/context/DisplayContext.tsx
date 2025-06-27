@@ -83,17 +83,7 @@ export const DisplayProvider: React.FC<DisplayProviderProps> = ({ children }) =>
   const currentHost = window.location.hostname;
   const currentPort = window.location.port;
   
-  // Se estamos acessando via IP da rede, usar o mesmo IP para backend
-  if (currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
-    console.log(`🌐 DisplayContext: Detectado acesso via rede: ${currentHost}`);
-    
-    if (path.startsWith('/')) {
-      return `http://${currentHost}:5000${path}`;
-    }
-    return `http://${currentHost}:5000/${path}`;
-  }
-  
-  // Detectar se estamos no Replit
+  // Detectar se estamos no Replit - frontend e backend na mesma porta
   const isReplit = currentHost.includes('replit.dev') || currentHost.includes('replit.co');
   
   if (isReplit) {
@@ -104,15 +94,25 @@ export const DisplayProvider: React.FC<DisplayProviderProps> = ({ children }) =>
       return `${currentOrigin}${path}`;
     }
     return `${currentOrigin}/${path}`;
-  } else {
-    // Desenvolvimento local
-    console.log(`🌐 DisplayContext Backend URL (Local): localhost:5000`);
+  }
+  
+  // Se estamos acessando via IP da rede (não Replit), usar porta 5000
+  if (currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
+    console.log(`🌐 DisplayContext: Detectado acesso via rede: ${currentHost}`);
     
     if (path.startsWith('/')) {
-      return `http://localhost:5000${path}`;
+      return `http://${currentHost}:5000${path}`;
     }
-    return `http://localhost:5000/${path}`;
+    return `http://${currentHost}:5000/${path}`;
   }
+  
+  // Desenvolvimento local - usar porta 5000
+  console.log(`🌐 DisplayContext Backend URL (Local): localhost:5000`);
+  
+  if (path.startsWith('/')) {
+    return `http://localhost:5000${path}`;
+  }
+  return `http://localhost:5000/${path}`;
 };
 
   // Função para gerar ID único
@@ -591,8 +591,8 @@ const deleteNotice = async (id: string): Promise<boolean> => {
         activeEscalaCategory: activeEscalaDoc?.category || 'sem categoria',
         noticesTotal: notices.length,
         noticesAtivos: notices.filter(n => n.active).length,
-        noticesFromServer: notices.filter(n => !n.String(id).startsWith('local-')).length,
-        noticesLocal: notices.filter(n => n.String(id).startsWith('local-')).length
+        noticesFromServer: notices.filter(n => !n.id.startsWith('local-')).length,
+        noticesLocal: notices.filter(n => n.id.startsWith('local-')).length
       });
     }
   }, [plasaDocuments, escalaDocuments, activePlasaDoc, activeEscalaDoc, currentEscalaIndex, notices]);
