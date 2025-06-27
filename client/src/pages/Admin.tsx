@@ -1876,14 +1876,18 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                     <h4 className="font-medium mb-2">📊 Estatísticas</h4>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div className="bg-blue-50 p-3 rounded">
-                        <div className="font-medium text-blue-800">PLASA</div>
+                        <div className="font-medium text-blue-800">📄 PLASA/BONO</div>
                         <div>Total: {plasaDocuments.length}</div>
                         <div>Ativos: {plasaDocuments.filter(d => d.active).length}</div>
+                        <div>PLASA: {plasaDocuments.filter(d => d.type === "plasa").length}</div>
+                        <div>BONO: {plasaDocuments.filter(d => d.type === "bono").length}</div>
                       </div>
                       <div className="bg-green-50 p-3 rounded">
-                        <div className="font-medium text-green-800">Escalas</div>
+                        <div className="font-medium text-green-800">📋 Escalas/Cardápios</div>
                         <div>Total: {escalaDocuments.length}</div>
                         <div>Ativos: {escalaDocuments.filter(d => d.active).length}</div>
+                        <div>Escalas: {escalaDocuments.filter(d => d.type === "escala").length}</div>
+                        <div>Cardápios: {escalaDocuments.filter(d => d.type === "cardapio").length}</div>
                       </div>
                     </div>
                     
@@ -1891,8 +1895,8 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                       <div className="font-medium text-yellow-800">📢 Avisos</div>
                       <div>Total: {notices.length}</div>
                       <div>Ativos: {notices.filter(n => n.active).length}</div>
-                      <div>Do Servidor: {notices.filter(n => !n.String(id).startsWith('local-')).length}</div>
-                      <div>Locais: {notices.filter(n => n.String(id).startsWith('local-')).length}</div>
+                      <div>Do Servidor: {notices.filter(n => !n.id.startsWith('local-')).length}</div>
+                      <div>Locais: {notices.filter(n => n.id.startsWith('local-')).length}</div>
                       <div>Carregando: {isLoading ? "Sim" : "Não"}</div>
                     </div>
                   </div>

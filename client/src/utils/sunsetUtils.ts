@@ -36,18 +36,18 @@ async function fetchSunsetFromAPI(): Promise<string> {
     const data = await response.json();
     
     if (data.status === 'OK' && data.results?.sunset) {
-      // A API retorna em UTC, ajustamos manualmente para Rio de Janeiro (UTC-3)
+      // A API retorna em UTC, converter para horário do Brasil
       const sunsetUTC = new Date(data.results.sunset);
       
-      // Adicionar 1 minuto para correção de precisão conforme observado
-      sunsetUTC.setMinutes(sunsetUTC.getMinutes() + 1);
+      // Usar toLocaleString com timezone do Brasil para conversão correta
+      const brasilOptions: Intl.DateTimeFormatOptions = {
+        timeZone: 'America/Sao_Paulo',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      };
       
-      // Converter para timezone do Rio de Janeiro (UTC-3)
-      const rioBrasilTime = new Date(sunsetUTC.getTime() - (3 * 60 * 60 * 1000));
-      
-      const hours = rioBrasilTime.getUTCHours().toString().padStart(2, '0');
-      const minutes = rioBrasilTime.getUTCMinutes().toString().padStart(2, '0');
-      const sunset = `${hours}:${minutes}`;
+      const sunset = sunsetUTC.toLocaleString('pt-BR', brasilOptions);
       
       // Atualizar cache
       cachedSunset = sunset;

@@ -446,15 +446,15 @@ const deleteNotice = async (id: string): Promise<boolean> => {
       url: newDoc.url
     });
 
-    if (docData.type === "plasa") {
+    if (docData.type === "plasa" || docData.type === "bono") {
       setPlasaDocuments(prev => {
         const exists = prev.some(doc => doc.url === fullUrl || doc.url === docData.url);
         if (exists) {
-          console.log("📄 Documento PLASA já existe, ignorando:", fullUrl);
+          console.log("📄 Documento PLASA/BONO já existe, ignorando:", fullUrl);
           return prev;
         }
         
-        console.log("📄 Adicionando novo PLASA:", newDoc.title);
+        console.log("📄 Adicionando novo PLASA/BONO:", newDoc.title);
         return [...prev, newDoc];
       });
     } else {
