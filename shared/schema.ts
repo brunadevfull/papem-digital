@@ -30,6 +30,16 @@ export const documents = pgTable("documents", {
   uploadDate: timestamp("upload_date").defaultNow(),
 });
 
+export const dutyOfficers = pgTable("duty_officers", {
+  id: serial("id").primaryKey(),
+  role: text("role").notNull().$type<"oficial_dia" | "contramestre_pernoite">(),
+  rank: text("rank").notNull(),
+  name: text("name").notNull(),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -46,9 +56,17 @@ export const insertDocumentSchema = createInsertSchema(documents).omit({
   uploadDate: true,
 });
 
+export const insertDutyOfficerSchema = createInsertSchema(dutyOfficers).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type Notice = typeof notices.$inferSelect;
 export type InsertNotice = z.infer<typeof insertNoticeSchema>;
 export type PDFDocument = typeof documents.$inferSelect;
 export type InsertDocument = z.infer<typeof insertDocumentSchema>;
+export type DutyOfficer = typeof dutyOfficers.$inferSelect;
+export type InsertDutyOfficer = z.infer<typeof insertDutyOfficerSchema>;

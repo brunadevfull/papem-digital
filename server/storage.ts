@@ -1,4 +1,4 @@
-import { users, notices, documents, type User, type InsertUser, type Notice, type InsertNotice, type PDFDocument, type InsertDocument } from "@shared/schema";
+import { users, notices, documents, dutyOfficers, type User, type InsertUser, type Notice, type InsertNotice, type PDFDocument, type InsertDocument, type DutyOfficer, type InsertDutyOfficer } from "@shared/schema";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -18,23 +18,34 @@ export interface IStorage {
   createDocument(document: InsertDocument): Promise<PDFDocument>;
   updateDocument(document: PDFDocument): Promise<PDFDocument>;
   deleteDocument(id: number): Promise<boolean>;
+  
+  // Duty Officer methods
+  getDutyOfficers(): Promise<DutyOfficer[]>;
+  getDutyOfficer(id: number): Promise<DutyOfficer | undefined>;
+  createDutyOfficer(officer: InsertDutyOfficer): Promise<DutyOfficer>;
+  updateDutyOfficer(officer: DutyOfficer): Promise<DutyOfficer>;
+  deleteDutyOfficer(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private notices: Map<number, Notice>;
   private documents: Map<number, PDFDocument>;
+  private dutyOfficers: Map<number, DutyOfficer>;
   private currentUserId: number;
   private currentNoticeId: number;
   private currentDocumentId: number;
+  private currentDutyOfficerId: number;
 
   constructor() {
     this.users = new Map();
     this.notices = new Map();
     this.documents = new Map();
+    this.dutyOfficers = new Map();
     this.currentUserId = 1;
     this.currentNoticeId = 1;
     this.currentDocumentId = 1;
+    this.currentDutyOfficerId = 1;
       console.log('💾 MemStorage initialized'); 
   }
 
