@@ -1332,37 +1332,47 @@ const upload = multer({
       // Tentar encontrar o arquivo cache baseado no filename
       const cacheDir = path.join(process.cwd(), 'uploads', 'extracted-data');
       
-      // Buscar arquivos cache que correspondem ao filename
-      try {
-        const cacheFiles = await readdir(cacheDir);
-        const matchingCache = cacheFiles.find(file => file.includes(filename.replace('.pdf', '')));
+      // Buscar documento correspondente ao filename para encontrar seu ID
+      const documents = await storage.getDocuments();
+      console.log(`🔍 Documentos disponíveis: ${documents.length}`);
+      console.log(`🔍 Buscando por filename: ${filename}`);
+      
+      const matchingDocument = documents.find(doc => {
+        console.log(`🔍 Verificando documento:`, { id: doc.id, url: doc.url, includes: doc.url?.includes(filename) });
+        return doc.url && doc.url.includes(filename);
+      });
+      
+      if (matchingDocument) {
+        // Buscar cache pelo ID do documento
+        const cacheFile = path.join(cacheDir, `${matchingDocument.id}-extracted.json`);
         
-        if (matchingCache) {
-          const cacheFile = path.join(cacheDir, matchingCache);
+        try {
           const extractedData = JSON.parse(await readFile(cacheFile, 'utf-8'));
           
-          console.log(`✅ Dados extraídos encontrados para ${filename}: ${extractedData.data?.militares?.length || 0} militares`);
+          console.log(`✅ Dados extraídos encontrados para ${filename}: ${extractedData.turnos?.pernoite?.length || 0} militares no pernoite`);
           
           res.json({
             success: true,
             extractedData: extractedData,
             filename: filename,
-            cacheFile: matchingCache
+            documentId: matchingDocument.id,
+            cacheFile: `${matchingDocument.id}-extracted.json`
           });
-        } else {
+        } catch (fileError) {
           res.status(404).json({ 
             success: false,
-            error: 'No extracted data found for this filename',
+            error: 'Cache file not found for this document',
             filename: filename,
+            documentId: matchingDocument.id,
             message: 'Extract data first using the admin panel'
           });
         }
-
-      } catch (dirError) {
+      } else {
         res.status(404).json({ 
           success: false,
-          error: 'No extracted data cache directory found',
-          filename: filename
+          error: 'Document not found for this filename',
+          filename: filename,
+          message: 'Upload the document first or check the filename'
         });
       }
 
