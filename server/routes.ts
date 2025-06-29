@@ -1176,15 +1176,24 @@ const upload = multer({
       }
 
       // Verificar se é um PDF de escala
-      if (document.category !== 'escala') {
+      if (document.type !== 'escala') {
         return res.status(400).json({ 
           success: false,
           error: 'Document is not a scale (escala) type'
         });
       }
 
+      // Extrair filename da URL (assumindo formato: /uploads/arquivo.pdf)
+      const filename = document.url.split('/').pop();
+      if (!filename) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'Invalid document URL format'
+        });
+      }
+
       // Caminho do arquivo PDF
-      const pdfPath = path.join(process.cwd(), 'uploads', document.filename);
+      const pdfPath = path.join(process.cwd(), 'uploads', filename);
       
       // Verificar se arquivo existe
       try {

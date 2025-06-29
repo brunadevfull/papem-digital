@@ -78,6 +78,13 @@ const Admin: React.FC = () => {
     contramestre: null
   });
 
+  // Estado para extração de dados de escalas
+  const [extractionStates, setExtractionStates] = useState<{[key: number]: {
+    extracting: boolean;
+    extractedData: any;
+    error: string | null;
+  }}>({});
+
   // Função para carregar dados dos militares
   const loadOfficers = async () => {
     try {
@@ -94,6 +101,62 @@ const Admin: React.FC = () => {
       }
     } catch (error) {
       console.error('Erro ao carregar militares:', error);
+    }
+  };
+
+  // Função para extrair dados de uma escala
+  const extractEscalaData = async (documentId: number) => {
+    const getBackendUrl = (path: string) => {
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return `http://localhost:5000${path}`;
+      }
+      return `http://${window.location.hostname}:5000${path}`;
+    };
+
+    setExtractionStates(prev => ({
+      ...prev,
+      [documentId]: { extracting: true, extractedData: null, error: null }
+    }));
+
+    try {
+      const response = await fetch(getBackendUrl(`/api/extract-pdf-data/${documentId}`), {
+        method: 'POST'
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        setExtractionStates(prev => ({
+          ...prev,
+          [documentId]: { 
+            extracting: false, 
+            extractedData: result.extractedData, 
+            error: null 
+          }
+        }));
+        
+        toast({
+          title: "Extração concluída",
+          description: `Dados extraídos com sucesso: ${result.extractedData.estatisticas?.total_militares || 0} militares encontrados`,
+        });
+      } else {
+        throw new Error(result.error || 'Erro na extração');
+      }
+    } catch (error) {
+      setExtractionStates(prev => ({
+        ...prev,
+        [documentId]: { 
+          extracting: false, 
+          extractedData: null, 
+          error: error instanceof Error ? error.message : 'Erro desconhecido'
+        }
+      }));
+      
+      toast({
+        title: "Erro na extração",
+        description: "Não foi possível extrair dados da escala. Verifique se é um PDF válido.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -1418,22 +1481,31 @@ const removeDocument = async (id: string) => {
                     >
                       {doc.active ? "✅" : "💤"}
                     </Button>
+                    <Button 
+                      variant="secondary" 
+                      size="sm"
+                      onClick={() => extractEscalaData(doc.id)}
+                      disabled={extractionStates[doc.id]?.extracting}
+                      title="Extrair dados da escala automaticamente"
+                    >
+                      {extractionStates[doc.id]?.extracting ? "⏳" : "🤖"}
+                    </Button>
                     <Sheet>
                       <SheetTrigger asChild>
                         <Button variant="outline" size="sm" title="Visualizar escala">👁️</Button>
                       </SheetTrigger>
-                      <SheetContent className="w-[85vw] sm:max-w-4xl">
+                      <SheetContent className="w-[95vw] sm:max-w-6xl">
                         <SheetHeader>
                           <SheetTitle>📋 {doc.title}</SheetTitle>
                           <SheetDescription>
-                            Visualização prévia da escala de serviço
+                            Visualização da escala - PDF original ou tabela extraída
                           </SheetDescription>
                         </SheetHeader>
-                        <div className="mt-6 h-[80vh]">
-                          <iframe 
-                            src={doc.url} 
-                            className="w-full h-full border rounded"
-                            title={doc.title}
+                        <div className="mt-6 h-[85vh]">
+                          <EscalaViewer
+                            pdfUrl={doc.url}
+                            extractedData={extractionStates[doc.id]?.extractedData}
+                            fileName={doc.title}
                           />
                         </div>
                       </SheetContent>
