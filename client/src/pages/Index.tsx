@@ -117,7 +117,7 @@ const Index = () => {
 
     fetchOfficerInfo();
     
-    // Atualizar a cada 5 minutos para pegar mudanças
+    // Atualizar a cada 5 minutos para pegar mudanças do admin
     const interval = setInterval(fetchOfficerInfo, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);

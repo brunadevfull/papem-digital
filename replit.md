@@ -141,7 +141,8 @@ Changelog:
   - Main page now loads duty officers from `/api/duty-officers` instead of hardcoded values
   - **Real-time updates**: Page refreshes military data every 5 minutes automatically
   - **Admin panel integration**: Changes in admin panel now reflect on main page
-  - Tested: Changed "CC Costa" to "1TEN Silva" and confirmed main page updated
+  - **Military rank display fixed**: Both ranks AND names update dynamically on main page
+  - Tested: Changed "1TEN Silva" to "CC Silva" and confirmed both rank and name updated correctly
 
 ## User Preferences
 
