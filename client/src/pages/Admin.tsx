@@ -790,6 +790,7 @@ const removeDocument = async (id: string) => {
           <TabsList className="w-full mb-6">
             <TabsTrigger value="avisos" className="flex-1">📢 Avisos</TabsTrigger>
             <TabsTrigger value="documentos" className="flex-1">📄 Documentos</TabsTrigger>
+            <TabsTrigger value="militares" className="flex-1">🪖 Militares</TabsTrigger>
             <TabsTrigger value="configuracoes" className="flex-1">⚙️ Configurações</TabsTrigger>
             <TabsTrigger value="debug" className="flex-1">🔍 Debug</TabsTrigger>
           </TabsList>
@@ -1862,6 +1863,124 @@ const removeDocument = async (id: string) => {
                     <li>Documentos inativos permanecem salvos mas não são exibidos</li>
                     <li>Avisos são sincronizados automaticamente com o servidor</li>
                   </ul>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Aba de Militares de Serviço */}
+          <TabsContent value="militares">
+            <Card>
+              <CardHeader>
+                <CardTitle>🪖 Militares de Serviço</CardTitle>
+                <CardDescription>
+                  Configure os militares que aparecem no painel principal
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Oficial do Dia */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <span className="text-yellow-400">👨‍✈️</span>
+                      Oficial do Dia
+                    </h3>
+                    <div className="space-y-3">
+                      <div>
+                        <Label htmlFor="oficial-rank">Patente</Label>
+                        <Select defaultValue="1TEN">
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="AMI">AMI</SelectItem>
+                            <SelectItem value="CF">CF</SelectItem>
+                            <SelectItem value="CC">CC</SelectItem>
+                            <SelectItem value="CT">CT</SelectItem>
+                            <SelectItem value="1TEN">1TEN</SelectItem>
+                            <SelectItem value="2TEN">2TEN</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="oficial-name">Nome</Label>
+                        <Input
+                          id="oficial-name"
+                          defaultValue="Silva"
+                          placeholder="Nome do militar"
+                        />
+                      </div>
+                      <Button className="w-full">
+                        Salvar Oficial do Dia
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Contramestre de Pernoite */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <span className="text-green-400">🛡️</span>
+                      Contramestre de Pernoite
+                    </h3>
+                    <div className="space-y-3">
+                      <div>
+                        <Label htmlFor="contramestre-rank">Patente</Label>
+                        <Select defaultValue="1SG">
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="SO">SO</SelectItem>
+                            <SelectItem value="1SG">1SG</SelectItem>
+                            <SelectItem value="2SG">2SG</SelectItem>
+                            <SelectItem value="3SG">3SG</SelectItem>
+                            <SelectItem value="CB">CB</SelectItem>
+                            <SelectItem value="MN">MN</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="contramestre-name">Nome</Label>
+                        <Input
+                          id="contramestre-name"
+                          defaultValue="Santos"
+                          placeholder="Nome do militar"
+                        />
+                      </div>
+                      <Button className="w-full">
+                        Salvar Contramestre
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Informações sobre patentes */}
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <h4 className="font-medium mb-2 text-blue-800">📋 Informações sobre Patentes</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-700">
+                    <div>
+                      <h5 className="font-medium mb-1">Oficiais:</h5>
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>AMI - Almirante</li>
+                        <li>CF - Capitão de Fragata</li>
+                        <li>CC - Capitão de Corveta</li>
+                        <li>CT - Capitão-Tenente</li>
+                        <li>1TEN - Primeiro-Tenente</li>
+                        <li>2TEN - Segundo-Tenente</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h5 className="font-medium mb-1">Praças:</h5>
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>SO - Suboficial</li>
+                        <li>1SG - Primeiro-Sargento</li>
+                        <li>2SG - Segundo-Sargento</li>
+                        <li>3SG - Terceiro-Sargento</li>
+                        <li>CB - Cabo</li>
+                        <li>MN - Marinheiro</li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
