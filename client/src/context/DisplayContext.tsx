@@ -446,15 +446,15 @@ const deleteNotice = async (id: string): Promise<boolean> => {
       url: newDoc.url
     });
 
-    if (docData.type === "plasa") {
+    if (docData.type === "plasa" || docData.type === "bono") {
       setPlasaDocuments(prev => {
         const exists = prev.some(doc => doc.url === fullUrl || doc.url === docData.url);
         if (exists) {
-          console.log("📄 Documento PLASA já existe, ignorando:", fullUrl);
+          console.log("📄 Documento PLASA/BONO já existe, ignorando:", fullUrl);
           return prev;
         }
         
-        console.log("📄 Adicionando novo PLASA:", newDoc.title);
+        console.log(`📄 Adicionando novo ${docData.type.toUpperCase()}:`, newDoc.title);
         return [...prev, newDoc];
       });
     } else {
@@ -500,7 +500,11 @@ const deleteNotice = async (id: string): Promise<boolean> => {
 };
 
   // Computed values com alternância automática para escalas
-  const activePlasaDoc = plasaDocuments.find(doc => doc.active) || null;
+  // Para PLASA/BONO: pegar todos os documentos ativos e alternar entre eles
+  const activePlasaDocuments = plasaDocuments.filter(doc => doc.active);
+  const activePlasaDoc = activePlasaDocuments.length > 0 
+    ? activePlasaDocuments[0] // Por enquanto, use apenas o primeiro ativo
+    : null;
   
   const activeEscalaDocuments = escalaDocuments.filter(doc => doc.active);
   const activeEscalaDoc = activeEscalaDocuments.length > 0 
