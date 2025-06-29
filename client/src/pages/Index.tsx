@@ -128,17 +128,18 @@ const Index = () => {
     return () => clearInterval(clockInterval);
   }, []);
 
-  console.log("🏠 Index: Renderizando página principal", {
-    activePlasa: activePlasaDoc?.title || 'nenhum',
-    activeEscala: activeEscalaDoc?.title || 'nenhum',
-    scrollSpeed,
-    autoRestartDelay
-  });
+  // Log apenas quando há mudanças significativas
+  useEffect(() => {
+    console.log("🏠 Index: Documentos carregados", {
+      activePlasa: activePlasaDoc?.title || 'nenhum',
+      activeEscala: activeEscalaDoc?.title || 'nenhum'
+    });
+  }, [activePlasaDoc?.id, activeEscalaDoc?.id]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-950 flex flex-col p-2 sm:p-3 lg:p-4">
-      {/* Header Responsivo */}
-      <header className="relative flex flex-col lg:flex-row items-center justify-between mb-4 p-4 bg-gradient-to-r from-slate-800/80 to-blue-900/80 backdrop-blur-xl rounded-xl lg:rounded-2xl shadow-2xl border border-blue-400/30">
+      {/* Header Responsivo - Compacto */}
+      <header className="relative flex flex-col lg:flex-row items-center justify-between mb-3 p-3 bg-gradient-to-r from-slate-800/80 to-blue-900/80 backdrop-blur-xl rounded-lg shadow-2xl border border-blue-400/30">
         {/* Logo e título */}
         <div className="flex items-center space-x-4 mb-3 lg:mb-0">
           <div className="relative">
@@ -156,14 +157,18 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Informações dos Oficiais */}
-        <div className="flex flex-col sm:flex-row items-center gap-4 mb-3 lg:mb-0">
-          <div className="text-center sm:text-left">
-            <div className="text-blue-200 text-xs font-medium">
-              👨‍✈️ {officialDuty}
-            </div>
-            <div className="text-blue-200 text-xs font-medium mt-1">
-              🛡️ {quartermasterNight}
+        {/* Informações dos Oficiais - Melhor estilização */}
+        <div className="flex flex-col xl:flex-row items-center gap-3 mb-3 lg:mb-0">
+          <div className="bg-slate-900/40 backdrop-blur-sm rounded-lg px-4 py-2 border border-blue-400/20 shadow-inner">
+            <div className="text-center xl:text-left space-y-1">
+              <div className="text-blue-100 text-xs font-semibold flex items-center justify-center xl:justify-start gap-2">
+                <span className="text-yellow-400">👨‍✈️</span>
+                <span>1TEN Silva</span>
+              </div>
+              <div className="text-blue-100 text-xs font-semibold flex items-center justify-center xl:justify-start gap-2">
+                <span className="text-green-400">🛡️</span>
+                <span>1SG Santos</span>
+              </div>
             </div>
           </div>
           

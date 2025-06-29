@@ -113,6 +113,13 @@ The Navy Display System (Sistema de Visualização da Marinha do Brasil) is a co
 
 Changelog:
 - June 29, 2025. Initial setup
+- June 29, 2025. Migration completed from Replit Agent to Replit environment
+  - Fixed BONO document management (edit/delete options working properly)  
+  - Removed duplicate CARDÁPIO section from DEBUG tab
+  - Added officer information to main header (Oficial do Dia and Contramestre de Pernoite)
+  - Added temperature display in header with fallback to estimated temperature
+  - Enhanced header layout for better responsiveness
+  - All core functionality tested and working properly
 
 ## User Preferences
 
