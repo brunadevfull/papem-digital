@@ -1,7 +1,7 @@
 import express, { type Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertNoticeSchema, insertDocumentSchema } from "@shared/schema";
+import { insertNoticeSchema, insertDocumentSchema, insertDutyOfficerSchema } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
@@ -936,6 +936,101 @@ const upload = multer({
     } catch (error) {
       console.error('Proxy error:', error);
       res.status(500).json({ error: 'Proxy request failed' });
+    }
+  });
+
+  // ===== DUTY OFFICERS ROUTES =====
+  
+  // GET all duty officers
+  app.get('/api/duty-officers', async (req, res) => {
+    try {
+      console.log('🪖 GET /api/duty-officers - Buscando militares de serviço...');
+      const officers = await storage.getDutyOfficers();
+      console.log(`✅ Encontrados ${officers.length} militares de serviço`);
+      res.json(officers);
+    } catch (error) {
+      console.error('❌ Erro ao buscar militares de serviço:', error);
+      res.status(500).json({ 
+        error: 'Failed to get duty officers',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // POST create duty officer
+  app.post('/api/duty-officers', async (req, res) => {
+    try {
+      console.log('🪖 POST /api/duty-officers - Criando militar de serviço...');
+      const validatedData = insertDutyOfficerSchema.parse(req.body);
+      const officer = await storage.createDutyOfficer(validatedData);
+      console.log('✅ Militar de serviço criado:', officer);
+      res.json(officer);
+    } catch (error) {
+      console.error('❌ Erro ao criar militar de serviço:', error);
+      res.status(500).json({ 
+        error: 'Failed to create duty officer',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // PUT update duty officer
+  app.put('/api/duty-officers/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      console.log(`🪖 PUT /api/duty-officers/${id} - Atualizando militar de serviço...`);
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ error: 'Invalid officer ID' });
+      }
+
+      const existingOfficer = await storage.getDutyOfficer(id);
+      if (!existingOfficer) {
+        return res.status(404).json({ error: 'Duty officer not found' });
+      }
+
+      const updateData = req.body;
+      const updatedOfficer = await storage.updateDutyOfficer({ 
+        ...existingOfficer, 
+        ...updateData,
+        id: id
+      });
+      
+      console.log('✅ Militar de serviço atualizado:', updatedOfficer);
+      res.json(updatedOfficer);
+    } catch (error) {
+      console.error(`❌ Erro ao atualizar militar de serviço ${req.params.id}:`, error);
+      res.status(500).json({ 
+        error: 'Failed to update duty officer',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // DELETE duty officer
+  app.delete('/api/duty-officers/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      console.log(`🪖 DELETE /api/duty-officers/${id} - Deletando militar de serviço...`);
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ error: 'Invalid officer ID' });
+      }
+      
+      const deleted = await storage.deleteDutyOfficer(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ error: 'Duty officer not found' });
+      }
+      
+      console.log(`✅ Militar de serviço ${id} deletado com sucesso`);
+      res.json({ success: true, message: 'Duty officer deleted successfully' });
+    } catch (error) {
+      console.error(`❌ Erro ao deletar militar de serviço ${req.params.id}:`, error);
+      res.status(500).json({ 
+        error: 'Failed to delete duty officer',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 
