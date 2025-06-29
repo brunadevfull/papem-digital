@@ -1316,6 +1316,65 @@ const upload = multer({
     }
   });
 
+  // 📊 ENDPOINT - Buscar dados extraídos por filename (para integração na página principal)
+  app.get('/api/extracted-data-by-filename/:filename', async (req, res) => {
+    try {
+      const { filename } = req.params;
+      console.log(`📊 GET /api/extracted-data-by-filename/${filename} - Buscando dados extraídos por filename...`);
+
+      if (!filename) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'Filename is required' 
+        });
+      }
+
+      // Tentar encontrar o arquivo cache baseado no filename
+      const cacheDir = path.join(process.cwd(), 'uploads', 'extracted-data');
+      
+      // Buscar arquivos cache que correspondem ao filename
+      try {
+        const cacheFiles = await readdir(cacheDir);
+        const matchingCache = cacheFiles.find(file => file.includes(filename.replace('.pdf', '')));
+        
+        if (matchingCache) {
+          const cacheFile = path.join(cacheDir, matchingCache);
+          const extractedData = JSON.parse(await readFile(cacheFile, 'utf-8'));
+          
+          console.log(`✅ Dados extraídos encontrados para ${filename}: ${extractedData.data?.militares?.length || 0} militares`);
+          
+          res.json({
+            success: true,
+            extractedData: extractedData,
+            filename: filename,
+            cacheFile: matchingCache
+          });
+        } else {
+          res.status(404).json({ 
+            success: false,
+            error: 'No extracted data found for this filename',
+            filename: filename,
+            message: 'Extract data first using the admin panel'
+          });
+        }
+
+      } catch (dirError) {
+        res.status(404).json({ 
+          success: false,
+          error: 'No extracted data cache directory found',
+          filename: filename
+        });
+      }
+
+    } catch (error) {
+      console.error(`❌ Erro ao buscar dados extraídos por filename ${req.params.filename}:`, error);
+      res.status(500).json({ 
+        success: false,
+        error: 'SERVER_ERROR: Failed to get extracted data by filename'
+      });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

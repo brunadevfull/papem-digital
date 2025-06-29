@@ -1,0 +1,420 @@
+[vite] connecting... client:495:9
+[vite] connected. client:618:15
+Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools chunk-WERSD76P.js:21551:25
+🔧 Admin carregado, avisos serão carregados do servidor Admin.tsx:271:13
+📋 Nenhuma escala ativa DisplayContext.tsx:391:15
+🚀 Inicializando DisplayContext... DisplayContext.tsx:490:15
+📥 Dados encontrados no localStorage DisplayContext.tsx:496:21
+🌐 DisplayContext Backend URL (Local): localhost:5000 DisplayContext.tsx:63:15
+✅ 1 documentos PLASA carregados DisplayContext.tsx:508:25
+🌐 DisplayContext Backend URL (Local): localhost:5000 3 DisplayContext.tsx:63:15
+✅ 3 documentos Escala carregados DisplayContext.tsx:522:25
+📢 Carregando avisos do servidor... DisplayContext.tsx:110:15
+🌐 DisplayContext Backend URL (Local): localhost:5000 DisplayContext.tsx:63:15
+📢 URL do backend: http://localhost:5000/api/notices DisplayContext.tsx:113:15
+📢 Resposta do servidor: 200 OK Admin.tsx:212:15
+📢 Resposta do servidor: 200 OK DisplayContext.tsx:121:15
+🔄 Configurando alternância entre 3 escalas a cada 30s DisplayContext.tsx:379:15
+📢 Resposta do servidor: 200 OK Admin.tsx:212:15
+📢 Dados recebidos: 
+Object { success: true, notices: (1) […], count: 1, timestamp: "2025-06-29T04:23:08.828Z" }
+DisplayContext.tsx:124:17
+📢 1 avisos carregados do servidor DisplayContext.tsx:127:19
+📢 Resposta do servidor: 200 OK Admin.tsx:212:15
+🔄 Carregando documentos do servidor... DisplayContext.tsx:458:15
+🌐 DisplayContext Backend URL (Local): localhost:5000 DisplayContext.tsx:63:15
+📄 Documentos do servidor: 4 DisplayContext.tsx:462:17
+🌐 DisplayContext Backend URL (Local): localhost:5000 DisplayContext.tsx:63:15
+📁 Auto-adicionando documento do servidor: Escala - 29/06/2025 DisplayContext.tsx:478:23
+📄 Adicionando documento: 
+Object { id: "1751170989937-x7dvf5pz3", title: "Escala - 29/06/2025", type: "escala", category: undefined, url: "http://localhost:5000/uploads/document-1751160534107-925816074-cardA_pio_rede_16jun.pdf" }
+DisplayContext.tsx:318:13
+📋 Documento Escala já existe, ignorando: http://localhost:5000/uploads/document-1751160534107-925816074-cardA_pio_rede_16jun.pdf DisplayContext.tsx:339:19
+🌐 DisplayContext Backend URL (Local): localhost:5000 DisplayContext.tsx:63:15
+📁 Auto-adicionando documento do servidor: Escala - 29/06/2025 DisplayContext.tsx:478:23
+📄 Adicionando documento: 
+Object { id: "1751170989938-ehwn1zj6f", title: "Escala - 29/06/2025", type: "escala", category: undefined, url: "http://localhost:5000/uploads/document-1751160684680-949254193-tulo.png" }
+DisplayContext.tsx:318:13
+📋 Documento Escala já existe, ignorando: http://localhost:5000/uploads/document-1751160684680-949254193-tulo.png DisplayContext.tsx:339:19
+🌐 DisplayContext Backend URL (Local): localhost:5000 DisplayContext.tsx:63:15
+📁 Auto-adicionando documento do servidor: Escala - 29/06/2025 DisplayContext.tsx:478:23
+📄 Adicionando documento: 
+Object { id: "1751170989938-1cozs3a2p", title: "Escala - 29/06/2025", type: "escala", category: undefined, url: "http://localhost:5000/uploads/document-1751160715087-552706906-17---05MAI-A-11MAI2025.pdf-print.pdf" }
+DisplayContext.tsx:318:13
+📋 Documento Escala já existe, ignorando: http://localhost:5000/uploads/document-1751160715087-552706906-17---05MAI-A-11MAI2025.pdf-print.pdf DisplayContext.tsx:339:19
+🌐 DisplayContext Backend URL (Local): localhost:5000 DisplayContext.tsx:63:15
+📁 Auto-adicionando documento do servidor: PLASA - 29/06/2025 DisplayContext.tsx:478:23
+📄 Adicionando documento: 
+Object { id: "1751170989938-ukd3aigfa", title: "PLASA - 29/06/2025", type: "plasa", category: undefined, url: "http://localhost:5000/uploads/document-1751160509489-511276131-PLASA_16_0.pdf" }
+DisplayContext.tsx:318:13
+📄 Documento PLASA/BONO já existe, ignorando: http://localhost:5000/uploads/document-1751160509489-511276131-PLASA_16_0.pdf DisplayContext.tsx:329:19
+✅ DisplayContext inicializado DisplayContext.tsx:556:19
+✅ Arquivo document-1751160684680-949254193-tulo.png removido do servidor: 
+Object { success: true, message: "Arquivo deletado com sucesso!", filename: "document-1751160684680-949254193-tulo.png" }
+Admin.tsx:562:21
+🗑️ Removendo do estado: 1751169255353-vm9oekfj9 DisplayContext.tsx:365:13
+🔄 Configurando alternância entre 2 escalas a cada 30s DisplayContext.tsx:379:15
+📊 Estado do DisplayContext: 
+Object { plasaTotal: 1, plasaAtivos: 1, escalaTotal: 2, escalaAtivos: 2, currentEscalaIndex: 0, activePlasa: "PLASA - 29/06/2025", activeEscala: "Escala - 29/06/2025", activeEscalaCategory: "sem categoria", noticesTotal: 1, noticesAtivos: 1, … }
+DisplayContext.tsx:402:15
+💾 Contexto salvo no localStorage (sem avisos): 
+Object { plasa: 1, escala: 2, escalaIndex: 0 }
+DisplayContext.tsx:441:15
+📢 Resposta do servidor: 200 OK Admin.tsx:212:15
+✅ Arquivo document-1751160534107-925816074-cardA_pio_rede_16jun.pdf removido do servidor: 
+Object { success: true, message: "Arquivo deletado com sucesso!", filename: "document-1751160534107-925816074-cardA_pio_rede_16jun.pdf" }
+Admin.tsx:562:21
+🗑️ Removendo do estado: 1751169255353-0xjt5lcq4 DisplayContext.tsx:365:13
+📋 Apenas uma escala ativa, sem alternância DisplayContext.tsx:389:15
+📊 Estado do DisplayContext: 
+Object { plasaTotal: 1, plasaAtivos: 1, escalaTotal: 1, escalaAtivos: 1, currentEscalaIndex: 0, activePlasa: "PLASA - 29/06/2025", activeEscala: "Escala - 29/06/2025", activeEscalaCategory: "sem categoria", noticesTotal: 1, noticesAtivos: 1, … }
+DisplayContext.tsx:402:15
+💾 Contexto salvo no localStorage (sem avisos): 
+Object { plasa: 1, escala: 1, escalaIndex: 0 }
+DisplayContext.tsx:441:15
+📢 Resposta do servidor: 200 OK Admin.tsx:212:15
+✅ Arquivo document-1751160715087-552706906-17---05MAI-A-11MAI2025.pdf-print.pdf removido do servidor: 
+Object { success: true, message: "Arquivo deletado com sucesso!", filename: "document-1751160715087-552706906-17---05MAI-A-11MAI2025.pdf-print.pdf" }
+Admin.tsx:562:21
+🗑️ Removendo do estado: 1751169255354-jvquy71lz DisplayContext.tsx:365:13
+📋 Nenhuma escala ativa DisplayContext.tsx:391:15
+📊 Estado do DisplayContext: 
+Object { plasaTotal: 1, plasaAtivos: 1, escalaTotal: 0, escalaAtivos: 0, currentEscalaIndex: 0, activePlasa: "PLASA - 29/06/2025", activeEscala: "nenhum", activeEscalaCategory: "sem categoria", noticesTotal: 1, noticesAtivos: 1, … }
+DisplayContext.tsx:402:15
+💾 Contexto salvo no localStorage (sem avisos): 
+Object { plasa: 1, escala: 0, escalaIndex: 0 }
+DisplayContext.tsx:441:15
+📢 Resposta do servidor: 200 OK Admin.tsx:212:15
+📁 Arquivo selecionado: 
+Object { name: "21 - 02JUN a 08JUN2025.pdf", size: 62481, type: "application/pdf", lastModified: Date Tue Jun 03 2025 09:55:08 GMT-0300 (Horário Padrão de Brasília) }
+Admin.tsx:326:15
+✅ Arquivo aceito: application/pdf Admin.tsx:349:15
+📄 Arquivo preparado para upload: 
+Object { name: "21 - 02JUN a 08JUN2025.pdf", size: "0.06 MB", type: "application/pdf", previewUrl: "blob:http://localhost:5000/d17afc86-a992-4270-964d-9a76ac8677b0" }
+Admin.tsx:360:15
+📤 Iniciando upload do arquivo: 21 - 02JUN a 08JUN2025.pdf Admin.tsx:399:17
+📤 Enviando para: http://localhost:5000/api/upload-pdf Admin.tsx:421:17
+✅ Upload realizado com sucesso: 
+Object { success: true, data: {…} }
+Admin.tsx:433:17
+📄 Adicionando documento ao contexto: 
+Object { title: "21 - 02JUN a 08JUN2025", url: "http://localhost:5000/uploads/document-1751171011727-112249382-21_-_02JUN_a_08JUN2025.pdf", type: "escala", category: "praca" }
+Admin.tsx:438:17
+📄 Adicionando documento: 
+Object { id: "1751171011751-uwutfnwex", title: "21 - 02JUN a 08JUN2025", type: "escala", category: "praca", url: "http://localhost:5000/uploads/document-1751171011727-112249382-21_-_02JUN_a_08JUN2025.pdf" }
+DisplayContext.tsx:318:13
+📋 Adicionando nova Escala: 21 - 02JUN a 08JUN2025 Categoria: praca DisplayContext.tsx:342:17
+📋 Apenas uma escala ativa, sem alternância DisplayContext.tsx:389:15
+📊 Estado do DisplayContext: 
+Object { plasaTotal: 1, plasaAtivos: 1, escalaTotal: 1, escalaAtivos: 1, currentEscalaIndex: 0, activePlasa: "PLASA - 29/06/2025", activeEscala: "21 - 02JUN a 08JUN2025", activeEscalaCategory: "praca", noticesTotal: 1, noticesAtivos: 1, … }
+DisplayContext.tsx:402:15
+💾 Contexto salvo no localStorage (sem avisos): 
+Object { plasa: 1, escala: 1, escalaIndex: 0 }
+DisplayContext.tsx:441:15
+📢 Resposta do servidor: 200 OK Admin.tsx:212:15
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:23:34.173Z" }
+NoticeDisplay.tsx:56:17
+🔄 PLASA Effect triggered: 
+Object { isScrolling: false, activePlasaDoc: "1751169255354-rc9edsp08", url: "http://localhost:5000/uploads/document-1751160509489-511276131-PLASA_16_0.pdf" }
+PDFViewer.tsx:512:15
+🎯 PLASA: Processando documento: http://localhost:5000/uploads/document-1751160509489-511276131-PLASA_16_0.pdf PDFViewer.tsx:533:15
+📄 PLASA: Documento é um PDF, convertendo para imagens PDFViewer.tsx:540:17
+🎯 INICIANDO CONVERSÃO PDF: http://localhost:5000/uploads/document-1751160509489-511276131-PLASA_16_0.pdf PDFViewer.tsx:305:15
+📚 Carregando PDF.js... PDFViewer.tsx:188:13
+📢 NoticeDisplay - Estado dos avisos: 
+Object { totalNotices: 1, activeNotices: 1, currentIndex: 0, avisos: (1) […] }
+NoticeDisplay.tsx:72:13
+🌅 Timer configurado para atualizar pôr do sol em 1356 minutos sunsetUtils.ts:67:11
+🌅 Buscando horário do pôr do sol via API: https://api.sunrise-sunset.org/json?lat=-22.9068&lng=-43.1729&date=2025-06-29&formatted=0 sunsetUtils.ts:13:13
+🏠 Index: Documentos carregados 
+Object { activePlasa: "PLASA - 29/06/2025", activeEscala: "21 - 02JUN a 08JUN2025" }
+Index.tsx:165:13
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:23:34.188Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:23:34.295Z" }
+NoticeDisplay.tsx:56:17
+✅ PDF.js carregado com sucesso PDFViewer.tsx:195:17
+📥 Obtendo dados do PDF: http://localhost:5000/uploads/document-1751160509489-511276131-PLASA_16_0.pdf PDFViewer.tsx:206:13
+✅ PDF carregado: 1068900 bytes PDFViewer.tsx:228:17
+✅ PDF válido detectado, iniciando processamento... PDFViewer.tsx:323:15
+📄 PDF carregado com sucesso: 8 páginas PDFViewer.tsx:338:15
+💾 Usando 8 páginas já salvas no servidor PDFViewer.tsx:292:19
+💾 Usando 8 páginas já convertidas PDFViewer.tsx:343:17
+✅ Página 1 carregada com sucesso PDFViewer.tsx:750:27
+✅ Página 2 carregada com sucesso PDFViewer.tsx:750:27
+✅ Página 3 carregada com sucesso PDFViewer.tsx:750:27
+✅ Página 4 carregada com sucesso PDFViewer.tsx:750:27
+✅ Página 5 carregada com sucesso PDFViewer.tsx:750:27
+✅ Página 6 carregada com sucesso PDFViewer.tsx:750:27
+✅ Página 7 carregada com sucesso PDFViewer.tsx:750:27
+✅ Página 8 carregada com sucesso PDFViewer.tsx:750:27
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:23:34.477Z" }
+NoticeDisplay.tsx:56:17
+✅ Pôr do sol UTC: 2025-06-29T20:19:49+00:00 sunsetUtils.ts:25:15
+✅ Pôr do sol Brasil: 17:20 sunsetUtils.ts:26:15
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:23:34.523Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:23:35.179Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:23:36.179Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:23:37.180Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:23:38.180Z" }
+NoticeDisplay.tsx:56:17
+📜 PLASA: Iniciando scroll - Total: 12604px, Visível: 763px, Para rolar: 11841px PDFViewer.tsx:55:13
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:23:39.201Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:23:40.206Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:23:41.208Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:23:42.223Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:23:43.221Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:23:44.234Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:23:45.250Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:23:46.260Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:23:46.674Z" }
+NoticeDisplay.tsx:56:17
+🔧 Admin carregado, avisos serão carregados do servidor Admin.tsx:271:13
+📢 Resposta do servidor: 200 OK Admin.tsx:212:15
+✅ Arquivo document-1751171011727-112249382-21_-_02JUN_a_08JUN2025.pdf removido do servidor: 
+Object { success: true, message: "Arquivo deletado com sucesso!", filename: "document-1751171011727-112249382-21_-_02JUN_a_08JUN2025.pdf" }
+Admin.tsx:562:21
+🗑️ Removendo do estado: 1751171011751-uwutfnwex DisplayContext.tsx:365:13
+📋 Nenhuma escala ativa DisplayContext.tsx:391:15
+📊 Estado do DisplayContext: 
+Object { plasaTotal: 1, plasaAtivos: 1, escalaTotal: 0, escalaAtivos: 0, currentEscalaIndex: 0, activePlasa: "PLASA - 29/06/2025", activeEscala: "nenhum", activeEscalaCategory: "sem categoria", noticesTotal: 1, noticesAtivos: 1, … }
+DisplayContext.tsx:402:15
+💾 Contexto salvo no localStorage (sem avisos): 
+Object { plasa: 1, escala: 0, escalaIndex: 0 }
+DisplayContext.tsx:441:15
+📢 Resposta do servidor: 200 OK Admin.tsx:212:15
+📁 Arquivo selecionado: 
+Object { name: "21 - 02JUN a 08JUN2025.pdf", size: 62481, type: "application/pdf", lastModified: Date Tue Jun 03 2025 09:55:08 GMT-0300 (Horário Padrão de Brasília) }
+Admin.tsx:326:15
+✅ Arquivo aceito: application/pdf Admin.tsx:349:15
+📄 Arquivo preparado para upload: 
+Object { name: "21 - 02JUN a 08JUN2025.pdf", size: "0.06 MB", type: "application/pdf", previewUrl: "blob:http://localhost:5000/14943c2a-425c-4d22-bb74-4d41885881f0" }
+Admin.tsx:360:15
+📤 Iniciando upload do arquivo: 21 - 02JUN a 08JUN2025.pdf Admin.tsx:399:17
+📤 Enviando para: http://localhost:5000/api/upload-pdf Admin.tsx:421:17
+✅ Upload realizado com sucesso: 
+Object { success: true, data: {…} }
+Admin.tsx:433:17
+📄 Adicionando documento ao contexto: 
+Object { title: "21 - 02JUN a 08JUN2025", url: "http://localhost:5000/uploads/document-1751171039575-950719660-21_-_02JUN_a_08JUN2025.pdf", type: "escala", category: "praca" }
+Admin.tsx:438:17
+📄 Adicionando documento: 
+Object { id: "1751171039616-bgavnndnh", title: "21 - 02JUN a 08JUN2025", type: "escala", category: "praca", url: "http://localhost:5000/uploads/document-1751171039575-950719660-21_-_02JUN_a_08JUN2025.pdf" }
+DisplayContext.tsx:318:13
+📋 Adicionando nova Escala: 21 - 02JUN a 08JUN2025 Categoria: praca DisplayContext.tsx:342:17
+📋 Apenas uma escala ativa, sem alternância DisplayContext.tsx:389:15
+📊 Estado do DisplayContext: 
+Object { plasaTotal: 1, plasaAtivos: 1, escalaTotal: 1, escalaAtivos: 1, currentEscalaIndex: 0, activePlasa: "PLASA - 29/06/2025", activeEscala: "21 - 02JUN a 08JUN2025", activeEscalaCategory: "praca", noticesTotal: 1, noticesAtivos: 1, … }
+DisplayContext.tsx:402:15
+💾 Contexto salvo no localStorage (sem avisos): 
+Object { plasa: 1, escala: 1, escalaIndex: 0 }
+DisplayContext.tsx:441:15
+📢 Resposta do servidor: 200 OK Admin.tsx:212:15
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:01.261Z" }
+NoticeDisplay.tsx:56:17
+🔄 PLASA Effect triggered: 
+Object { isScrolling: false, activePlasaDoc: "1751169255354-rc9edsp08", url: "http://localhost:5000/uploads/document-1751160509489-511276131-PLASA_16_0.pdf" }
+PDFViewer.tsx:512:15
+🎯 PLASA: Processando documento: http://localhost:5000/uploads/document-1751160509489-511276131-PLASA_16_0.pdf PDFViewer.tsx:533:15
+📄 PLASA: Documento é um PDF, convertendo para imagens PDFViewer.tsx:540:17
+🎯 INICIANDO CONVERSÃO PDF: http://localhost:5000/uploads/document-1751160509489-511276131-PLASA_16_0.pdf PDFViewer.tsx:305:15
+📢 NoticeDisplay - Estado dos avisos: 
+Object { totalNotices: 1, activeNotices: 1, currentIndex: 0, avisos: (1) […] }
+NoticeDisplay.tsx:72:13
+🏠 Index: Documentos carregados 
+Object { activePlasa: "PLASA - 29/06/2025", activeEscala: "21 - 02JUN a 08JUN2025" }
+Index.tsx:165:13
+📥 Obtendo dados do PDF: http://localhost:5000/uploads/document-1751160509489-511276131-PLASA_16_0.pdf PDFViewer.tsx:206:13
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:01.266Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:01.276Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:01.377Z" }
+NoticeDisplay.tsx:56:17
+✅ PDF carregado: 1068900 bytes PDFViewer.tsx:228:17
+✅ PDF válido detectado, iniciando processamento... PDFViewer.tsx:323:15
+📄 PDF carregado com sucesso: 8 páginas PDFViewer.tsx:338:15
+💾 Usando 8 páginas já salvas no servidor PDFViewer.tsx:292:19
+💾 Usando 8 páginas já convertidas PDFViewer.tsx:343:17
+✅ Página 1 carregada com sucesso PDFViewer.tsx:750:27
+✅ Página 2 carregada com sucesso PDFViewer.tsx:750:27
+✅ Página 3 carregada com sucesso PDFViewer.tsx:750:27
+✅ Página 4 carregada com sucesso PDFViewer.tsx:750:27
+✅ Página 5 carregada com sucesso PDFViewer.tsx:750:27
+✅ Página 6 carregada com sucesso PDFViewer.tsx:750:27
+✅ Página 7 carregada com sucesso PDFViewer.tsx:750:27
+✅ Página 8 carregada com sucesso PDFViewer.tsx:750:27
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:01.528Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:02.267Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:03.269Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:04.317Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:05.316Z" }
+NoticeDisplay.tsx:56:17
+📜 PLASA: Iniciando scroll - Total: 12604px, Visível: 763px, Para rolar: 11841px PDFViewer.tsx:55:13
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:06.322Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:07.335Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:08.335Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:09.371Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:10.376Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:11.376Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:12.380Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:13.382Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:14.401Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:15.447Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:16.449Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:17.471Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:18.473Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:19.497Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:20.500Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:21.501Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:22.513Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:23.514Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:24.514Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:25.529Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:27.241Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:28.244Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:29.243Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:30.246Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:31.246Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:32.247Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:33.247Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:34.249Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:35.250Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:36.251Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:37.287Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:38.288Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:39.292Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:40.296Z" }
+NoticeDisplay.tsx:56:17
+📢 Verificando aviso "Teste Arquivo": 
+Object { active: true, inPeriod: true, startDate: "2025-06-29T00:00:00.000Z", endDate: "2025-06-30T00:00:00.000Z", now: "2025-06-29T04:24:40.535Z" }
+NoticeDisplay.tsx:56:17
+🔧 Admin carregado, avisos serão carregados do servidor Admin.tsx:271:13
+📢 Resposta do servidor: 200 OK Admin.tsx:212:15
+XHRPOST
+http://localhost:5000/api/extract-pdf-data/NaN
+[HTTP/1.1 400 Bad Request 56ms]
+
+	
+POST
+	http://localhost:5000/api/extract-pdf-data/NaN
+Status
+400
+Bad Request
+VersãoHTTP/1.1
+Transferido776 B (tamanho 65 B)
+Referrer Policystrict-origin-when-cross-origin
+Prioridade da requisiçãoHighest
+Resolução de DNSSistema
+
+📢 Resposta do servidor: 200 OK Admin.tsx:212:15

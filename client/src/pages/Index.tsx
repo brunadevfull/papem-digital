@@ -127,7 +127,7 @@ const Index = () => {
   }, []);
 
   // Função para carregar dados extraídos da escala
-  const fetchEscalaExtractedData = async (documentId: number) => {
+  const fetchEscalaExtractedData = async (filename: string) => {
     try {
       const getBackendUrl = (path: string) => {
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
@@ -136,28 +136,45 @@ const Index = () => {
         return `http://${window.location.hostname}:5000${path}`;
       };
 
-      const response = await fetch(getBackendUrl(`/api/extracted-data/${documentId}`));
+      console.log('🔍 Buscando dados extraídos para arquivo:', filename);
+      const response = await fetch(getBackendUrl(`/api/extracted-data-by-filename/${filename}`));
+      
       if (response.ok) {
         const result = await response.json();
         if (result.success && result.extractedData) {
-          console.log('📊 Dados extraídos carregados para escala:', documentId);
+          console.log('📊 Dados extraídos carregados para arquivo:', filename, '- Militares:', result.extractedData.data?.militares?.length || 0);
           setEscalaExtractedData(result.extractedData);
+        } else {
+          console.log('⚠️ Nenhum dado extraído encontrado para arquivo:', filename);
+          setEscalaExtractedData(null);
         }
+      } else {
+        console.log('⚠️ Dados extraídos não encontrados para arquivo:', filename);
+        setEscalaExtractedData(null);
       }
     } catch (error) {
-      console.log('⚠️ Dados extraídos não encontrados para escala:', documentId);
+      console.log('❌ Erro ao buscar dados extraídos para arquivo:', filename, error);
       setEscalaExtractedData(null);
     }
   };
 
   // Carregar dados extraídos quando escala ativa mudar
   useEffect(() => {
-    if (activeEscalaDoc?.id) {
-      fetchEscalaExtractedData(Number(activeEscalaDoc.id));
+    if (activeEscalaDoc?.url) {
+      console.log('🔍 Tentando buscar dados extraídos para escala:', activeEscalaDoc.title, 'URL:', activeEscalaDoc.url);
+      
+      // Extrair filename da URL do documento
+      const filename = activeEscalaDoc.url.split('/').pop();
+      if (filename) {
+        fetchEscalaExtractedData(filename);
+      } else {
+        console.log('❌ Não foi possível extrair filename da URL:', activeEscalaDoc.url);
+        setEscalaExtractedData(null);
+      }
     } else {
       setEscalaExtractedData(null);
     }
-  }, [activeEscalaDoc?.id]);
+  }, [activeEscalaDoc?.url]);
 
   // Atualizar horário e data em tempo real
   useEffect(() => {
