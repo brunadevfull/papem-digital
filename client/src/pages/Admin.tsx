@@ -68,6 +68,39 @@ const Admin: React.FC = () => {
   
   const { toast } = useToast();
   
+  // Estado para militares de serviço
+  const [currentOfficers, setCurrentOfficers] = useState<{
+    oficialDia: { rank: string; name: string; } | null;
+    contramestre: { rank: string; name: string; } | null;
+  }>({
+    oficialDia: null,
+    contramestre: null
+  });
+
+  // Função para carregar dados dos militares
+  const loadOfficers = async () => {
+    try {
+      const response = await fetch('/api/duty-officers');
+      if (response.ok) {
+        const officers = await response.json();
+        const oficialDia = officers.find((o: any) => o.role === 'oficial_dia');
+        const contramestre = officers.find((o: any) => o.role === 'contramestre_pernoite');
+        
+        setCurrentOfficers({
+          oficialDia: oficialDia ? { rank: oficialDia.rank, name: oficialDia.name } : null,
+          contramestre: contramestre ? { rank: contramestre.rank, name: contramestre.name } : null
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao carregar militares:', error);
+    }
+  };
+
+  // Carregar dados dos militares na inicialização
+  useEffect(() => {
+    loadOfficers();
+  }, []);
+  
   // Form states
   const [newNotice, setNewNotice] = useState<Omit<Notice, "id" | "createdAt" | "updatedAt">>({
     title: "",
@@ -1888,7 +1921,7 @@ const removeDocument = async (id: string) => {
                     <div className="space-y-3">
                       <div>
                         <Label htmlFor="oficial-rank">Patente</Label>
-                        <Select defaultValue="1TEN">
+                        <Select defaultValue={currentOfficers.oficialDia?.rank || "1TEN"} key={currentOfficers.oficialDia?.rank}>
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
@@ -1906,7 +1939,8 @@ const removeDocument = async (id: string) => {
                         <Label htmlFor="oficial-name">Nome</Label>
                         <Input
                           id="oficial-name"
-                          defaultValue="Silva"
+                          defaultValue={currentOfficers.oficialDia?.name || "Silva"}
+                          key={currentOfficers.oficialDia?.name}
                           placeholder="Nome do militar"
                         />
                       </div>
@@ -1957,7 +1991,7 @@ const removeDocument = async (id: string) => {
                     <div className="space-y-3">
                       <div>
                         <Label htmlFor="contramestre-rank">Patente</Label>
-                        <Select defaultValue="1SG">
+                        <Select defaultValue={currentOfficers.contramestre?.rank || "1SG"} key={currentOfficers.contramestre?.rank}>
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
@@ -1975,7 +2009,8 @@ const removeDocument = async (id: string) => {
                         <Label htmlFor="contramestre-name">Nome</Label>
                         <Input
                           id="contramestre-name"
-                          defaultValue="Santos"
+                          defaultValue={currentOfficers.contramestre?.name || "Santos"}
+                          key={currentOfficers.contramestre?.name}
                           placeholder="Nome do militar"
                         />
                       </div>
