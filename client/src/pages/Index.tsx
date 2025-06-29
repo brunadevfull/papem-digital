@@ -19,6 +19,47 @@ const Index = () => {
     month: "",
     weekday: ""
   });
+  const [temperature, setTemperature] = useState<string>("--°C");
+  const [officialDuty, setOfficialDuty] = useState<string>("Oficial do Dia: Não definido");
+  const [quartermasterNight, setQuartermasterNight] = useState<string>("Contramestre de Pernoite: Não definido");
+
+  // Buscar temperatura
+  useEffect(() => {
+    const fetchTemperature = async () => {
+      try {
+        // API de temperatura para Rio de Janeiro
+        const response = await fetch(
+          'https://api.openweathermap.org/data/2.5/weather?q=Rio%20de%20Janeiro,BR&appid=your_api_key&units=metric'
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          setTemperature(`${Math.round(data.main.temp)}°C`);
+        } else {
+          // Fallback para temperatura estimada para Rio de Janeiro
+          const now = new Date();
+          const month = now.getMonth() + 1;
+          let estimatedTemp = 25; // Temperatura média para RJ
+          
+          // Ajustar por estação do ano (hemisfério sul)
+          if (month >= 12 || month <= 2) estimatedTemp = 28; // Verão
+          else if (month >= 3 && month <= 5) estimatedTemp = 25; // Outono  
+          else if (month >= 6 && month <= 8) estimatedTemp = 22; // Inverno
+          else estimatedTemp = 26; // Primavera
+          
+          setTemperature(`${estimatedTemp}°C*`);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar temperatura:', error);
+        setTemperature("25°C*");
+      }
+    };
+
+    fetchTemperature();
+    // Atualizar temperatura a cada 30 minutos
+    const tempInterval = setInterval(fetchTemperature, 30 * 60 * 1000);
+    return () => clearInterval(tempInterval);
+  }, []);
 
   // Buscar horário do pôr do sol
   useEffect(() => {
@@ -37,6 +78,22 @@ const Index = () => {
     // Atualizar a cada hora
     const interval = setInterval(fetchSunset, 60 * 60 * 1000);
     return () => clearInterval(interval);
+  }, []);
+
+  // Buscar informações dos oficiais de serviço
+  useEffect(() => {
+    const fetchOfficerInfo = async () => {
+      try {
+        // Por enquanto, usar dados padrão configuráveis
+        // TODO: Implementar API para buscar dados reais das escalas
+        setOfficialDuty("Oficial do Dia: 1TEN Silva");
+        setQuartermasterNight("Contramestre de Pernoite: 1SG Santos");
+      } catch (error) {
+        console.error('Erro ao buscar informações dos oficiais:', error);
+      }
+    };
+
+    fetchOfficerInfo();
   }, []);
 
   // Atualizar horário e data em tempo real
@@ -81,9 +138,9 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-950 flex flex-col p-2 sm:p-3 lg:p-4">
       {/* Header Responsivo */}
-      <header className="relative flex flex-col sm:flex-row items-center justify-between mb-4 p-4 bg-gradient-to-r from-slate-800/80 to-blue-900/80 backdrop-blur-xl rounded-xl lg:rounded-2xl shadow-2xl border border-blue-400/30">
+      <header className="relative flex flex-col lg:flex-row items-center justify-between mb-4 p-4 bg-gradient-to-r from-slate-800/80 to-blue-900/80 backdrop-blur-xl rounded-xl lg:rounded-2xl shadow-2xl border border-blue-400/30">
         {/* Logo e título */}
-        <div className="flex items-center space-x-4 mb-3 sm:mb-0">
+        <div className="flex items-center space-x-4 mb-3 lg:mb-0">
           <div className="relative">
             <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
               <span className="text-white font-bold text-sm sm:text-lg">⚓</span>
@@ -96,6 +153,28 @@ const Index = () => {
               PAPEM - Sistema Operacional
             </h1>
             <p className="text-blue-200/80 text-xs sm:text-sm font-medium">Sistema de Visualização de Documentos</p>
+          </div>
+        </div>
+
+        {/* Informações dos Oficiais */}
+        <div className="flex flex-col sm:flex-row items-center gap-4 mb-3 lg:mb-0">
+          <div className="text-center sm:text-left">
+            <div className="text-blue-200 text-xs font-medium">
+              👨‍✈️ {officialDuty}
+            </div>
+            <div className="text-blue-200 text-xs font-medium mt-1">
+              🛡️ {quartermasterNight}
+            </div>
+          </div>
+          
+          {/* Temperatura */}
+          <div className="bg-slate-900/60 backdrop-blur-sm rounded-lg px-3 py-2 border border-blue-400/30 shadow-inner">
+            <div className="text-blue-200 text-xs font-medium text-center">
+              Temperatura
+            </div>
+            <div className="text-white font-bold text-center text-lg">
+              🌡️ {temperature}
+            </div>
           </div>
         </div>
 
