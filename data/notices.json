@@ -1,4 +1,16 @@
 {
-  "items": [],
-  "currentId": 1
+  "items": [
+    {
+      "title": "Teste Arquivo",
+      "content": "Este é um teste de persistência em arquivo JSON",
+      "priority": "high",
+      "startDate": "2025-06-29T00:00:00.000Z",
+      "endDate": "2025-06-30T00:00:00.000Z",
+      "active": true,
+      "id": 1,
+      "createdAt": "2025-06-29T03:27:15.685Z",
+      "updatedAt": "2025-06-29T03:27:15.685Z"
+    }
+  ],
+  "currentId": 2
 }
