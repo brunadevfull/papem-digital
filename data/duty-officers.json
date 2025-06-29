@@ -11,12 +11,12 @@
     },
     {
       "id": 2,
-      "name": "Santos",
+      "name": "Oliveira",
       "role": "contramestre_pernoite",
-      "rank": "1SG",
+      "rank": "SO",
       "active": true,
       "createdAt": "2025-06-29T03:25:09.269Z",
-      "updatedAt": "2025-06-29T03:25:09.269Z"
+      "updatedAt": "2025-06-29T03:46:33.162Z"
     }
   ],
   "currentId": 3

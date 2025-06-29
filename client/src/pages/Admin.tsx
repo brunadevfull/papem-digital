@@ -1967,6 +1967,8 @@ const removeDocument = async (id: string) => {
                                 title: "Oficial do Dia atualizado",
                                 description: `${rank} ${name} salvo com sucesso.`
                               });
+                              // Recarregar dados para atualizar a interface
+                              await loadOfficers();
                             }
                           } catch (error) {
                             toast({
@@ -2037,6 +2039,8 @@ const removeDocument = async (id: string) => {
                                 title: "Contramestre atualizado",
                                 description: `${rank} ${name} salvo com sucesso.`
                               });
+                              // Recarregar dados para atualizar a interface
+                              await loadOfficers();
                             }
                           } catch (error) {
                             toast({
