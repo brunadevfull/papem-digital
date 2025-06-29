@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import PDFViewer from "@/components/PDFViewer";
+import EscalaViewer from "@/components/EscalaViewer";
 import NoticeDisplay from "@/components/NoticeDisplay";
 import { useDisplay } from "@/context/DisplayContext";
 import { getSunsetWithLabel } from "@/utils/sunsetUtils";
@@ -26,6 +27,9 @@ const Index = () => {
   // Estados para os dados dos militares individuais
   const [oficialDiaData, setOficialDiaData] = useState<{rank: string, name: string}>({rank: "...", name: "Carregando..."});
   const [contramestreData, setContramestreData] = useState<{rank: string, name: string}>({rank: "...", name: "Carregando..."});
+
+  // Estado para dados extraídos das escalas
+  const [escalaExtractedData, setEscalaExtractedData] = useState<any>(null);
 
   // Buscar temperatura
   useEffect(() => {
@@ -121,6 +125,39 @@ const Index = () => {
     const interval = setInterval(fetchOfficerInfo, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
+
+  // Função para carregar dados extraídos da escala
+  const fetchEscalaExtractedData = async (documentId: number) => {
+    try {
+      const getBackendUrl = (path: string) => {
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          return `http://localhost:5000${path}`;
+        }
+        return `http://${window.location.hostname}:5000${path}`;
+      };
+
+      const response = await fetch(getBackendUrl(`/api/extracted-data/${documentId}`));
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && result.extractedData) {
+          console.log('📊 Dados extraídos carregados para escala:', documentId);
+          setEscalaExtractedData(result.extractedData);
+        }
+      }
+    } catch (error) {
+      console.log('⚠️ Dados extraídos não encontrados para escala:', documentId);
+      setEscalaExtractedData(null);
+    }
+  };
+
+  // Carregar dados extraídos quando escala ativa mudar
+  useEffect(() => {
+    if (activeEscalaDoc?.id) {
+      fetchEscalaExtractedData(Number(activeEscalaDoc.id));
+    } else {
+      setEscalaExtractedData(null);
+    }
+  }, [activeEscalaDoc?.id]);
 
   // Atualizar horário e data em tempo real
   useEffect(() => {
@@ -282,10 +319,20 @@ const Index = () => {
           {/* Escala de Serviço */}
           <div className="h-[65%] min-h-[200px] xl:min-h-[320px]">
             <div className="h-full bg-gradient-to-br from-white/5 via-blue-900/20 to-white/5 backdrop-blur-sm rounded-xl lg:rounded-2xl border border-blue-400/25 shadow-2xl hover:border-blue-400/40 transition-all duration-500 overflow-hidden">
-              <PDFViewer
-                documentType="escala"
-                title={activeEscalaDoc?.title || "Escala de Serviço Semanal"}
-              />
+              {activeEscalaDoc ? (
+                <EscalaViewer
+                  pdfUrl={activeEscalaDoc.url}
+                  extractedData={escalaExtractedData}
+                  fileName={activeEscalaDoc.title || "Escala de Serviço Semanal"}
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full text-white/60">
+                  <div className="text-center">
+                    <h3 className="text-lg font-semibold mb-2">📋 Nenhuma Escala Ativa</h3>
+                    <p className="text-sm">Configure escalas no painel administrativo</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

@@ -151,6 +151,8 @@ Changelog:
   - **Backend API**: New endpoints `/api/extract-pdf-data/:id` and `/api/extracted-data/:id`
   - **Admin interface**: Added extraction button (🤖) for each scale with real-time processing feedback
   - **EscalaViewer component**: Advanced viewer with PDF/table toggle, statistics, and military-grade styling
+  - **Main page integration**: EscalaViewer now replaces PDFViewer on main page with automatic data loading
+  - **Automatic extraction loading**: Main page automatically loads extracted data when available for active scales
 
 ## User Preferences
 
