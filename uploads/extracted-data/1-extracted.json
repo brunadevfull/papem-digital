@@ -1,0 +1,64 @@
+{
+  "cabecalho": {
+    "escala": "SERVIÇO"
+  },
+  "turnos": {
+    "pernoite": [
+      {
+        "patente": "2SG",
+        "nome": "NIBI CB EVELYN",
+        "linha_original": "*2SG NIBI CB EVELYN *2SG NIBI CB EVELYN 1SG LEANDRO CB SODRÉ 1SG TERVAS CB ANA SOUZA",
+        "turno": "pernoite"
+      },
+      {
+        "patente": "2SG",
+        "nome": "SOUZA LIMA CB FABIO",
+        "linha_original": "*2SG SOUZA LIMA CB FABIO *2SG SOUZA LIMA CB FABIO 2SG BEIRUTH CB NAYARA 2SG COUTO CB ROGER",
+        "turno": "pernoite"
+      },
+      {
+        "patente": "2SG",
+        "nome": "MONIQUE CB DOS SANTOS",
+        "linha_original": "2SG MONIQUE CB DOS SANTOS 2SG MONIQUE CB DOS SANTOS 1SG ELIANE CB HERICK 3SG GUERRA CB ONOFRE",
+        "turno": "pernoite"
+      },
+      {
+        "patente": "2SG",
+        "nome": "DAMASCENO CB BRUNA",
+        "linha_original": "2SG DAMASCENO CB BRUNA 2SG DAMASCENO CB BRUNA 3SG TAINÁ NEVES CB ROCHA 2SG ALFENAS CB STAMPINI",
+        "turno": "pernoite"
+      },
+      {
+        "patente": "2SG",
+        "nome": "CANESCHE CB SODRÉ",
+        "linha_original": "*2SG CANESCHE CB SODRÉ *2SG CANESCHE CB SODRÉ 1SG ANTONIO CB EVELYN 3SG SOUSA DIAS CB DE OLIVEIRA",
+        "turno": "pernoite"
+      },
+      {
+        "patente": "3SG",
+        "nome": "MARCIA CB ROGER",
+        "linha_original": "3SG MARCIA CB ROGER",
+        "turno": "pernoite"
+      },
+      {
+        "patente": "3SG",
+        "nome": "JUSTINO",
+        "linha_original": "*3SG JUSTINO *CB ANA SOUZA",
+        "turno": "pernoite"
+      }
+    ],
+    "manha": [],
+    "tarde": [],
+    "diario": []
+  },
+  "observacoes": [],
+  "estatisticas": {
+    "total_militares": 7,
+    "por_turno": {
+      "pernoite": 7,
+      "manha": 0,
+      "tarde": 0,
+      "diario": 0
+    }
+  }
+}
