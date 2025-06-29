@@ -7,6 +7,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { promisify } from "util";
+import { exec } from "child_process";
 
 // Promisify fs functions for async/await
 const writeFile = promisify(fs.writeFile);
@@ -15,6 +16,7 @@ const mkdir = promisify(fs.mkdir);
 const readdir = promisify(fs.readdir);
 const unlink = promisify(fs.unlink);
 const access = promisify(fs.access);
+const execPromise = promisify(exec);
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Create uploads directory if it doesn't exist
@@ -1147,6 +1149,160 @@ const upload = multer({
       res.status(500).json({ 
         error: 'Failed to get system info',
         details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // 📄 ROTA: Extração de dados de PDF de escala
+  app.post('/api/extract-pdf-data/:documentId', async (req, res) => {
+    try {
+      const documentId = parseInt(req.params.documentId);
+      console.log(`📊 POST /api/extract-pdf-data/${documentId} - Extraindo dados do PDF...`);
+      
+      if (isNaN(documentId)) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'VALIDATION_ERROR: Invalid document ID'
+        });
+      }
+
+      // Buscar documento no storage
+      const document = await storage.getDocument(documentId);
+      if (!document) {
+        return res.status(404).json({ 
+          success: false,
+          error: 'Document not found'
+        });
+      }
+
+      // Verificar se é um PDF de escala
+      if (document.category !== 'escala') {
+        return res.status(400).json({ 
+          success: false,
+          error: 'Document is not a scale (escala) type'
+        });
+      }
+
+      // Caminho do arquivo PDF
+      const pdfPath = path.join(process.cwd(), 'uploads', document.filename);
+      
+      // Verificar se arquivo existe
+      try {
+        await access(pdfPath);
+      } catch {
+        return res.status(404).json({ 
+          success: false,
+          error: 'PDF file not found on server'
+        });
+      }
+
+      // Executar script Python para extração
+      const pythonScript = path.join(process.cwd(), 'server', 'pdf_extractor.py');
+      const command = `python3 "${pythonScript}" "${pdfPath}"`;
+      
+      console.log(`🐍 Executando extração Python: ${command}`);
+      
+      try {
+        const { stdout, stderr } = await execPromise(command);
+        
+        if (stderr) {
+          console.warn('⚠️ Python stderr:', stderr);
+        }
+
+        // Parse do resultado JSON
+        const extractedData = JSON.parse(stdout);
+        
+        if (extractedData.erro) {
+          return res.status(500).json({ 
+            success: false,
+            error: 'PDF extraction failed',
+            details: extractedData.erro
+          });
+        }
+
+        // Salvar dados extraídos em cache (opcional)
+        const cacheDir = path.join(process.cwd(), 'uploads', 'extracted-data');
+        try {
+          await mkdir(cacheDir, { recursive: true });
+          const cacheFile = path.join(cacheDir, `${documentId}-extracted.json`);
+          await writeFile(cacheFile, JSON.stringify(extractedData, null, 2));
+          console.log(`💾 Dados extraídos salvos em cache: ${cacheFile}`);
+        } catch (cacheError) {
+          console.warn('⚠️ Erro ao salvar cache:', cacheError);
+        }
+
+        console.log(`✅ Extração concluída para documento ${documentId}:`);
+        console.log(`   - Total militares: ${extractedData.estatisticas?.total_militares || 0}`);
+        console.log(`   - Turnos encontrados: ${Object.keys(extractedData.turnos || {}).length}`);
+
+        res.json({
+          success: true,
+          documentId: documentId,
+          extractedData: extractedData,
+          message: 'PDF data extracted successfully'
+        });
+
+      } catch (execError) {
+        console.error('❌ Erro na execução Python:', execError);
+        res.status(500).json({ 
+          success: false,
+          error: 'Python execution failed',
+          details: execError instanceof Error ? execError.message : 'Unknown error'
+        });
+      }
+
+    } catch (error) {
+      console.error(`❌ Erro ao extrair dados do PDF ${req.params.documentId}:`, error);
+      res.status(500).json({ 
+        success: false,
+        error: 'SERVER_ERROR: Failed to extract PDF data',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // 📄 ROTA: Obter dados extraídos em cache
+  app.get('/api/extracted-data/:documentId', async (req, res) => {
+    try {
+      const documentId = parseInt(req.params.documentId);
+      console.log(`📊 GET /api/extracted-data/${documentId} - Buscando dados extraídos...`);
+      
+      if (isNaN(documentId)) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'VALIDATION_ERROR: Invalid document ID'
+        });
+      }
+
+      const cacheFile = path.join(process.cwd(), 'uploads', 'extracted-data', `${documentId}-extracted.json`);
+      
+      try {
+        await access(cacheFile);
+        const cacheData = await readFile(cacheFile, 'utf8');
+        const extractedData = JSON.parse(cacheData);
+        
+        console.log(`✅ Dados extraídos encontrados em cache para documento ${documentId}`);
+        
+        res.json({
+          success: true,
+          documentId: documentId,
+          extractedData: extractedData,
+          cached: true
+        });
+
+      } catch {
+        res.status(404).json({ 
+          success: false,
+          error: 'No extracted data found in cache',
+          message: 'Use POST /api/extract-pdf-data/:documentId to extract data first'
+        });
+      }
+
+    } catch (error) {
+      console.error(`❌ Erro ao buscar dados extraídos ${req.params.documentId}:`, error);
+      res.status(500).json({ 
+        success: false,
+        error: 'SERVER_ERROR: Failed to get extracted data'
       });
     }
   });

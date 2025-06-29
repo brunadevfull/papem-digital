@@ -44,6 +44,7 @@ import {
   SheetTrigger 
 } from "@/components/ui/sheet";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import EscalaViewer from "@/components/EscalaViewer";
 
 const Admin: React.FC = () => {
   const { 
