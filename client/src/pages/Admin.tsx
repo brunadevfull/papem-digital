@@ -1484,11 +1484,11 @@ const removeDocument = async (id: string) => {
                     <Button 
                       variant="secondary" 
                       size="sm"
-                      onClick={() => extractEscalaData(doc.id)}
-                      disabled={extractionStates[doc.id]?.extracting}
+                      onClick={() => extractEscalaData(Number(doc.id))}
+                      disabled={extractionStates[Number(doc.id)]?.extracting}
                       title="Extrair dados da escala automaticamente"
                     >
-                      {extractionStates[doc.id]?.extracting ? "⏳" : "🤖"}
+                      {extractionStates[Number(doc.id)]?.extracting ? "⏳" : "🤖"}
                     </Button>
                     <Sheet>
                       <SheetTrigger asChild>
@@ -1504,7 +1504,7 @@ const removeDocument = async (id: string) => {
                         <div className="mt-6 h-[85vh]">
                           <EscalaViewer
                             pdfUrl={doc.url}
-                            extractedData={extractionStates[doc.id]?.extractedData}
+                            extractedData={extractionStates[Number(doc.id)]?.extractedData}
                             fileName={doc.title}
                           />
                         </div>

@@ -143,6 +143,14 @@ Changelog:
   - **Admin panel integration**: Changes in admin panel now reflect on main page
   - **Military rank display fixed**: Both ranks AND names update dynamically on main page
   - Tested: Changed "1TEN Silva" to "CC Silva" and confirmed both rank and name updated correctly
+- June 29, 2025. **Advanced PDF extraction system implemented**
+  - **Python integration**: Created automatic PDF data extraction system for military scales
+  - **Dual visualization**: Scales can now display as original PDF or extracted structured table
+  - **Smart parsing**: Automatically identifies military ranks, names, and duty shifts (pernoite, manhã, tarde, diário)
+  - **Professional styling**: Tables match official military format with rank badges and organized layout
+  - **Backend API**: New endpoints `/api/extract-pdf-data/:id` and `/api/extracted-data/:id`
+  - **Admin interface**: Added extraction button (🤖) for each scale with real-time processing feedback
+  - **EscalaViewer component**: Advanced viewer with PDF/table toggle, statistics, and military-grade styling
 
 ## User Preferences
 
