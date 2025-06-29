@@ -18,6 +18,46 @@ const access = promisify(fs.access);
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Create uploads directory if it doesn't exist
+  app.delete('/api/delete-pdf/:filename', (req, res) => {
+  console.log(`🗑️ DELETE recebido: ${req.params.filename}`);
+  
+  const filename = req.params.filename;
+  const decodedFilename = decodeURIComponent(filename);
+  const filePath = path.join(process.cwd(), 'uploads', decodedFilename);
+  const exists = fs.existsSync(filePath);
+  
+  console.log(`📁 Decoded: ${decodedFilename}`);
+  console.log(`📁 Existe: ${exists}`);
+  
+  if (exists) {
+    try {
+      fs.unlinkSync(filePath);
+      console.log(`✅ DELETADO: ${decodedFilename}`);
+      
+      res.json({ 
+        success: true, 
+        message: 'Arquivo deletado com sucesso!', 
+        filename: decodedFilename
+      });
+    } catch (error) {
+      console.log(`❌ ERRO ao deletar: ${error}`);
+      
+      res.status(500).json({ 
+        success: false, 
+        error: 'Erro ao deletar arquivo'
+      });
+    }
+  } else {
+    console.log(`❌ Arquivo não encontrado: ${decodedFilename}`);
+    
+    res.status(404).json({ 
+      success: false, 
+      error: 'Arquivo não encontrado'
+    });
+  }
+});
+
+
   const uploadsDir = path.join(process.cwd(), 'uploads');
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
@@ -34,31 +74,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Multer configuration for file uploads
-  const storage_config = multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, uploadsDir);
-    },
-    filename: (req, file, cb) => {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      cb(null, 'document-' + uniqueSuffix + '-' + file.originalname);
-    }
-  });
+  // ================================================================
+// 🛠️ FUNÇÃO para sanitizar nomes de arquivo
+// ================================================================
 
-  const upload = multer({
-    storage: storage_config,
-    limits: {
-      fileSize: 50 * 1024 * 1024, // 50MB limit
-    },
-    fileFilter: (req, file, cb) => {
-      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
-      if (allowedTypes.includes(file.mimetype)) {
-        cb(null, true);
-      } else {
-        cb(new Error('INVALID_FILE: Only PDF and image files are allowed'));
-      }
+const sanitizeFilename = (filename: string): string => {
+  return filename
+    // Remover acentos e caracteres especiais
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    // Substituir espaços por underscores
+    .replace(/\s+/g, '_')
+    // Substituir caracteres problemáticos
+    .replace(/[^a-zA-Z0-9._-]/g, '_')
+    // Remover underscores múltiplos
+    .replace(/_+/g, '_')
+    // Remover underscores no início e fim
+    .replace(/^_+|_+$/g, '')
+    // Garantir que não fica vazio
+    || 'document';
+};
+
+ const storage_config = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    
+    // ✅ SANITIZAR o nome original
+    const originalName = file.originalname;
+    const sanitizedName = sanitizeFilename(originalName);
+    
+    const finalFilename = 'document-' + uniqueSuffix + '-' + sanitizedName;
+    
+    console.log(`📁 Upload filename transformation:`);
+    console.log(`   Original: "${originalName}"`);
+    console.log(`   Sanitized: "${sanitizedName}"`);
+    console.log(`   Final: "${finalFilename}"`);
+    
+    cb(null, finalFilename);
+  }
+});
+
+// TESTE SIMPLES - ADICIONE NO INÍCIO DO ROUTES.TS
+
+
+const upload = multer({
+  storage: storage_config,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    console.log(`📄 File upload attempt: "${file.originalname}" (${file.mimetype})`);
+    
+    const allowedTypes = [
+      'application/pdf', 
+      'image/jpeg', 
+      'image/png', 
+      'image/jpg',
+      'image/gif',
+      'image/webp'
+    ];
+    
+    if (allowedTypes.includes(file.mimetype)) {
+      console.log(`✅ File type accepted: ${file.mimetype}`);
+      cb(null, true);
+    } else {
+      console.log(`❌ File type rejected: ${file.mimetype}`);
+      cb(new Error('INVALID_FILE: Only PDF and image files are allowed'));
     }
-  });
+  }
+});
 
   // 🔥 NOVO: Multer para cache (memória)
   const cacheUpload = multer({
@@ -77,46 +164,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // File upload route
-  app.post('/api/upload-pdf', upload.single('pdf'), (req, res) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({ 
-          success: false, 
-          error: 'MISSING_FILE: No file uploaded' 
-        });
-      }
-
-      const { title, type, category } = req.body;
-      
-      if (!title || !type) {
-        return res.status(400).json({ 
-          success: false, 
-          error: 'MISSING_FIELDS: Title and type are required' 
-        });
-      }
-
-      const fileUrl = `/uploads/${req.file.filename}`;
-      
-      res.json({
-        success: true,
-        data: {
-          filename: req.file.filename,
-          originalname: req.file.originalname,
-          size: req.file.size,
-          url: fileUrl,
-          title: title,
-          type: type,
-          category: category || undefined
-        }
-      });
-    } catch (error) {
-      console.error('Upload error:', error);
-      res.status(500).json({ 
+ app.post('/api/upload-pdf', upload.single('pdf'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ 
         success: false, 
-        error: 'SERVER_ERROR: Failed to process upload' 
+        error: 'MISSING_FILE: No file uploaded' 
       });
     }
-  });
+
+    const { title, type, category } = req.body;
+    
+    if (!title || !type) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'MISSING_FIELDS: Title and type are required' 
+      });
+    }
+
+    const fileUrl = `/uploads/${req.file.filename}`;
+    
+    console.log(`✅ File uploaded successfully:`);
+    console.log(`   Original name: "${req.file.originalname}"`);
+    console.log(`   Saved as: "${req.file.filename}"`);
+    console.log(`   Size: ${Math.round(req.file.size / 1024)}KB`);
+    console.log(`   URL: ${fileUrl}`);
+    
+    res.json({
+      success: true,
+      data: {
+        filename: req.file.filename,
+        originalname: req.file.originalname,
+        sanitizedName: req.file.filename.replace(/^document-\d+-\d+-/, ''),
+        size: req.file.size,
+        url: fileUrl,
+        title: title,
+        type: type,
+        category: category || undefined
+      }
+    });
+  } catch (error) {
+    console.error('❌ Upload error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'SERVER_ERROR: Failed to process upload' 
+    });
+  }
+});
 
   // 🔥 NOVO: 1. ENDPOINT - Upload de página do PLASA
   app.post('/api/upload-plasa-page', cacheUpload.single('file'), async (req, res) => {
@@ -792,7 +886,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete uploaded file route
+  /* Delete uploaded file route
   app.delete('/api/delete-pdf/:filename', (req, res) => {
     try {
       const { filename } = req.params;
@@ -810,7 +904,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ success: false, error: 'Failed to delete file' });
     }
   });
-
+*/
   // PDF Proxy route to handle CORS issues
   app.get('/api/proxy-pdf', async (req, res) => {
     try {

@@ -568,36 +568,51 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
   };
 
   
-  const removeDocument = async (id: string) => {
-    if (confirm("Tem certeza que deseja remover este documento?")) {
-      const doc = [...plasaDocuments, ...escalaDocuments].find(d => d.id === id);
-      
-      if (doc && doc.url.includes('/uploads/')) {
-        try {
-          const filename = doc.url.split('/uploads/')[1];
-          const deleteUrl = getBackendUrl(`/api/delete-pdf/${filename}`);
-          const response = await fetch(deleteUrl, {
-            method: 'DELETE'
+const removeDocument = async (id: string) => {
+  if (confirm("Tem certeza que deseja remover este documento?")) {
+    const doc = [...plasaDocuments, ...escalaDocuments].find(d => d.id === id);
+
+    if (doc && doc.url.includes('/uploads/')) {
+      try {
+        const filename = doc.url.split('/uploads/')[1];
+        const deleteUrl = getBackendUrl(`/api/delete-pdf/${filename}`);
+        const response = await fetch(deleteUrl, {
+          method: 'DELETE'
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          console.log(`✅ Arquivo ${filename} removido do servidor:`, result);
+          deleteDocument(id);
+          toast({
+            title: "Documento removido",
+            description: "O documento foi removido com sucesso."
           });
-          
-          if (response.ok) {
-            const result = await response.json();
-            console.log(`✅ Arquivo ${filename} removido do servidor:`, result);
-          } else {
-            console.log(`⚠️ Não foi possível remover ${filename} do servidor`);
-          }
-        } catch (error) {
-          console.log("⚠️ Erro ao remover arquivo do servidor:", error);
+        } else {
+          console.log(`⚠️ Não foi possível remover ${filename} do servidor`);
+          toast({
+            title: "Erro ao remover documento",
+            description: "Não foi possível remover o arquivo do servidor."
+          });
         }
+      } catch (error) {
+        console.log("⚠️ Erro ao remover arquivo do servidor:", error);
+        toast({
+          title: "Erro ao remover documento",
+          description: "Erro inesperado ao tentar remover o arquivo."
+        });
       }
-      
+    } else {
+      // Caso não seja arquivo do servidor, só remove do front
       deleteDocument(id);
       toast({
         title: "Documento removido",
         description: "O documento foi removido com sucesso."
       });
     }
-  };
+  }
+};
+
   
   const updateDocumentAlternateInterval = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value);

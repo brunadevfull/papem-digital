@@ -151,18 +151,12 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
  const getBackendUrl = (path: string): string => {
 
   // Função para gerar ID do documento
-  const generateDocumentId = (url: string): string => {
-    const urlParts = url.split("/");
-    const filename = urlParts[urlParts.length - 1];
-    const cleanName = filename
-      .replace(/\.[^/.]+$/, "")
-      .replace(/[^a-zA-Z0-9]/g, "-")
-      .toLowerCase();
-    return cleanName;
-  };
+ 
   if (path.startsWith('http') || path.startsWith('blob:') || path.startsWith('data:')) {
     return path;
   }
+  
+  
   
   // 🚨 CORREÇÃO: Usar IP real do servidor para acesso em rede
   const currentHost = window.location.hostname;
@@ -195,6 +189,15 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     return `http://localhost:5000/${path}`;
   }
 };
+ const generateDocumentId = (url: string): string => {
+    const urlParts = url.split("/");
+    const filename = urlParts[urlParts.length - 1];
+    const cleanName = filename
+      .replace(/\.[^/.]+$/, "")
+      .replace(/[^a-zA-Z0-9]/g, "-")
+      .toLowerCase();
+    return cleanName;
+  };
 
   // CORREÇÃO: Função para determinar a URL do documento com alternância
   const getDocumentUrl = () => {

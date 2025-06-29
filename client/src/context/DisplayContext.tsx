@@ -491,51 +491,13 @@ const deleteNotice = async (id: string): Promise<boolean> => {
     }
   };
 
-  const deleteDocument = async (id: string) => {
-    console.log("🗑️ Removendo documento:", id);
-    
-    // Encontrar o documento para obter o filename
-    const allDocs = [...plasaDocuments, ...escalaDocuments];
-    const docToDelete = allDocs.find(doc => doc.id === id);
-    
-    if (docToDelete && docToDelete.url.includes('/uploads/')) {
-      try {
-        // Extrair filename da URL
-        const filename = docToDelete.url.split('/uploads/')[1];
-        console.log("🗑️ Deletando arquivo do servidor:", filename);
-        
-        const response = await fetch(getBackendUrl(`/api/delete-pdf/${filename}`), {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-          console.log("✅ Arquivo deletado do servidor com sucesso");
-        } else {
-          console.warn("⚠️ Falha ao deletar arquivo do servidor:", result.error);
-        }
-      } catch (error) {
-        console.error("❌ Erro ao deletar arquivo do servidor:", error);
-      }
-    }
-    
-    // Remover da lista local independentemente do resultado do servidor
-    setPlasaDocuments(prev => prev.filter(doc => doc.id !== id));
-    setEscalaDocuments(prev => {
-      const newList = prev.filter(doc => doc.id !== id);
-      const activeEscalas = newList.filter(doc => doc.active);
-      if (activeEscalas.length === 0) {
-        setCurrentEscalaIndex(0);
-      } else if (currentEscalaIndex >= activeEscalas.length) {
-        setCurrentEscalaIndex(0);
-      }
-      return newList;
-    });
-  };
+ const deleteDocument = (id: string) => {
+  console.log("🗑️ Removendo do estado:", id);
+  
+  // Apenas mexer no estado React - SEM servidor
+  setPlasaDocuments(prev => prev.filter(doc => doc.id !== id));
+  setEscalaDocuments(prev => prev.filter(doc => doc.id !== id));
+};
 
   // Computed values com alternância automática para escalas
   const activePlasaDoc = plasaDocuments.find(doc => doc.active) || null;
