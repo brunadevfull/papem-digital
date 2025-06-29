@@ -213,7 +213,6 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       const activeEscalas = escalaDocuments.filter(doc => doc.active);
       
       if (activeEscalas.length === 0) {
-        console.log("📋 ESCALA: Nenhuma escala ativa");
         return null;
       }
       
@@ -991,12 +990,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       const docUrl = getDocumentUrl();
       const currentEscala = getCurrentEscalaDoc();
       
-      console.log("🖼️ ESCALA: Renderizando", {
-        docUrl,
-        escalaImageUrl: escalaImageUrl,
-        loading,
-        currentEscala: currentEscala?.title
-      });
+      // Log removido para evitar renderização infinita
       
       return (
         <div className="w-full h-full flex items-center justify-center p-4">
