@@ -157,17 +157,36 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Informações dos Oficiais - Melhor estilização */}
+        {/* Informações dos Oficiais - Estilização com patentes */}
         <div className="flex flex-col xl:flex-row items-center gap-3 mb-3 lg:mb-0">
-          <div className="bg-slate-900/40 backdrop-blur-sm rounded-lg px-4 py-2 border border-blue-400/20 shadow-inner">
-            <div className="text-center xl:text-left space-y-1">
-              <div className="text-blue-100 text-xs font-semibold flex items-center justify-center xl:justify-start gap-2">
-                <span className="text-yellow-400">👨‍✈️</span>
-                <span>1TEN Silva</span>
+          <div className="bg-slate-900/50 backdrop-blur-sm rounded-lg px-4 py-3 border border-blue-400/30 shadow-lg">
+            <div className="text-center xl:text-left space-y-2">
+              {/* Oficial do Dia */}
+              <div className="flex items-center justify-center xl:justify-start gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-yellow-400 text-lg">👨‍✈️</span>
+                  <div className="bg-navy-900 text-yellow-400 px-2 py-1 rounded text-xs font-bold border border-yellow-400/30">
+                    1TEN
+                  </div>
+                </div>
+                <div className="text-left">
+                  <div className="text-blue-200 text-xs font-medium">Oficial do Dia</div>
+                  <div className="text-blue-50 text-sm font-semibold">Silva</div>
+                </div>
               </div>
-              <div className="text-blue-100 text-xs font-semibold flex items-center justify-center xl:justify-start gap-2">
-                <span className="text-green-400">🛡️</span>
-                <span>1SG Santos</span>
+              
+              {/* Contramestre de Pernoite */}
+              <div className="flex items-center justify-center xl:justify-start gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-green-400 text-lg">🛡️</span>
+                  <div className="bg-slate-800 text-yellow-400 px-2 py-1 rounded text-xs font-bold border border-yellow-400/30">
+                    1SG
+                  </div>
+                </div>
+                <div className="text-left">
+                  <div className="text-blue-200 text-xs font-medium">Contramestre de Pernoite</div>
+                  <div className="text-blue-50 text-sm font-semibold">Santos</div>
+                </div>
               </div>
             </div>
           </div>

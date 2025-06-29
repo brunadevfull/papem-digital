@@ -405,6 +405,38 @@ export class MemStorage implements IStorage {
   async deleteDocument(id: number): Promise<boolean> {
     return this.documents.delete(id);
   }
+
+  // Duty Officers methods
+  async getDutyOfficers(): Promise<DutyOfficer[]> {
+    return Array.from(this.dutyOfficers.values());
+  }
+
+  async getDutyOfficer(id: number): Promise<DutyOfficer | undefined> {
+    return this.dutyOfficers.get(id);
+  }
+
+  async createDutyOfficer(insertOfficer: InsertDutyOfficer): Promise<DutyOfficer> {
+    const id = this.currentDutyOfficerId++;
+    const officer: DutyOfficer = { 
+      ...insertOfficer, 
+      id, 
+      active: insertOfficer.active ?? true,
+      createdAt: new Date(),
+      updatedAt: new Date() 
+    };
+    this.dutyOfficers.set(id, officer);
+    return officer;
+  }
+
+  async updateDutyOfficer(officer: DutyOfficer): Promise<DutyOfficer> {
+    const updatedOfficer = { ...officer, updatedAt: new Date() };
+    this.dutyOfficers.set(officer.id, updatedOfficer);
+    return updatedOfficer;
+  }
+
+  async deleteDutyOfficer(id: number): Promise<boolean> {
+    return this.dutyOfficers.delete(id);
+  }
 }
 
 export const storage = new MemStorage();
