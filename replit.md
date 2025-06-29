@@ -130,6 +130,12 @@ Changelog:
   - Default officers created automatically: Oficial do Dia (1TEN Silva) and Contramestre (1SG Santos)
   - Functional save buttons that update server data in real-time
   - Complete military rank hierarchy implemented (AMI to MN)
+- June 29, 2025. **File-based storage system implemented**
+  - **Switched from PostgreSQL to JSON file storage** for simplified deployment
+  - Data persisted in `/data` directory with JSON files (notices.json, duty-officers.json, etc.)
+  - **Server-side persistence confirmed** - changes saved permanently to JSON files
+  - Tested: Officer changed from "1TEN Silva" to "CC Costa" and saved in duty-officers.json
+  - All CRUD operations working with file storage for simpler installation
 
 ## User Preferences
 

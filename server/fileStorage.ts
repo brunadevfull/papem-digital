@@ -177,39 +177,27 @@ export class FileStorage {
 
   // Documents methods
   async getDocuments(): Promise<PDFDocument[]> {
-    const data = await this.readFile<PDFDocument>(DOCUMENTS_FILE);
-    return data.items.map(doc => ({
-      ...doc,
-      type: doc.type as "plasa" | "bono" | "escala" | "cardapio",
-      uploadDate: doc.uploadDate ? new Date(doc.uploadDate) : null
-    }));
+    const data = await this.readFile<any>(DOCUMENTS_FILE);
+    return data.items;
   }
 
   async getDocument(id: number): Promise<PDFDocument | undefined> {
-    const data = await this.readFile<PDFDocument>(DOCUMENTS_FILE);
-    const doc = data.items.find(d => d.id === id);
-    if (!doc) return undefined;
-    
-    return {
-      ...doc,
-      type: doc.type as "plasa" | "bono" | "escala" | "cardapio",
-      uploadDate: doc.uploadDate ? new Date(doc.uploadDate) : null
-    };
+    const data = await this.readFile<any>(DOCUMENTS_FILE);
+    return data.items.find((d: any) => d.id === id);
   }
 
   async createDocument(insertDocument: InsertDocument): Promise<PDFDocument> {
-    const data = await this.readFile<PDFDocument>(DOCUMENTS_FILE);
-    const document: PDFDocument = {
+    const data = await this.readFile<any>(DOCUMENTS_FILE);
+    const document = {
       ...insertDocument,
       id: data.currentId,
       active: insertDocument.active ?? true,
-      type: insertDocument.type as "plasa" | "bono" | "escala" | "cardapio",
       uploadDate: new Date()
     };
     data.items.push(document);
     data.currentId++;
     await this.writeFile(DOCUMENTS_FILE, data);
-    return document;
+    return document as PDFDocument;
   }
 
   async updateDocument(document: PDFDocument): Promise<PDFDocument> {
@@ -257,8 +245,8 @@ export class FileStorage {
   }
 
   async createDutyOfficer(insertOfficer: InsertDutyOfficer): Promise<DutyOfficer> {
-    const data = await this.readFile<DutyOfficer>(DUTY_OFFICERS_FILE);
-    const officer: DutyOfficer = {
+    const data = await this.readFile<any>(DUTY_OFFICERS_FILE);
+    const officer = {
       ...insertOfficer,
       id: data.currentId,
       active: insertOfficer.active ?? true,
@@ -268,7 +256,7 @@ export class FileStorage {
     data.items.push(officer);
     data.currentId++;
     await this.writeFile(DUTY_OFFICERS_FILE, data);
-    return officer;
+    return officer as DutyOfficer;
   }
 
   async updateDutyOfficer(officer: DutyOfficer): Promise<DutyOfficer> {

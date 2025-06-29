@@ -2,12 +2,12 @@
   "items": [
     {
       "id": 1,
-      "name": "Silva",
+      "name": "Costa",
       "role": "oficial_dia",
-      "rank": "1TEN",
+      "rank": "CC",
       "active": true,
       "createdAt": "2025-06-29T03:25:09.269Z",
-      "updatedAt": "2025-06-29T03:25:09.269Z"
+      "updatedAt": "2025-06-29T03:26:40.742Z"
     },
     {
       "id": 2,

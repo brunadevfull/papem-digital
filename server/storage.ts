@@ -1,5 +1,5 @@
 import { users, notices, documents, dutyOfficers, type User, type InsertUser, type Notice, type InsertNotice, type PDFDocument, type InsertDocument, type DutyOfficer, type InsertDutyOfficer } from "@shared/schema";
-import { FileStorage } from "./fileStorage";
+import { SimpleFileStorage } from "./simpleFileStorage";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -476,4 +476,4 @@ export class MemStorage implements IStorage {
 
 // Simplified: Focus on MemStorage for now
 
-export const storage = new FileStorage();
+export const storage = new SimpleFileStorage();
