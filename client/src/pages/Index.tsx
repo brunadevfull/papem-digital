@@ -24,8 +24,8 @@ const Index = () => {
   const [quartermasterNight, setQuartermasterNight] = useState<string>("Contramestre de Pernoite: Não definido");
   
   // Estados para os dados dos militares individuais
-  const [oficialDiaData, setOficialDiaData] = useState<{rank: string, name: string}>({rank: "1TEN", name: "Silva"});
-  const [contramestreData, setContramestreData] = useState<{rank: string, name: string}>({rank: "1SG", name: "Santos"});
+  const [oficialDiaData, setOficialDiaData] = useState<{rank: string, name: string}>({rank: "...", name: "Carregando..."});
+  const [contramestreData, setContramestreData] = useState<{rank: string, name: string}>({rank: "...", name: "Carregando..."});
 
   // Buscar temperatura
   useEffect(() => {
@@ -191,7 +191,7 @@ const Index = () => {
               <div className="flex items-center justify-center xl:justify-start gap-3">
                 <div className="flex items-center gap-2">
                   <span className="text-yellow-400 text-lg">👨‍✈️</span>
-                  <div className="bg-navy-900 text-yellow-400 px-2 py-1 rounded text-xs font-bold border border-yellow-400/30">
+                  <div className="bg-slate-800 text-yellow-400 px-2 py-1 rounded text-xs font-bold border border-yellow-400/30">
                     {oficialDiaData.rank}
                   </div>
                 </div>
