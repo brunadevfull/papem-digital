@@ -21,6 +21,16 @@ export interface PDFDocument {
   active: boolean;
   uploadDate: Date;
 }
+
+export interface DutyOfficer {
+  id: number;
+  name: string;
+  role: "oficial_dia" | "contramestre_pernoite";
+  rank: string;
+  active: boolean;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+}
 interface DisplayContextType {
   notices: Notice[];
   plasaDocuments: PDFDocument[];
