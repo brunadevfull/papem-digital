@@ -136,6 +136,12 @@ Changelog:
   - **Server-side persistence confirmed** - changes saved permanently to JSON files
   - Tested: Officer changed from "1TEN Silva" to "CC Costa" and saved in duty-officers.json
   - All CRUD operations working with file storage for simpler installation
+- June 29, 2025. **Main page integration completed**
+  - **Fixed main page not updating** with new military personnel data
+  - Main page now loads duty officers from `/api/duty-officers` instead of hardcoded values
+  - **Real-time updates**: Page refreshes military data every 5 minutes automatically
+  - **Admin panel integration**: Changes in admin panel now reflect on main page
+  - Tested: Changed "CC Costa" to "1TEN Silva" and confirmed main page updated
 
 ## User Preferences
 

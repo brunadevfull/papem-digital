@@ -84,16 +84,36 @@ const Index = () => {
   useEffect(() => {
     const fetchOfficerInfo = async () => {
       try {
-        // Por enquanto, usar dados padrão configuráveis
-        // TODO: Implementar API para buscar dados reais das escalas
-        setOfficialDuty("Oficial do Dia: 1TEN Silva");
-        setQuartermasterNight("Contramestre de Pernoite: 1SG Santos");
+        const response = await fetch('/api/duty-officers');
+        if (response.ok) {
+          const officers = await response.json();
+          const oficialDia = officers.find((o: any) => o.role === 'oficial_dia');
+          const contramestre = officers.find((o: any) => o.role === 'contramestre_pernoite');
+          
+          if (oficialDia) {
+            setOfficialDuty(`Oficial do Dia: ${oficialDia.rank} ${oficialDia.name}`);
+          }
+          
+          if (contramestre) {
+            setQuartermasterNight(`Contramestre de Pernoite: ${contramestre.rank} ${contramestre.name}`);
+          }
+        } else {
+          // Fallback se API não responder
+          setOfficialDuty("Oficial do Dia: Não definido");
+          setQuartermasterNight("Contramestre de Pernoite: Não definido");
+        }
       } catch (error) {
         console.error('Erro ao buscar informações dos oficiais:', error);
+        setOfficialDuty("Oficial do Dia: Erro ao carregar");
+        setQuartermasterNight("Contramestre de Pernoite: Erro ao carregar");
       }
     };
 
     fetchOfficerInfo();
+    
+    // Atualizar a cada 5 minutos para pegar mudanças
+    const interval = setInterval(fetchOfficerInfo, 5 * 60 * 1000);
+    return () => clearInterval(interval);
   }, []);
 
   // Atualizar horário e data em tempo real
