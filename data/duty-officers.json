@@ -1,0 +1,23 @@
+{
+  "items": [
+    {
+      "id": 1,
+      "name": "Silva",
+      "role": "oficial_dia",
+      "rank": "1TEN",
+      "active": true,
+      "createdAt": "2025-06-29T03:25:09.269Z",
+      "updatedAt": "2025-06-29T03:25:09.269Z"
+    },
+    {
+      "id": 2,
+      "name": "Santos",
+      "role": "contramestre_pernoite",
+      "rank": "1SG",
+      "active": true,
+      "createdAt": "2025-06-29T03:25:09.269Z",
+      "updatedAt": "2025-06-29T03:25:09.269Z"
+    }
+  ],
+  "currentId": 3
+}

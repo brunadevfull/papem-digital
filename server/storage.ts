@@ -1,6 +1,5 @@
 import { users, notices, documents, dutyOfficers, type User, type InsertUser, type Notice, type InsertNotice, type PDFDocument, type InsertDocument, type DutyOfficer, type InsertDutyOfficer } from "@shared/schema";
-import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { FileStorage } from "./fileStorage";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -477,4 +476,4 @@ export class MemStorage implements IStorage {
 
 // Simplified: Focus on MemStorage for now
 
-export const storage = new MemStorage();
+export const storage = new FileStorage();
