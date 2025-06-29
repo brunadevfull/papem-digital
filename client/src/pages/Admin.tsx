@@ -1910,7 +1910,39 @@ const removeDocument = async (id: string) => {
                           placeholder="Nome do militar"
                         />
                       </div>
-                      <Button className="w-full">
+                      <Button 
+                        className="w-full"
+                        onClick={async () => {
+                          const rank = (document.getElementById('oficial-rank') as HTMLSelectElement)?.value || "1TEN";
+                          const name = (document.getElementById('oficial-name') as HTMLInputElement)?.value || "Silva";
+                          
+                          try {
+                            const response = await fetch('/api/duty-officers/1', {
+                              method: 'PUT',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                name,
+                                rank,
+                                role: 'oficial_dia',
+                                active: true
+                              })
+                            });
+                            
+                            if (response.ok) {
+                              toast({
+                                title: "Oficial do Dia atualizado",
+                                description: `${rank} ${name} salvo com sucesso.`
+                              });
+                            }
+                          } catch (error) {
+                            toast({
+                              title: "Erro",
+                              description: "Falha ao salvar oficial do dia.",
+                              variant: "destructive"
+                            });
+                          }
+                        }}
+                      >
                         Salvar Oficial do Dia
                       </Button>
                     </div>
@@ -1947,7 +1979,39 @@ const removeDocument = async (id: string) => {
                           placeholder="Nome do militar"
                         />
                       </div>
-                      <Button className="w-full">
+                      <Button 
+                        className="w-full"
+                        onClick={async () => {
+                          const rank = (document.getElementById('contramestre-rank') as HTMLSelectElement)?.value || "1SG";
+                          const name = (document.getElementById('contramestre-name') as HTMLInputElement)?.value || "Santos";
+                          
+                          try {
+                            const response = await fetch('/api/duty-officers/2', {
+                              method: 'PUT',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                name,
+                                rank,
+                                role: 'contramestre_pernoite',
+                                active: true
+                              })
+                            });
+                            
+                            if (response.ok) {
+                              toast({
+                                title: "Contramestre atualizado",
+                                description: `${rank} ${name} salvo com sucesso.`
+                              });
+                            }
+                          } catch (error) {
+                            toast({
+                              title: "Erro",
+                              description: "Falha ao salvar contramestre.",
+                              variant: "destructive"
+                            });
+                          }
+                        }}
+                      >
                         Salvar Contramestre
                       </Button>
                     </div>

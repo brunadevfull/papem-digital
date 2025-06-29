@@ -17,8 +17,9 @@ The Navy Display System (Sistema de Visualização da Marinha do Brasil) is a co
 ### Backend Architecture
 - **Runtime**: Node.js with Express.js server framework
 - **Language**: TypeScript for type safety across the entire stack
+- **Database**: PostgreSQL with Drizzle ORM for data persistence
 - **File Upload**: Multer middleware for handling PDF document uploads
-- **Storage**: In-memory storage with file system persistence for uploaded documents
+- **Storage**: Hybrid storage - PostgreSQL for structured data, file system for uploaded documents
 - **API Design**: RESTful endpoints with structured JSON responses
 
 ### PDF Processing
@@ -120,6 +121,15 @@ Changelog:
   - Added temperature display in header with fallback to estimated temperature
   - Enhanced header layout for better responsiveness
   - All core functionality tested and working properly
+- June 29, 2025. Military personnel management system implemented
+  - **PostgreSQL database configured** for data persistence
+  - **Server-side storage confirmed** - both notices and duty officers saved on server
+  - Added military rank badges with professional styling (1TEN Silva, 1SG Santos)
+  - Created new "Militares" tab in admin panel with rank selection and name editing
+  - Implemented full CRUD API for duty officers (/api/duty-officers)
+  - Default officers created automatically: Oficial do Dia (1TEN Silva) and Contramestre (1SG Santos)
+  - Functional save buttons that update server data in real-time
+  - Complete military rank hierarchy implemented (AMI to MN)
 
 ## User Preferences
 
