@@ -22,6 +22,10 @@ const Index = () => {
   const [temperature, setTemperature] = useState<string>("--°C");
   const [officialDuty, setOfficialDuty] = useState<string>("Oficial do Dia: Não definido");
   const [quartermasterNight, setQuartermasterNight] = useState<string>("Contramestre de Pernoite: Não definido");
+  
+  // Estados para os dados dos militares individuais
+  const [oficialDiaData, setOficialDiaData] = useState<{rank: string, name: string}>({rank: "1TEN", name: "Silva"});
+  const [contramestreData, setContramestreData] = useState<{rank: string, name: string}>({rank: "1SG", name: "Santos"});
 
   // Buscar temperatura
   useEffect(() => {
@@ -92,10 +96,12 @@ const Index = () => {
           
           if (oficialDia) {
             setOfficialDuty(`Oficial do Dia: ${oficialDia.rank} ${oficialDia.name}`);
+            setOficialDiaData({rank: oficialDia.rank, name: oficialDia.name});
           }
           
           if (contramestre) {
             setQuartermasterNight(`Contramestre de Pernoite: ${contramestre.rank} ${contramestre.name}`);
+            setContramestreData({rank: contramestre.rank, name: contramestre.name});
           }
         } else {
           // Fallback se API não responder
@@ -186,12 +192,12 @@ const Index = () => {
                 <div className="flex items-center gap-2">
                   <span className="text-yellow-400 text-lg">👨‍✈️</span>
                   <div className="bg-navy-900 text-yellow-400 px-2 py-1 rounded text-xs font-bold border border-yellow-400/30">
-                    1TEN
+                    {oficialDiaData.rank}
                   </div>
                 </div>
                 <div className="text-left">
                   <div className="text-blue-200 text-xs font-medium">Oficial do Dia</div>
-                  <div className="text-blue-50 text-sm font-semibold">Silva</div>
+                  <div className="text-blue-50 text-sm font-semibold">{oficialDiaData.name}</div>
                 </div>
               </div>
               
@@ -200,12 +206,12 @@ const Index = () => {
                 <div className="flex items-center gap-2">
                   <span className="text-green-400 text-lg">🛡️</span>
                   <div className="bg-slate-800 text-yellow-400 px-2 py-1 rounded text-xs font-bold border border-yellow-400/30">
-                    1SG
+                    {contramestreData.rank}
                   </div>
                 </div>
                 <div className="text-left">
                   <div className="text-blue-200 text-xs font-medium">Contramestre de Pernoite</div>
-                  <div className="text-blue-50 text-sm font-semibold">Santos</div>
+                  <div className="text-blue-50 text-sm font-semibold">{contramestreData.name}</div>
                 </div>
               </div>
             </div>
