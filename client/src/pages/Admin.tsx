@@ -46,45 +46,58 @@ import {
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 // Dados dos oficiais baseados no quadro da Marinha
 const OFFICERS_DATA = [
-  // Capitães-Tenentes (CT)
-  { name: "KLEBER", rank: "ct", specialty: "IM" },
-  { name: "CRISTIANE MORETTO", rank: "ct", specialty: "IM" },
-  { name: "PAULA BALLARD", rank: "ct", specialty: "T" },
-  { name: "REJANE AMARAL", rank: "ct", specialty: "T" },
-  { name: "ROGÉRIO RIBEIRO", rank: "ct", specialty: "T" },
-  { name: "ELAINE ANDRADE", rank: "ct", specialty: "T" },
-  { name: "CAMILA", rank: "ct", specialty: "IM" },
-  { name: "AZEVEDO", rank: "ct", specialty: "IM" },
-  { name: "REGINA GRISI", rank: "ct", specialty: "IM" },
-  { name: "WILLIAM", rank: "ct", specialty: "T" },
-  { name: "YAGO", rank: "ct", specialty: "IM" },
-  { name: "MATEUS BARBOSA", rank: "ct", specialty: "IM" },
-  
-  // Capitães-de-Corveta (CC)
-  { name: "TAMIRES", rank: "cc", specialty: "QC-IM" },
-  { name: "CHAVES", rank: "cc", specialty: "QC-IM" },
-  { name: "VIANA", rank: "cc", specialty: "RM2-T" },
-  { name: "PINA TRIGO", rank: "cc", specialty: "RM2-T" },
-  
-  // Primeiros-Tenentes (1T)
-  { name: "KARINE", rank: "1t", specialty: "RM2-T" },
-  { name: "LEONARDO ANDRADE", rank: "1t", specialty: "IM" },
-  { name: "ELIEZER", rank: "1t", specialty: "IM" },
-  { name: "LARISSA CASTRO", rank: "1t", specialty: "RM2-T" },
-  { name: "ALEXANDRIA", rank: "1t", specialty: "IM" },
-  
-  // Segundos-Tenentes (2T)
-  { name: "MARCO MARTINS", rank: "2t", specialty: "AA" },
-  { name: "MACHADO", rank: "2t", specialty: "AA" },
+  { name: "CT (IM) YAGO", rank: "ct" as const },
+  { name: "CT (IM) MATEUS BARBOSA", rank: "ct" as const },
+  { name: "1T (RM2-T) LARISSA CASTRO", rank: "1t" as const },
+  { name: "1T (IM) ALEXANDRIA", rank: "1t" as const },
+  { name: "1T (QC-IM) TAMIRES", rank: "1t" as const },
+  { name: "1T (RM2-T) KARINE", rank: "1t" as const },
+  { name: "1T (AA) RONALD CHAVES", rank: "1t" as const },
+  { name: "1T (RM2-T) PINA TRIGO", rank: "1t" as const },
+  { name: "1T (IM) LEONARDO ANDRADE", rank: "1t" as const },
+  { name: "1T (IM) ELIEZER", rank: "1t" as const },
+  { name: "2T (AA) MARCIO MARTINS", rank: "2t" as const },
+  { name: "2T (AA) MACHADO", rank: "2t" as const }
 ];
 
 const MASTERS_DATA = [
-  { name: "SILVA SANTOS", rank: "1sg", specialty: "Administração" },
-  { name: "OLIVEIRA COSTA", rank: "1sg", specialty: "Logística" },
-  { name: "SOUZA LIMA", rank: "2sg", specialty: "Comunicações" },
-  { name: "PEREIRA ROCHA", rank: "2sg", specialty: "Administração" },
-  { name: "FERREIRA ALVES", rank: "3sg", specialty: "Apoio" },
-  { name: "RODRIGUES NUNES", rank: "3sg", specialty: "Manutenção" },
+  { name: "1SG SALES", rank: "1sg" as const },
+  { name: "1SG LEANDRO", rank: "1sg" as const },
+  { name: "1SG ELIANE", rank: "1sg" as const },
+  { name: "1SG RAFAELA", rank: "1sg" as const },
+  { name: "1SG SILVIA HELENA", rank: "1sg" as const },
+  { name: "1SG DA SILVA", rank: "1sg" as const },
+  { name: "1SG BEIRUTH", rank: "1sg" as const },
+  { name: "1SG CARLA", rank: "1sg" as const },
+  { name: "2SG ALICE", rank: "2sg" as const },
+  { name: "2SG DIEGO", rank: "2sg" as const },
+  { name: "2SG CANESCHE", rank: "2sg" as const },
+  { name: "2SG NIBI", rank: "2sg" as const },
+  { name: "2SG MONIQUE", rank: "2sg" as const },
+  { name: "2SG DAMASCENO", rank: "2sg" as const },
+  { name: "2SG SOUZA LIMA", rank: "2sg" as const },
+  { name: "2SG SANT'ANNA", rank: "2sg" as const },
+  { name: "2SG AFONSO", rank: "2sg" as const },
+  { name: "2SG MEIRELES", rank: "2sg" as const },
+  { name: "2SG BRUNA ROCHA", rank: "2sg" as const },
+  { name: "2SG ARIANNE", rank: "2sg" as const },
+  { name: "3SG MAYARA", rank: "3sg" as const },
+  { name: "3SG MARCIA", rank: "3sg" as const },
+  { name: "3SG JUSTINO", rank: "3sg" as const },
+  { name: "3SG JONAS", rank: "3sg" as const },
+  { name: "3SG THAÍS SILVA", rank: "3sg" as const },
+  { name: "3SG SABRINA", rank: "3sg" as const },
+  { name: "3SG TAINÁ NEVES", rank: "3sg" as const },
+  { name: "3SG AMANDA PAULINO", rank: "3sg" as const },
+  { name: "3SG ANA BEATHRIZ", rank: "3sg" as const },
+  { name: "3SG KEVIN", rank: "3sg" as const },
+  { name: "3SG JORGE", rank: "3sg" as const },
+  { name: "3SG ALAN", rank: "3sg" as const },
+  { name: "3SG HUGO", rank: "3sg" as const },
+  { name: "3SG DA SILVA", rank: "3sg" as const },
+  { name: "3SG FERNANDES", rank: "3sg" as const },
+  { name: "3SG LUCAS SANTOS", rank: "3sg" as const },
+  { name: "3SG JÉSSYCA (Dispensa Gestante)", rank: "3sg" as const }
 ];
 
 const Admin: React.FC = () => {
@@ -1765,7 +1778,7 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                           <SelectContent>
                             {OFFICERS_DATA.map((officer) => (
                               <SelectItem key={officer.name} value={officer.name}>
-                                {officer.rank.toUpperCase()} {officer.name} ({officer.specialty})
+                                {officer.name}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -1819,7 +1832,7 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                           <SelectContent>
                             {MASTERS_DATA.map((master) => (
                               <SelectItem key={master.name} value={master.name}>
-                                {master.rank.toUpperCase()} {master.name} ({master.specialty})
+                                {master.name}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -1990,6 +2003,46 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                     <p className="text-xs text-muted-foreground">
                       Tempo de pausa no final do PLASA antes de reiniciar do topo.
                     </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>👥 Lista de Militares</CardTitle>
+                  <CardDescription>
+                    Militares disponíveis para escalas de serviço
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-3">
+                      <h3 className="font-medium text-blue-700">🎖️ Oficiais Disponíveis</h3>
+                      <div className="bg-blue-50 p-3 rounded-lg text-sm space-y-1 max-h-48 overflow-y-auto">
+                        {OFFICERS_DATA.map((officer, index) => (
+                          <div key={index} className="text-blue-800">
+                            {officer.name}
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Total: {OFFICERS_DATA.length} oficiais
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <h3 className="font-medium text-green-700">⭐ Contramesres Disponíveis</h3>
+                      <div className="bg-green-50 p-3 rounded-lg text-sm space-y-1 max-h-48 overflow-y-auto">
+                        {MASTERS_DATA.map((master, index) => (
+                          <div key={index} className="text-green-800">
+                            {master.name}
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Total: {MASTERS_DATA.length} contramesres
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
