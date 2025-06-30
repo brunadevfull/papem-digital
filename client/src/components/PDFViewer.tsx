@@ -364,6 +364,20 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     });
   };
 
+  // Função para gerar ID único do documento baseado na URL
+  const generateDocumentId = (url: string): string => {
+    const urlParts = url.split("/");
+    const filename = urlParts[urlParts.length - 1];
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 8);
+    const cleanName = filename
+      .replace(/\.[^/.]+$/, "")
+      .replace(/[^a-zA-Z0-9]/g, "-")
+      .toLowerCase()
+      .substring(0, 20);
+    return `${timestamp}-${cleanName}-${random}`;
+  };
+
   // Verificar se páginas já existem no servidor
   const checkExistingPages = async (totalPages: number, documentId: string): Promise<string[]> => {
     try {

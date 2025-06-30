@@ -83,45 +83,27 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-950 flex flex-col p-2 sm:p-3 lg:p-4">
       {/* Header Responsivo */}
-      <header className="relative flex flex-col sm:flex-row items-center justify-between mb-4 p-4 bg-gradient-to-r from-slate-800/80 to-blue-900/80 backdrop-blur-xl rounded-xl lg:rounded-2xl shadow-2xl border border-blue-400/30">
+      <header className="relative flex flex-col mb-4 p-4 bg-gradient-to-r from-slate-800/80 to-blue-900/80 backdrop-blur-xl rounded-xl lg:rounded-2xl shadow-2xl border border-blue-400/30">
         {/* Logo e título */}
-        <div className="flex items-center space-x-4 mb-3 sm:mb-0">
-          <div className="relative">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-sm sm:text-lg">⚓</span>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-4">
+            <div className="relative">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-sm sm:text-lg">⚓</span>
+              </div>
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border border-white shadow-lg animate-pulse"></div>
             </div>
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border border-white shadow-lg animate-pulse"></div>
+            
+            <div className="text-center sm:text-left">
+              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold bg-gradient-to-r from-blue-300 to-white bg-clip-text text-transparent tracking-tight">
+                PAPEM - Sistema Operacional
+              </h1>
+              <p className="text-blue-200/80 text-xs sm:text-sm font-medium">Sistema de Visualização de Documentos</p>
+            </div>
           </div>
-          
-          <div className="text-center sm:text-left">
-            <h1 className="text-lg sm:text-xl lg:text-2xl font-bold bg-gradient-to-r from-blue-300 to-white bg-clip-text text-transparent tracking-tight">
-              PAPEM - Sistema Operacional
-            </h1>
-            <p className="text-blue-200/80 text-xs sm:text-sm font-medium">Sistema de Visualização de Documentos</p>
-          </div>
-        </div>
 
-        {/* Informações de Status e Temperatura */}
-        <div className="flex flex-col lg:flex-row items-center space-y-3 lg:space-y-0 lg:space-x-6 relative z-10">
-          {/* Temperatura */}
-          <div className="bg-slate-900/60 backdrop-blur-sm rounded-lg p-3 border border-blue-400/30 shadow-inner min-w-[200px]">
-            <TemperatureDisplay />
-          </div>
-          
-          {/* Separador */}
-          <div className="hidden lg:block w-px h-16 bg-gradient-to-b from-transparent via-blue-400/60 to-transparent shadow-lg"></div>
-          
-          {/* Oficiais de Serviço */}
-          <div className="bg-slate-900/60 backdrop-blur-sm rounded-lg p-3 border border-blue-400/30 shadow-inner min-w-[300px]">
-            <DutyOfficersDisplay />
-          </div>
-          
-          {/* Separador */}
-          <div className="hidden lg:block w-px h-16 bg-gradient-to-b from-transparent via-blue-400/60 to-transparent shadow-lg"></div>
-          
           {/* Data e Hora */}
           <div className="flex items-center space-x-4">
-            {/* Data Compacta */}
             <div className="text-right">
               <div className="text-blue-200 text-xs font-medium tracking-widest uppercase">
                 {currentDate.weekday}
@@ -135,10 +117,8 @@ const Index = () => {
               </div>
             </div>
             
-            {/* Separador compacto */}
             <div className="w-px h-10 bg-gradient-to-b from-transparent via-blue-400/60 to-transparent shadow-lg"></div>
             
-            {/* Horário Digital Compacto */}
             <div className="bg-slate-900/60 backdrop-blur-sm rounded-lg px-4 py-2 border border-blue-400/30 shadow-inner">
               <div className="text-blue-200 text-xs font-medium tracking-widest uppercase text-center">
                 Hora Oficial
@@ -146,11 +126,23 @@ const Index = () => {
               <div className="text-white font-mono font-bold tracking-wider text-center text-xl">
                 {currentTime}
               </div>
-              {/* Horário do Pôr do Sol */}
               <div className="text-amber-300 text-xs font-medium text-center mt-1 opacity-90">
                 🌅 {sunsetTime}
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Informações de Status - Temperatura e Oficiais */}
+        <div className="flex flex-col lg:flex-row items-stretch gap-4">
+          {/* Temperatura */}
+          <div className="flex-1 bg-slate-900/60 backdrop-blur-sm rounded-lg p-3 border border-blue-400/30 shadow-inner">
+            <TemperatureDisplay />
+          </div>
+          
+          {/* Oficiais de Serviço */}
+          <div className="flex-1 bg-slate-900/60 backdrop-blur-sm rounded-lg p-3 border border-blue-400/30 shadow-inner">
+            <DutyOfficersDisplay />
           </div>
         </div>
       </header>
