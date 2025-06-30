@@ -76,15 +76,18 @@ export const TemperatureDisplay = () => {
 
   if (error) {
     return (
-      <div className="flex items-center gap-2 text-white/80">
-        <AlertCircle className="w-4 h-4" />
-        <span className="text-sm">Temp. indisponível</span>
+      <div className="flex flex-col items-center justify-center bg-gradient-to-br from-red-800/30 to-red-900/30 backdrop-blur-sm rounded-lg border border-red-400/20 p-4 shadow-lg min-w-[240px]">
+        <div className="flex items-center gap-2 mb-2">
+          <AlertCircle className="w-5 h-5 text-red-300" />
+          <span className="text-red-200 text-sm font-medium">Temp. indisponível</span>
+        </div>
         <button 
           onClick={handleRefresh}
-          className="p-1 hover:bg-white/10 rounded"
+          className="p-2 hover:bg-red-500/20 rounded-full transition-all duration-200 hover:scale-110"
           disabled={loading}
+          title="Tentar novamente"
         >
-          <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`w-4 h-4 text-red-300 ${loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
     );
@@ -92,36 +95,57 @@ export const TemperatureDisplay = () => {
 
   if (!weather) {
     return (
-      <div className="flex items-center gap-2 text-white/80">
-        <Thermometer className="w-4 h-4" />
-        <span className="text-sm">Carregando...</span>
+      <div className="flex flex-col items-center justify-center bg-gradient-to-br from-gray-800/30 to-gray-900/30 backdrop-blur-sm rounded-lg border border-gray-400/20 p-4 shadow-lg min-w-[240px]">
+        <div className="flex items-center gap-2">
+          <Thermometer className="w-5 h-5 text-gray-300" />
+          <span className="text-gray-200 text-sm font-medium">Carregando temperatura...</span>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-2 text-white">
-      <Thermometer className="w-4 h-4" />
-      <div className="flex flex-col">
-        <div className="flex items-center gap-2">
-          <span className="font-semibold text-lg">
-            {weather.temp}°C
-          </span>
-          <span className="text-xs text-white/70">
-            Sensação {weather.feelsLike}°C
-          </span>
-          <button 
-            onClick={handleRefresh}
-            className="p-1 hover:bg-white/10 rounded transition-colors"
-            disabled={loading}
-            title="Atualizar temperatura"
-          >
-            <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
-          </button>
+    <div className="flex flex-col items-center justify-center bg-gradient-to-br from-orange-800/30 to-red-900/30 backdrop-blur-sm rounded-lg border border-orange-400/20 p-4 shadow-lg min-w-[240px]">
+      {/* Cabeçalho com ícone e título */}
+      <div className="flex items-center gap-2 mb-3">
+        <div className="p-2 bg-orange-500/20 rounded-full">
+          <Thermometer className="w-5 h-5 text-orange-300" />
         </div>
-        <div className="flex items-center gap-3 text-xs text-white/60">
-          <span className="capitalize">{weather.description}</span>
-          <span>Umidade: {weather.humidity}%</span>
+        <h3 className="text-orange-200 text-sm font-semibold uppercase tracking-wide">
+          Temperatura
+        </h3>
+        <button 
+          onClick={handleRefresh}
+          className="p-1.5 hover:bg-orange-500/20 rounded-full transition-all duration-200 hover:scale-110"
+          disabled={loading}
+          title="Atualizar temperatura"
+        >
+          <RefreshCw className={`w-3 h-3 text-orange-300 ${loading ? 'animate-spin' : ''}`} />
+        </button>
+      </div>
+
+      {/* Informações da temperatura */}
+      <div className="w-full space-y-2">
+        {/* Temperatura principal */}
+        <div className="bg-slate-900/40 rounded-lg p-3 border border-orange-500/20 text-center">
+          <div className="text-2xl font-bold text-white mb-1">
+            {weather.temp}°C
+          </div>
+          <div className="text-xs text-orange-300 uppercase tracking-wider">
+            Sensação {weather.feelsLike}°C
+          </div>
+        </div>
+        
+        {/* Detalhes */}
+        <div className="bg-slate-900/40 rounded-lg p-3 border border-orange-500/20">
+          <div className="text-center">
+            <div className="text-white font-medium text-sm capitalize mb-1">
+              {weather.description}
+            </div>
+            <div className="text-xs text-orange-400/70">
+              Umidade: {weather.humidity}%
+            </div>
+          </div>
         </div>
       </div>
     </div>

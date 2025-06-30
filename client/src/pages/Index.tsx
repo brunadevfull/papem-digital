@@ -101,15 +101,18 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Informações em linha horizontal - Oficiais mais centralizados */}
-        <div className="flex flex-col lg:flex-row items-center gap-3 lg:gap-8">
-          {/* Oficiais de Serviço - Posição centralizada com melhor estilização */}
-          <div className="order-1 lg:order-1 flex-1 text-center">
+        {/* Informações em linha horizontal - Layout corrigido */}
+        <div className="flex flex-col lg:flex-row items-center gap-3 lg:gap-6 w-full">
+          {/* Espaço vazio à esquerda para centralizar oficiais */}
+          <div className="hidden lg:block flex-1"></div>
+          
+          {/* Oficiais de Serviço - Posição central */}
+          <div className="flex-shrink-0">
             <DutyOfficersDisplay />
           </div>
           
-          {/* Temperatura - Movida para a direita */}
-          <div className="order-2 lg:order-2 text-center lg:text-right">
+          {/* Temperatura - Direita */}
+          <div className="flex-1 flex justify-end">
             <TemperatureDisplay />
           </div>
           
