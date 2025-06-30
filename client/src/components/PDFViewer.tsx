@@ -1084,8 +1084,9 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                 <button 
                   onClick={() => {
                     setDebugInfo({});
-                    if (activePlasaDoc && activePlasaDoc.url) {
-                      const fullUrl = getBackendUrl(activePlasaDoc.url);
+                    const activeMainDoc = documentType === "plasa" ? activePlasaDoc : activeBonoDoc;
+                    if (activeMainDoc && activeMainDoc.url) {
+                      const fullUrl = getBackendUrl(activeMainDoc.url);
                       if (isImageFile(fullUrl)) {
                         setSavedPageUrls([fullUrl]);
                         setLoading(false);
@@ -1113,15 +1114,15 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
             <>
               <div className="text-6xl mb-4">📄</div>
               <div className="text-gray-600 text-lg">
-                {documentType === "plasa" && !activePlasaDoc 
-                  ? "Nenhum documento PLASA ativo" 
+                {((documentType === "plasa" && !activePlasaDoc) || (documentType === "bono" && !activeBonoDoc))
+                  ? `Nenhum documento ${documentType.toUpperCase()} ativo` 
                   : loading
                   ? "Processando documento..."
                   : "Preparando visualização..."}
               </div>
-              {documentType === "plasa" && !activePlasaDoc && (
+              {((documentType === "plasa" && !activePlasaDoc) || (documentType === "bono" && !activeBonoDoc)) && (
                 <div className="mt-4 text-sm text-gray-500">
-                  Vá para o painel administrativo e faça upload de um documento PLASA
+                  Vá para o painel administrativo e faça upload de um documento {documentType.toUpperCase()}
                 </div>
               )}
               {activePlasaDoc && (
