@@ -101,16 +101,16 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Informações em linha horizontal */}
-        <div className="flex flex-col lg:flex-row items-center gap-3 lg:gap-6">
-          {/* Temperatura */}
-          <div className="text-center lg:text-left">
-            <TemperatureDisplay />
+        {/* Informações em linha horizontal - Oficiais mais centralizados */}
+        <div className="flex flex-col lg:flex-row items-center gap-3 lg:gap-8">
+          {/* Oficiais de Serviço - Posição centralizada com melhor estilização */}
+          <div className="order-1 lg:order-1 flex-1 text-center">
+            <DutyOfficersDisplay />
           </div>
           
-          {/* Oficiais de Serviço */}
-          <div className="text-center lg:text-left">
-            <DutyOfficersDisplay />
+          {/* Temperatura - Movida para a direita */}
+          <div className="order-2 lg:order-2 text-center lg:text-right">
+            <TemperatureDisplay />
           </div>
           
           {/* Data e Hora */}

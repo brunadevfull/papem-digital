@@ -214,4 +214,3 @@ export const getMinutesUntilNextUpdate = (): number => {
   
   return Math.max(0, Math.ceil(remaining / (60 * 1000)));
 };
-
