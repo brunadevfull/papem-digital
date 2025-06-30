@@ -24,10 +24,13 @@ export interface PDFDocument {
 interface DisplayContextType {
   notices: Notice[];
   plasaDocuments: PDFDocument[];
+  bonoDocuments: PDFDocument[];
   escalaDocuments: PDFDocument[];
   activePlasaDoc: PDFDocument | null;
+  activeBonoDoc: PDFDocument | null;
   activeEscalaDoc: PDFDocument | null;
   currentEscalaIndex: number;
+  currentMainDocType: "plasa" | "bono";
   documentAlternateInterval: number;
   scrollSpeed: "slow" | "normal" | "fast";
   autoRestartDelay: number;
@@ -62,8 +65,10 @@ export const DisplayProvider: React.FC<DisplayProviderProps> = ({ children }) =>
   // Estados
   const [notices, setNotices] = useState<Notice[]>([]);
   const [plasaDocuments, setPlasaDocuments] = useState<PDFDocument[]>([]);
+  const [bonoDocuments, setBonoDocuments] = useState<PDFDocument[]>([]);
   const [escalaDocuments, setEscalaDocuments] = useState<PDFDocument[]>([]);
   const [currentEscalaIndex, setCurrentEscalaIndex] = useState(0);
+  const [currentMainDocType, setCurrentMainDocType] = useState<"plasa" | "bono">("plasa");
   const [documentAlternateInterval, setDocumentAlternateInterval] = useState(30000);
   const [scrollSpeed, setScrollSpeed] = useState<"slow" | "normal" | "fast">("normal");
   const [autoRestartDelay, setAutoRestartDelay] = useState(3);
@@ -544,13 +549,8 @@ const deleteNotice = async (id: string): Promise<boolean> => {
     });
   };
 
-  // Computed values com alternância automática para escalas
-  const activePlasaDoc = plasaDocuments.find(doc => doc.active) || null;
-  
+  // Computed values com alternância automática para escalas  
   const activeEscalaDocuments = escalaDocuments.filter(doc => doc.active);
-  const activeEscalaDoc = activeEscalaDocuments.length > 0 
-    ? activeEscalaDocuments[currentEscalaIndex % activeEscalaDocuments.length] 
-    : null;
 
   // Effect para alternar escalas automaticamente
   useEffect(() => {
@@ -799,13 +799,23 @@ const deleteNotice = async (id: string): Promise<boolean> => {
     }
   }, [activeEscalaDocuments.length, currentEscalaIndex]);
 
+  // Documentos ativos derivados
+  const activePlasaDoc = plasaDocuments.find(doc => doc.active) || null;
+  const activeBonoDoc = bonoDocuments.find(doc => doc.active) || null;
+  const activeEscalaDoc = activeEscalaDocuments.length > 0 
+    ? activeEscalaDocuments[currentEscalaIndex % activeEscalaDocuments.length] 
+    : null;
+
   const value: DisplayContextType = {
     notices,
     plasaDocuments,
+    bonoDocuments,
     escalaDocuments,
     activePlasaDoc,
+    activeBonoDoc,
     activeEscalaDoc,
     currentEscalaIndex,
+    currentMainDocType,
     documentAlternateInterval,
     scrollSpeed,
     autoRestartDelay,
