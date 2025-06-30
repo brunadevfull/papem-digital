@@ -87,6 +87,15 @@ const Admin: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   
+  // Estados para oficiais de serviço
+  const [dutyOfficers, setDutyOfficers] = useState({
+    officerName: "",
+    officerRank: "1t" as "1t" | "2t" | "ct",
+    masterName: "",
+    masterRank: "3sg" as "3sg" | "2sg" | "1sg"
+  });
+  const [isLoadingOfficers, setIsLoadingOfficers] = useState(false);
+
   // Estados para status do sistema
   const [serverStatus, setServerStatus] = useState<{
     connected: boolean;
@@ -214,8 +223,74 @@ const Admin: React.FC = () => {
     }
   };
 
+  // Carregar oficiais de serviço
+  const loadDutyOfficers = async () => {
+    setIsLoadingOfficers(true);
+    try {
+      const response = await fetch(getBackendUrl('/api/duty-officers'));
+      const data = await response.json();
+      
+      if (data.success && data.officers) {
+        setDutyOfficers({
+          officerName: data.officers.officerName || "",
+          officerRank: data.officers.officerRank || "1t",
+          masterName: data.officers.masterName || "",
+          masterRank: data.officers.masterRank || "3sg"
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao carregar oficiais:', error);
+    } finally {
+      setIsLoadingOfficers(false);
+    }
+  };
+
+  // Salvar oficiais de serviço
+  const saveDutyOfficers = async () => {
+    if (!dutyOfficers.officerName || !dutyOfficers.masterName) {
+      toast({
+        title: "Erro",
+        description: "Nome do oficial e contramestre são obrigatórios.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsLoadingOfficers(true);
+    try {
+      const response = await fetch(getBackendUrl('/api/duty-officers'), {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dutyOfficers),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        toast({
+          title: "Sucesso",
+          description: "Oficiais de serviço atualizados com sucesso!",
+        });
+      } else {
+        throw new Error(data.error || 'Erro ao salvar oficiais');
+      }
+    } catch (error) {
+      console.error('Erro ao salvar oficiais:', error);
+      toast({
+        title: "Erro",
+        description: "Falha ao salvar oficiais de serviço.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoadingOfficers(false);
+    }
+  };
+
   useEffect(() => {
     console.log("🔧 Admin carregado, avisos serão carregados do servidor");
+    loadDutyOfficers();
   }, []);
   
   // Form handler para avisos com servidor
@@ -775,6 +850,7 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
           <TabsList className="w-full mb-6">
             <TabsTrigger value="avisos" className="flex-1">📢 Avisos</TabsTrigger>
             <TabsTrigger value="documentos" className="flex-1">📄 Documentos</TabsTrigger>
+            <TabsTrigger value="oficiais" className="flex-1">👮 Oficiais</TabsTrigger>
             <TabsTrigger value="configuracoes" className="flex-1">⚙️ Configurações</TabsTrigger>
             <TabsTrigger value="debug" className="flex-1">🔍 Debug</TabsTrigger>
           </TabsList>
@@ -1587,6 +1663,173 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
     </CardContent>
   </Card>
 </TabsContent>
+
+          {/* Aba de Oficiais de Serviço */}
+          <TabsContent value="oficiais">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Formulário de Oficiais */}
+              <Card className="border-navy">
+                <CardHeader className="bg-navy text-white">
+                  <CardTitle>👮 Oficiais de Serviço</CardTitle>
+                  <CardDescription className="text-gray-200">
+                    Configure o oficial do dia e contramestre do serviço
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 pt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Oficial do Dia */}
+                    <div className="space-y-4 p-4 border rounded-lg bg-blue-50">
+                      <h3 className="font-medium text-blue-800 flex items-center gap-2">
+                        🎖️ Oficial do Dia
+                      </h3>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="officerRank">Posto</Label>
+                        <Select 
+                          value={dutyOfficers.officerRank} 
+                          onValueChange={(value: "1t" | "2t" | "ct") => 
+                            setDutyOfficers({...dutyOfficers, officerRank: value})
+                          }
+                          disabled={isLoadingOfficers}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o posto" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1t">1º Tenente</SelectItem>
+                            <SelectItem value="2t">2º Tenente</SelectItem>
+                            <SelectItem value="ct">Capitão-Tenente</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="officerName">Nome do Oficial</Label>
+                        <Input 
+                          id="officerName" 
+                          placeholder="Nome completo do oficial"
+                          value={dutyOfficers.officerName}
+                          onChange={(e) => setDutyOfficers({...dutyOfficers, officerName: e.target.value})}
+                          disabled={isLoadingOfficers}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Contramestre */}
+                    <div className="space-y-4 p-4 border rounded-lg bg-green-50">
+                      <h3 className="font-medium text-green-800 flex items-center gap-2">
+                        ⚓ Contramestre do Serviço
+                      </h3>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="masterRank">Graduação</Label>
+                        <Select 
+                          value={dutyOfficers.masterRank} 
+                          onValueChange={(value: "3sg" | "2sg" | "1sg") => 
+                            setDutyOfficers({...dutyOfficers, masterRank: value})
+                          }
+                          disabled={isLoadingOfficers}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione a graduação" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="3sg">3º Sargento</SelectItem>
+                            <SelectItem value="2sg">2º Sargento</SelectItem>
+                            <SelectItem value="1sg">1º Sargento</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="masterName">Nome do Contramestre</Label>
+                        <Input 
+                          id="masterName" 
+                          placeholder="Nome completo do contramestre"
+                          value={dutyOfficers.masterName}
+                          onChange={(e) => setDutyOfficers({...dutyOfficers, masterName: e.target.value})}
+                          disabled={isLoadingOfficers}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-4">
+                    <Button 
+                      onClick={saveDutyOfficers}
+                      disabled={isLoadingOfficers || !dutyOfficers.officerName || !dutyOfficers.masterName}
+                      className="bg-navy hover:bg-navy/90"
+                    >
+                      {isLoadingOfficers ? "💾 Salvando..." : "💾 Salvar Oficiais"}
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      onClick={loadDutyOfficers}
+                      disabled={isLoadingOfficers}
+                    >
+                      🔄 Recarregar
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Visualização Atual */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>👁️ Visualização Atual</CardTitle>
+                  <CardDescription>
+                    Como as informações aparecem na tela principal
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="p-4 border rounded-lg bg-gray-50">
+                      <h4 className="font-medium mb-2 text-gray-700">
+                        Informações Exibidas no Header:
+                      </h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                          <span>
+                            <strong>Oficial do Dia:</strong> {
+                              dutyOfficers.officerName || "Não definido"
+                            } {
+                              dutyOfficers.officerName && `(${dutyOfficers.officerRank.toUpperCase()})`
+                            }
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                          <span>
+                            <strong>Contramestre:</strong> {
+                              dutyOfficers.masterName || "Não definido"
+                            } {
+                              dutyOfficers.masterName && `(${dutyOfficers.masterRank.toUpperCase()})`
+                            }
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-3 bg-blue-50 rounded-lg">
+                      <p className="text-sm text-blue-700">
+                        💡 <strong>Dica:</strong> As informações dos oficiais são exibidas no cabeçalho 
+                        da tela principal e são atualizadas automaticamente em tempo real.
+                      </p>
+                    </div>
+
+                    <div className="p-3 bg-amber-50 rounded-lg">
+                      <p className="text-sm text-amber-700">
+                        ⚠️ <strong>Importante:</strong> Certifique-se de que os nomes estão corretos 
+                        antes de salvar, pois eles serão exibidos publicamente.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
           {/* Aba de Configurações */}
           <TabsContent value="configuracoes">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
