@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import PDFViewer from "@/components/PDFViewer";
-import EscalaViewer from "@/components/EscalaViewer";
 import NoticeDisplay from "@/components/NoticeDisplay";
 import { useDisplay } from "@/context/DisplayContext";
 import { getSunsetWithLabel } from "@/utils/sunsetUtils";
@@ -31,34 +30,53 @@ const Index = () => {
   // Estado para dados extraídos das escalas
   const [escalaExtractedData, setEscalaExtractedData] = useState<any>(null);
 
-  // Buscar temperatura
   useEffect(() => {
     const fetchTemperature = async () => {
       try {
-        // API de temperatura para Rio de Janeiro
-        const response = await fetch(
-          'https://api.openweathermap.org/data/2.5/weather?q=Rio%20de%20Janeiro,BR&appid=your_api_key&units=metric'
-        );
+        console.log('🌡️ Buscando temperatura...');
         
-        if (response.ok) {
-          const data = await response.json();
-          setTemperature(`${Math.round(data.main.temp)}°C`);
-        } else {
-          // Fallback para temperatura estimada para Rio de Janeiro
-          const now = new Date();
-          const month = now.getMonth() + 1;
-          let estimatedTemp = 25; // Temperatura média para RJ
+        // OPÇÃO 1: API gratuita alternativa (sem chave necessária)
+        try {
+          const response = await fetch(
+            'https://wttr.in/Rio+de+Janeiro?format=j1'
+          );
           
-          // Ajustar por estação do ano (hemisfério sul)
-          if (month >= 12 || month <= 2) estimatedTemp = 28; // Verão
-          else if (month >= 3 && month <= 5) estimatedTemp = 25; // Outono  
-          else if (month >= 6 && month <= 8) estimatedTemp = 22; // Inverno
-          else estimatedTemp = 26; // Primavera
-          
-          setTemperature(`${estimatedTemp}°C*`);
+          if (response.ok) {
+            const data = await response.json();
+            const temp = data.current_condition[0].temp_C;
+            setTemperature(`${temp}°C`);
+            console.log('✅ Temperatura obtida via wttr.in:', `${temp}°C`);
+            return;
+          }
+        } catch (error) {
+          console.warn('⚠️ Falha na API wttr.in:', error);
         }
+
+        // OPÇÃO 2: Fallback para temperatura estimada baseada na época do ano
+        console.log('🔄 Usando temperatura estimada...');
+        const now = new Date();
+        const month = now.getMonth() + 1;
+        const hour = now.getHours();
+        
+        let estimatedTemp = 25; // Temperatura base para Rio de Janeiro
+        
+        // Ajustar por estação do ano (hemisfério sul)
+        if (month >= 12 || month <= 2) estimatedTemp = 28; // Verão
+        else if (month >= 3 && month <= 5) estimatedTemp = 25; // Outono  
+        else if (month >= 6 && month <= 8) estimatedTemp = 22; // Inverno
+        else estimatedTemp = 26; // Primavera
+        
+        // Ajustar por horário do dia
+        if (hour >= 6 && hour <= 12) estimatedTemp += 2; // Manhã/tarde
+        else if (hour >= 13 && hour <= 17) estimatedTemp += 4; // Tarde quente
+        else if (hour >= 18 && hour <= 22) estimatedTemp += 1; // Noite
+        else estimatedTemp -= 3; // Madrugada
+        
+        setTemperature(`${estimatedTemp}°C*`);
+        console.log('✅ Temperatura estimada:', `${estimatedTemp}°C*`);
+        
       } catch (error) {
-        console.error('Erro ao buscar temperatura:', error);
+        console.error('❌ Erro ao buscar temperatura:', error);
         setTemperature("25°C*");
       }
     };
@@ -68,7 +86,7 @@ const Index = () => {
     const tempInterval = setInterval(fetchTemperature, 30 * 60 * 1000);
     return () => clearInterval(tempInterval);
   }, []);
-
+  
   // Buscar horário do pôr do sol
   useEffect(() => {
     const fetchSunset = async () => {
@@ -128,53 +146,61 @@ const Index = () => {
 
   // Função para carregar dados extraídos da escala
   const fetchEscalaExtractedData = async (filename: string) => {
-    try {
-      const getBackendUrl = (path: string) => {
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-          return `http://localhost:5000${path}`;
-        }
-        return `http://${window.location.hostname}:5000${path}`;
-      };
-
-      console.log('🔍 Buscando dados extraídos para arquivo:', filename);
-      const response = await fetch(getBackendUrl(`/api/extracted-data-by-filename/${filename}`));
-      
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success && result.extractedData) {
-          console.log('📊 Dados extraídos carregados para arquivo:', filename, '- Militares:', result.extractedData.data?.militares?.length || 0);
-          setEscalaExtractedData(result.extractedData);
-        } else {
-          console.log('⚠️ Nenhum dado extraído encontrado para arquivo:', filename);
-          setEscalaExtractedData(null);
-        }
-      } else {
-        console.log('⚠️ Dados extraídos não encontrados para arquivo:', filename);
-        setEscalaExtractedData(null);
+  try {
+    setIsLoadingExtraction(true);
+    
+    const getBackendUrl = (path: string) => {
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return `http://localhost:5000${path}`;
       }
-    } catch (error) {
-      console.log('❌ Erro ao buscar dados extraídos para arquivo:', filename, error);
-      setEscalaExtractedData(null);
-    }
-  };
+      return `http://${window.location.hostname}:5000${path}`;
+    };
 
-  // Carregar dados extraídos quando escala ativa mudar
-  useEffect(() => {
-    if (activeEscalaDoc?.url) {
-      console.log('🔍 Tentando buscar dados extraídos para escala:', activeEscalaDoc.title, 'URL:', activeEscalaDoc.url);
-      
-      // Extrair filename da URL do documento
-      const filename = activeEscalaDoc.url.split('/').pop();
-      if (filename) {
-        fetchEscalaExtractedData(filename);
+    console.log('🔍 Buscando dados extraídos para arquivo:', filename);
+    const response = await fetch(getBackendUrl(`/api/extracted-data-by-filename/${filename}`));
+    
+    if (response.ok) {
+      const result = await response.json();
+      if (result.success && result.extractedData) {
+        console.log('📊 Dados extraídos carregados:', {
+          filename,
+          totalMilitares: result.extractedData.estatisticas?.total_militares || 0,
+          turnos: Object.keys(result.extractedData.turnos || {})
+        });
+        setEscalaExtractedData(result.extractedData);
       } else {
-        console.log('❌ Não foi possível extrair filename da URL:', activeEscalaDoc.url);
+        console.log('⚠️ Nenhum dado extraído encontrado para:', filename);
         setEscalaExtractedData(null);
       }
     } else {
+      console.log('⚠️ Dados extraídos não encontrados (HTTP', response.status, ')');
       setEscalaExtractedData(null);
     }
-  }, [activeEscalaDoc?.url]);
+  } catch (error) {
+    console.error('❌ Erro ao buscar dados extraídos:', error);
+    setEscalaExtractedData(null);
+  } finally {
+    setIsLoadingExtraction(false);
+  }
+};
+  // Carregar dados extraídos quando escala ativa mudar
+ useEffect(() => {
+  if (activeEscalaDoc?.url) {
+    console.log('🔍 Tentando buscar dados extraídos para escala:', activeEscalaDoc.title, 'URL:', activeEscalaDoc.url);
+    
+    const filename = activeEscalaDoc.url.split('/').pop();
+    if (filename) {
+      fetchEscalaExtractedData(filename);
+    } else {
+      console.log('❌ Não foi possível extrair filename da URL:', activeEscalaDoc.url);
+      setEscalaExtractedData(null);
+      setIsLoadingExtraction(false);
+    }
+  } else {
+    setEscalaExtractedData(null);
+    setIsLoadingExtraction(false);
+  }
+}, [activeEscalaDoc?.url]);
 
   // Atualizar horário e data em tempo real
   useEffect(() => {
@@ -336,12 +362,14 @@ const Index = () => {
           {/* Escala de Serviço */}
           <div className="h-[65%] min-h-[200px] xl:min-h-[320px]">
             <div className="h-full bg-gradient-to-br from-white/5 via-blue-900/20 to-white/5 backdrop-blur-sm rounded-xl lg:rounded-2xl border border-blue-400/25 shadow-2xl hover:border-blue-400/40 transition-all duration-500 overflow-hidden">
-              {activeEscalaDoc ? (
-                <EscalaViewer
-                  pdfUrl={activeEscalaDoc.url}
-                  extractedData={escalaExtractedData}
-                  fileName={activeEscalaDoc.title || "Escala de Serviço Semanal"}
-                />
+             {activeEscalaDoc && (
+  <EscalaStyledViewer
+    key={activeEscalaDoc.id}
+    pdfUrl={activeEscalaDoc.url}
+    fileName={activeEscalaDoc.title}
+    extractedData={escalaExtractedData}
+    isLoading={isLoadingExtraction}
+  />
               ) : (
                 <div className="flex items-center justify-center h-full text-white/60">
                   <div className="text-center">

@@ -55,10 +55,10 @@ class ContinuousAutoScroller {
     
     this.fixedMaxScroll = this.container.scrollHeight - this.container.clientHeight;
     
-    console.log(`📜 PLASA: Iniciando scroll - Total: ${this.container.scrollHeight}px, Visível: ${this.container.clientHeight}px, Para rolar: ${this.fixedMaxScroll}px`);
+    console.log(`📜 Documento: Iniciando scroll - Total: ${this.container.scrollHeight}px, Visível: ${this.container.clientHeight}px, Para rolar: ${this.fixedMaxScroll}px`);
     
     if (this.fixedMaxScroll <= 0) {
-      console.log("⚠️ PLASA: Não há conteúdo suficiente para scroll");
+      console.log("⚠️ Documento: Não há conteúdo suficiente para scroll");
       this.stop();
       return;
     }
@@ -79,7 +79,7 @@ class ContinuousAutoScroller {
       this.animationId = requestAnimationFrame(this.scroll);
     } else {
       this.container.scrollTop = maxScroll;
-      console.log(`✅ PLASA: Scroll completo até o final do documento`);
+      console.log(`✅ Documento: Scroll completo até o final`);
       
       setTimeout(() => {
         this.stop();
@@ -119,8 +119,16 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   scrollSpeed = "normal",
   autoRestartDelay = 3
 }) => {
-  // CORREÇÃO: Usar currentEscalaIndex do contexto
-  const { activeEscalaDoc, activePlasaDoc, currentEscalaIndex, escalaDocuments } = useDisplay();
+  // Estados do contexto
+  const { 
+    activeEscalaDoc, 
+    activePlasaDoc, 
+    currentEscalaIndex, 
+    escalaDocuments,
+    advanceToNextPlasaDocument
+  } = useDisplay();
+  
+  // Estados locais
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(false);
   const [isScrolling, setIsScrolling] = useState(false);
@@ -130,6 +138,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   const [debugInfo, setDebugInfo] = useState<DebugInfo>({});
   const [escalaImageUrl, setEscalaImageUrl] = useState<string | null>(null);
 
+  // Refs
   const scrollerRef = useRef<ContinuousAutoScroller | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const restartTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -147,284 +156,158 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   const RESTART_DELAY = autoRestartDelay * 1000;
   const PDF_SCALE = 1.5;
 
-  // Função para obter a URL completa do servidor backend - DETECTAR AMBIENTE
- const getBackendUrl = (path: string): string => {
+  // Função para obter a URL completa do servidor backend
+  const getBackendUrl = (path: string): string => {
+    if (path.startsWith('http') || path.startsWith('blob:') || path.startsWith('data:')) {
+      return path;
+    }
+    
+    const currentHost = window.location.hostname;
+    
+    if (currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
+      console.log(`🌐 PDFViewer: Detectado acesso via rede: ${currentHost}`);
+      
+      if (path.startsWith('/')) {
+        return `http://${currentHost}:5000${path}`;
+      }
+      return `http://${currentHost}:5000/${path}`;
+    }
+    
+    const isReplit = currentHost.includes('replit.dev') || currentHost.includes('replit.co');
+    
+    if (isReplit) {
+      const currentOrigin = window.location.origin;
+      console.log(`🌐 PDFViewer Backend URL (Replit): ${currentOrigin}`);
+      
+      if (path.startsWith('/')) {
+        return `${currentOrigin}${path}`;
+      }
+      return `${currentOrigin}/${path}`;
+    } else {
+      console.log(`🌐 PDFViewer Backend URL (Local): localhost:5000`);
+      
+      if (path.startsWith('/')) {
+        return `http://localhost:5000${path}`;
+      }
+      return `http://localhost:5000/${path}`;
+    }
+  };
 
   // Função para gerar ID do documento
- 
-  if (path.startsWith('http') || path.startsWith('blob:') || path.startsWith('data:')) {
-    return path;
-  }
-  
-  
-  
-  // 🚨 CORREÇÃO: Usar IP real do servidor para acesso em rede
-  const currentHost = window.location.hostname;
-  const currentPort = window.location.port;
-  
-  // Se estamos acessando via IP da rede, usar o mesmo IP para backend
-  if (currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
-    console.log(`🌐 PDFViewer: Detectado acesso via rede: ${currentHost}`);
-    
-    if (path.startsWith('/')) {
-      return `http://${currentHost}:5000${path}`;
-    }
-    return `http://${currentHost}:5000/${path}`;
-  }
-  
-  // Detectar se estamos no Replit
-  const isReplit = currentHost.includes('replit.dev') || currentHost.includes('replit.co');
-  
-  if (isReplit) {
-    const currentOrigin = window.location.origin;
-    if (path.startsWith('/')) {
-      return `${currentOrigin}${path}`;
-    }
-    return `${currentOrigin}/${path}`;
-  } else {
-    // Desenvolvimento local
-    if (path.startsWith('/')) {
-      return `http://localhost:5000${path}`;
-    }
-    return `http://localhost:5000/${path}`;
-  }
-};
- const generateDocumentId = (url: string): string => {
-    const urlParts = url.split("/");
-    const filename = urlParts[urlParts.length - 1];
-    const cleanName = filename
-      .replace(/\.[^/.]+$/, "")
-      .replace(/[^a-zA-Z0-9]/g, "-")
-      .toLowerCase();
-    return cleanName;
+  const generateDocumentId = (url: string): string => {
+    return url.split('/').pop()?.replace(/\.[^/.]+$/, '') || 'default';
   };
 
-  // CORREÇÃO: Função para determinar a URL do documento com alternância
-  const getDocumentUrl = () => {
-    if (documentType === "plasa") {
-      if (activePlasaDoc?.url) {
-        console.log("📄 PLASA: Usando documento do admin:", activePlasaDoc.url);
-        return getBackendUrl(activePlasaDoc.url);
-      }
-      console.log("📄 PLASA: Nenhum documento ativo");
-      return null;
-    } else if (documentType === "escala") {
-      // CORREÇÃO: Usar a escala atual baseada no índice
-      const activeEscalas = escalaDocuments.filter(doc => doc.active);
-      
-      if (activeEscalas.length === 0) {
-        return null;
-      }
-      
-      const currentEscala = activeEscalas[currentEscalaIndex % activeEscalas.length];
-      
-      if (currentEscala?.url) {
-        console.log(`📋 ESCALA: Usando escala ${currentEscalaIndex + 1}/${activeEscalas.length}:`, {
-          title: currentEscala.title,
-          category: currentEscala.category,
-          url: currentEscala.url
-        });
-        return getBackendUrl(currentEscala.url);
-      }
-      
-      console.log("📋 ESCALA: Escala atual sem URL válida");
-      return null;
-    }
-    return null;
+  // Verificar se é arquivo de imagem
+  const isImageFile = (url: string): boolean => {
+    return /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
   };
 
-  // CORREÇÃO: Obter documento da escala atual
-  const getCurrentEscalaDoc = () => {
-    const activeEscalas = escalaDocuments.filter(doc => doc.active);
-    if (activeEscalas.length === 0) return null;
-    return activeEscalas[currentEscalaIndex % activeEscalas.length] || null;
-  };
-
-  // Verificar se arquivo é imagem
-  const isImageFile = (url: string) => {
-    return (
-      url.startsWith('data:image') ||
-      url.startsWith('blob:') ||
-      /\.(jpg|jpeg|png|gif|webp)$/i.test(url)
-    );
-  };
-
-  // Carregar PDF.js APENAS quando necessário
-  const loadPDFJS = async () => {
-    if (window.pdfjsLib) return window.pdfjsLib;
-
-    console.log("📚 Carregando PDF.js...");
-    return new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-      script.onload = () => {
-        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 
-          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        window.pdfjsLib.GlobalWorkerOptions.verbosity = 0;
-        console.log("✅ PDF.js carregado com sucesso");
-        resolve(window.pdfjsLib);
-      };
-      script.onerror = () => {
-        console.error("❌ Erro ao carregar PDF.js");
-        reject(new Error('Falha ao carregar PDF.js'));
-      };
-      document.head.appendChild(script);
-    });
-  };
-
-  // Função melhorada para obter dados do PDF com tratamento de CORS
-  const getPDFData = async (url: string): Promise<ArrayBuffer | Uint8Array> => {
-    console.log("📥 Obtendo dados do PDF:", url);
-    
+  // 🔥 UNIFICADO: Verificar páginas existentes (PLASA/BONO)
+  const checkExistingPages = async (totalPages: number, documentId: string, docType: string = 'plasa'): Promise<string[]> => {
     try {
-      if (url.startsWith('blob:')) {
-        console.log("🔗 URL blob detectada");
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`Erro blob: ${response.status}`);
-        const arrayBuffer = await response.arrayBuffer();
-        console.log(`✅ Blob convertido: ${arrayBuffer.byteLength} bytes`);
-        return arrayBuffer;
-      }
-      
-      // Primeira tentativa com headers melhorados
-      try {
-        const response = await fetch(url, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/pdf,*/*'
-          },
-          mode: 'cors',
-          cache: 'no-cache',
-          credentials: 'omit'
-        });
-        
-        if (!response.ok) throw new Error(`HTTP: ${response.status}`);
-        
-        const arrayBuffer = await response.arrayBuffer();
-        console.log(`✅ PDF carregado: ${arrayBuffer.byteLength} bytes`);
-        return arrayBuffer;
-        
-      } catch (corsError) {
-        console.warn("⚠️ Erro CORS, tentando proxy:", corsError);
-        
-        // Fallback: usar proxy
-        const proxyUrl = getBackendUrl(`/api/proxy-pdf?url=${encodeURIComponent(url)}`);
-        console.log("🔄 Usando proxy:", proxyUrl);
-        
-        const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error(`Proxy: ${response.status}`);
-        
-        const arrayBuffer = await response.arrayBuffer();
-        console.log(`✅ PDF via proxy: ${arrayBuffer.byteLength} bytes`);
-        return arrayBuffer;
-      }
-      
-    } catch (error) {
-      console.error("❌ Erro ao obter PDF:", error);
-      throw error;
-    }
-  };
-
-  // Função para salvar página como imagem no servidor
-  const savePageAsImage = async (canvas: HTMLCanvasElement, pageNum: number, documentId: string): Promise<string> => {
-    return new Promise((resolve) => {
-      canvas.toBlob(async (blob) => {
-        if (!blob) {
-          console.error(`❌ Erro ao converter página ${pageNum} para blob`);
-          resolve(canvas.toDataURL('image/jpeg', 0.85));
-          return;
-        }
-
-        try {
-          const formData = new FormData();
-          formData.append('file', blob, `plasa-page-${pageNum}.jpg`);
-          formData.append('pageNumber', String(pageNum));
-          formData.append('documentId', documentId);
-          
-          const uploadUrl = getBackendUrl('/api/upload-plasa-page');
-          
-          const response = await fetch(uploadUrl, {
-            method: 'POST',
-            body: formData,
-          });
-
-          if (response.ok) {
-            const result = await response.json();
-            const savedUrl = result.data?.url || result.url || `/plasa-pages/plasa-page-${pageNum}.jpg`;
-            const fullSavedUrl = getBackendUrl(savedUrl);
-            console.log(`💾 Página ${pageNum} salva no servidor: ${fullSavedUrl}`);
-            resolve(fullSavedUrl);
-          } else {
-            throw new Error(`Erro no servidor: ${response.status}`);
-          }
-          
-        } catch (error) {
-          console.warn(`⚠️ Falha ao salvar página ${pageNum} no servidor, usando data URL:`, error);
-          resolve(canvas.toDataURL('image/jpeg', 0.85));
-        }
-      }, 'image/jpeg', 0.85);
-    });
-  };
-
-  // Verificar se páginas já existem no servidor
-  const checkExistingPages = async (totalPages: number, documentId: string): Promise<string[]> => {
-    try {
-      const checkUrl = getBackendUrl('/api/check-plasa-pages');
-      
-      const response = await fetch(checkUrl, {
+      const response = await fetch(getBackendUrl('/api/check-document-pages'), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ totalPages, documentId }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          totalPages, 
+          documentId, 
+          documentType: docType 
+        })
       });
 
       if (response.ok) {
         const result = await response.json();
-        if (result.allPagesExist) {
-          console.log(`💾 Usando ${totalPages} páginas já salvas no servidor`);
-          return result.pageUrls.map((url: string) => getBackendUrl(url));
-        }
+        console.log(`🔍 ${docType.toUpperCase()}: Verificação de cache:`, {
+          documentId,
+          allExist: result.allPagesExist,
+          totalPages: result.totalPages,
+          urls: result.pageUrls?.length || 0
+        });
+        
+        return result.allPagesExist ? result.pageUrls : [];
       }
-      
-      console.log("🆕 Páginas não encontradas, gerando novas...");
-      return [];
-      
     } catch (error) {
-      console.log(`⚠️ Erro ao verificar páginas existentes:`, error);
-      return [];
+      console.log(`⚠️ ${docType.toUpperCase()}: Erro ao verificar cache:`, error);
     }
+    return [];
   };
 
-  // FUNÇÃO PRINCIPAL: Converter PDF para imagens
-  const convertPDFToImages = async (pdfUrl: string) => {
+  // 🔥 UNIFICADO: Upload de página (PLASA/BONO)
+  const uploadPageToServer = async (imageBlob: Blob, pageNumber: number, documentId: string, docType: string = 'plasa'): Promise<string | null> => {
     try {
-      console.log(`🎯 INICIANDO CONVERSÃO PDF: ${pdfUrl}`);
+      const formData = new FormData();
+      formData.append('file', imageBlob, `${docType}-${documentId}-page-${pageNumber}.jpg`);
+      formData.append('pageNumber', pageNumber.toString());
+      formData.append('documentId', documentId);
+      formData.append('documentType', docType);
+
+      const response = await fetch(getBackendUrl('/api/upload-document-page'), {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log(`💾 ${docType.toUpperCase()}: Página ${pageNumber} salva no servidor:`, result.data.filename);
+        return getBackendUrl(result.data.url);
+      } else {
+        console.error(`❌ ${docType.toUpperCase()}: Falha ao salvar página ${pageNumber}`);
+      }
+    } catch (error) {
+      console.error(`❌ ${docType.toUpperCase()}: Erro ao salvar página ${pageNumber}:`, error);
+    }
+    return null;
+  };
+
+  // 🔥 UNIFICADO: Converter PDF para imagens (PLASA/BONO)
+  const convertPDFToImages = async (pdfUrl: string, docType: string = 'plasa') => {
+    try {
       setLoading(true);
       setLoadingProgress(0);
-      setDebugInfo({});
+      console.log(`🎯 ${docType.toUpperCase()}: Processando documento:`, pdfUrl);
 
-      if (!pdfUrl || pdfUrl === "null" || pdfUrl === "undefined") {
-        throw new Error("URL do PDF está vazia ou inválida");
+      if (!window.pdfjsLib) {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        document.head.appendChild(script);
+        
+        await new Promise((resolve, reject) => {
+          script.onload = resolve;
+          script.onerror = reject;
+        });
+        
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 
+          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
       }
 
-      const pdfjsLib = await loadPDFJS();
-      const pdfData = await getPDFData(pdfUrl);
+      let pdfData: ArrayBuffer;
       
-      const uint8Array = new Uint8Array(pdfData);
-      const header = new TextDecoder().decode(uint8Array.slice(0, 8));
-      
-      if (!header.startsWith('%PDF')) {
-        console.log("⚠️ Arquivo não é PDF válido, tentando como imagem");
-        setSavedPageUrls([pdfUrl]);
+      if (pdfUrl.startsWith('blob:')) {
+        const response = await fetch(pdfUrl);
+        pdfData = await response.arrayBuffer();
+      } else {
+        const response = await fetch(pdfUrl);
+        if (!response.ok) {
+          throw new Error(`Erro ao buscar PDF: ${response.status}`);
+        }
+        pdfData = await response.arrayBuffer();
+      }
+
+      if (pdfData.byteLength < 100) {
+        console.log(`❌ ${docType.toUpperCase()}: Arquivo muito pequeno ou inválido`);
+        setDebugInfo({
+          error: "Arquivo PDF inválido ou muito pequeno",
+          suggestion: "Verifique se o arquivo foi enviado corretamente"
+        });
         setTotalPages(1);
         setLoading(false);
         return;
       }
       
-      console.log("✅ PDF válido detectado, iniciando processamento...");
+      console.log(`✅ ${docType.toUpperCase()}: PDF válido detectado, iniciando processamento...`);
       
-      const loadingTask = pdfjsLib.getDocument({
+      const loadingTask = window.pdfjsLib.getDocument({
         data: pdfData,
         verbosity: 0,
         disableAutoFetch: true,
@@ -439,25 +322,26 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       });
       
       const pdf = await loadingTask.promise;
-      console.log(`📄 PDF carregado com sucesso: ${pdf.numPages} páginas`);
+      console.log(`📄 ${docType.toUpperCase()}: PDF carregado com sucesso: ${pdf.numPages} páginas`);
       setTotalPages(pdf.numPages);
       
       const docId = generateDocumentId(pdfUrl);
-      const existingPages = await checkExistingPages(pdf.numPages, docId);
+      const existingPages = await checkExistingPages(pdf.numPages, docId, docType);
       if (existingPages.length === pdf.numPages) {
-        console.log(`💾 Usando ${pdf.numPages} páginas já convertidas`);
+        console.log(`💾 ${docType.toUpperCase()}: Usando ${pdf.numPages} páginas já convertidas`);
         setSavedPageUrls(existingPages);
         setLoading(false);
         pdf.destroy();
         return;
       }
 
-      console.log("🖼️ Convertendo páginas para imagens...");
+      console.log(`🖼️ ${docType.toUpperCase()}: Convertendo páginas para imagens...`);
       const imageUrls: string[] = [];
 
       for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
         try {
-          console.log(`📄 Processando página ${pageNum}/${pdf.numPages}`);
+          console.log(`📄 ${docType.toUpperCase()}: Processando página ${pageNum}/${pdf.numPages}`);
+          setLoadingProgress((pageNum / pdf.numPages) * 100);
           
           const page = await pdf.getPage(pageNum);
           
@@ -465,124 +349,65 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
           const scale = Math.min(PDF_SCALE, 2048 / Math.max(originalViewport.width, originalViewport.height));
           const viewport = page.getViewport({ scale: scale });
 
-          console.log(`📐 Página ${pageNum} - Original: ${originalViewport.width}x${originalViewport.height}, Escala: ${scale}, Final: ${viewport.width}x${viewport.height}`);
+          console.log(`📐 ${docType.toUpperCase()}: Página ${pageNum} - Original: ${originalViewport.width}x${originalViewport.height}, Escala: ${scale}, Final: ${viewport.width}x${viewport.height}`);
 
           const canvas = document.createElement('canvas');
           const context = canvas.getContext('2d', { 
             alpha: false,
             willReadFrequently: false
           })!;
-          
-          canvas.height = Math.floor(viewport.height);
-          canvas.width = Math.floor(viewport.width);
-          
-          context.fillStyle = '#FFFFFF';
-          context.fillRect(0, 0, canvas.width, canvas.height);
+
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
 
           const renderContext = {
             canvasContext: context,
             viewport: viewport,
-            background: '#FFFFFF',
-            intent: 'display'
+            intent: 'display',
+            enableWebGL: false,
+            renderInteractiveForms: false,
+            optionalContentConfigPromise: null
           };
 
-          console.log(`🎨 Renderizando página ${pageNum}...`);
-          
-          const renderPromise = page.render(renderContext).promise;
-          const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Timeout na renderização')), 30000)
-          );
-          
-          await Promise.race([renderPromise, timeoutPromise]);
-          
-          console.log(`✅ Página ${pageNum} renderizada com sucesso`);
-          
-          const imageUrl = await savePageAsImage(canvas, pageNum, docId);
-          imageUrls.push(imageUrl);
-          
-          console.log(`💾 Página ${pageNum} salva: ${imageUrl}`);
-          
-          setLoadingProgress(Math.round((pageNum / pdf.numPages) * 100));
-          
-          page.cleanup();
-          
-          if (pageNum < pdf.numPages) {
-            await new Promise(resolve => setTimeout(resolve, 200));
-          }
-          
-        } catch (pageError) {
-          console.error(`❌ Erro na página ${pageNum}:`, pageError);
-          
-          const errorCanvas = document.createElement('canvas');
-          errorCanvas.width = 800;
-          errorCanvas.height = 1100;
-          const ctx = errorCanvas.getContext('2d')!;
-          
-          ctx.fillStyle = '#FFFFFF';
-          ctx.fillRect(0, 0, errorCanvas.width, errorCanvas.height);
-          
-          ctx.fillStyle = '#dc2626';
-          ctx.font = 'bold 32px Arial, sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText(`Erro na Página ${pageNum}`, errorCanvas.width/2, 200);
-          
-          ctx.font = '24px Arial, sans-serif';
-          ctx.fillStyle = '#666666';
-          ctx.fillText('Falha ao processar esta página', errorCanvas.width/2, 250);
-          
-          ctx.font = '18px Arial, sans-serif';
-          ctx.fillStyle = '#999999';
-          ctx.fillText('O resto do documento será exibido normalmente', errorCanvas.width/2, 300);
-          
-          ctx.fillStyle = '#dc2626';
-          ctx.font = '120px Arial, sans-serif';
-          ctx.fillText('⚠️', errorCanvas.width/2, 450);
-          
-          const errorUrl = await savePageAsImage(errorCanvas, pageNum, docId);
-          imageUrls.push(errorUrl);
-        }
-      }
+          await page.render(renderContext).promise;
 
-      console.log(`🎉 CONVERSÃO CONCLUÍDA: ${imageUrls.length}/${pdf.numPages} páginas processadas!`);
-      
-      if (imageUrls.length > 0) {
-        setSavedPageUrls(imageUrls);
-        setLoading(false);
-      } else {
-        throw new Error('Nenhuma página foi convertida com sucesso');
+          const imageBlob = await new Promise<Blob>((resolve) => {
+            canvas.toBlob((blob) => {
+              resolve(blob!);
+            }, 'image/jpeg', 0.85);
+          });
+
+          const serverUrl = await uploadPageToServer(imageBlob, pageNum, docId, docType);
+          
+          if (serverUrl) {
+            imageUrls.push(serverUrl);
+            console.log(`✅ ${docType.toUpperCase()}: Página ${pageNum} processada e salva`);
+          } else {
+            const localUrl = URL.createObjectURL(imageBlob);
+            imageUrls.push(localUrl);
+            console.log(`⚠️ ${docType.toUpperCase()}: Página ${pageNum} salva apenas localmente`);
+          }
+
+          page.cleanup();
+
+        } catch (pageError) {
+          console.error(`❌ ${docType.toUpperCase()}: Erro na página ${pageNum}:`, pageError);
+        }
       }
 
       pdf.destroy();
-      
-    } catch (error: unknown) {
-      console.error('❌ ERRO CRÍTICO NA CONVERSÃO:', error);
+      setSavedPageUrls(imageUrls);
       setLoading(false);
-      
-      // FIX: Properly declare variables with explicit types
-      let errorMessage: string = "Erro ao processar o documento";
-      let suggestion: string = "Tente as seguintes soluções:";
-      let details: string = error instanceof Error ? error.message : String(error);
-      
-      if (error instanceof Error) {
-        if (error.message?.includes("Invalid PDF")) {
-          errorMessage = "Arquivo PDF inválido ou corrompido";
-          suggestion = "• Verifique se o arquivo não está corrompido\n• Tente salvar o PDF novamente\n• Use uma imagem (JPG/PNG) como alternativa";
-        } else if (error.message?.includes("fetch") || error.message?.includes("HTTP") || error.message?.includes("NetworkError")) {
-          errorMessage = "Erro de conexão ou arquivo não encontrado";
-          suggestion = "• Verifique se o servidor backend está rodando\n• Confirme se o arquivo foi enviado corretamente\n• Tente fazer upload novamente";
-        } else if (error.message?.includes("Timeout")) {
-          errorMessage = "Tempo limite excedido na conversão";
-          suggestion = "• O PDF pode ser muito complexo\n• Tente um PDF mais simples\n• Use uma imagem como alternativa";
-        } else if (error.message?.includes("ArrayBuffer")) {
-          errorMessage = "Erro ao ler o arquivo";
-          suggestion = "• O arquivo pode estar corrompido\n• Verifique se é um PDF válido\n• Tente outro arquivo";
-        }
-      }
-      
-      setDebugInfo({ 
-        error: errorMessage,
-        suggestion: suggestion,
-        details: details,
+      setLoadingProgress(100);
+
+      console.log(`✅ ${docType.toUpperCase()}: Conversão completa - ${imageUrls.length}/${pdf.numPages} páginas processadas`);
+
+    } catch (error) {
+      console.error(`❌ ${docType.toUpperCase()}: Erro na conversão:`, error);
+      setLoading(false);
+      setDebugInfo({
+        error: `Erro ao processar ${docType.toUpperCase()}`,
+        details: error instanceof Error ? error.message : 'Erro desconhecido',
         timestamp: new Date().toLocaleTimeString(),
         troubleshooting: [
           "1. Verifique se o servidor backend está funcionando",
@@ -591,6 +416,68 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
           "4. Verifique o console do navegador (F12) para mais detalhes"
         ]
       });
+    }
+  };
+
+  // Função para obter escala atual
+  const getCurrentEscalaDoc = useCallback(() => {
+    const activeEscalas = escalaDocuments.filter(doc => doc.active);
+    return activeEscalas.length > 0 ? activeEscalas[currentEscalaIndex % activeEscalas.length] : null;
+  }, [escalaDocuments, currentEscalaIndex]);
+
+  // Converter escala PDF para imagem
+  const convertEscalaPDFToImage = async (pdfUrl: string) => {
+    try {
+      setLoading(true);
+      console.log("🖼️ ESCALA: Convertendo PDF para imagem única...");
+
+      if (!window.pdfjsLib) {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        document.head.appendChild(script);
+        
+        await new Promise((resolve, reject) => {
+          script.onload = resolve;
+          script.onerror = reject;
+        });
+        
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 
+          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      }
+
+      const response = await fetch(pdfUrl);
+      if (!response.ok) {
+        throw new Error(`Erro ao buscar PDF: ${response.status}`);
+      }
+      
+      const pdfData = await response.arrayBuffer();
+      const pdf = await window.pdfjsLib.getDocument({ data: pdfData }).promise;
+      
+      const page = await pdf.getPage(1);
+      const viewport = page.getViewport({ scale: 2.0 });
+
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d')!;
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+
+      await page.render({
+        canvasContext: context,
+        viewport: viewport
+      }).promise;
+
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const imageUrl = URL.createObjectURL(blob);
+          setEscalaImageUrl(imageUrl);
+          console.log("✅ ESCALA: Imagem convertida com sucesso");
+        }
+        setLoading(false);
+      }, 'image/jpeg', 0.9);
+
+    } catch (error) {
+      console.error("❌ ESCALA: Erro na conversão:", error);
+      setLoading(false);
     }
   };
 
@@ -611,8 +498,14 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
 
   // Callback quando scroll completa
   const handleScrollComplete = useCallback(() => {
-    console.log(`✅ PLASA: Documento visualizado completamente`);
+    console.log(`✅ Documento visualizado completamente`);
     setIsScrolling(false);
+    
+    // Avançar para próximo documento PLASA/BONO
+    if (documentType === "plasa") {
+      console.log("🔄 Avançando para próximo documento PLASA/BONO...");
+      advanceToNextPlasaDocument();
+    }
     
     if (!isAutomationPaused) {
       restartTimerRef.current = setTimeout(() => {
@@ -621,7 +514,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
         }
       }, RESTART_DELAY);
     }
-  }, [isAutomationPaused, RESTART_DELAY]);
+  }, [isAutomationPaused, RESTART_DELAY, documentType, advanceToNextPlasaDocument]);
 
   // Iniciar scroll contínuo
   const startContinuousScroll = useCallback(() => {
@@ -662,24 +555,25 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     }, 1000);
   }, [documentType, savedPageUrls.length, isAutomationPaused, handleScrollComplete, SCROLL_SPEED]);
 
-  // CORREÇÃO: INICIALIZAR PLASA com melhor verificação
+  // CORREÇÃO: INICIALIZAR PLASA/BONO com processamento unificado
   useEffect(() => {
     if (documentType === "plasa") {
-      console.log("🔄 PLASA Effect triggered:", {
+      console.log("🔄 PLASA/BONO Effect triggered:", {
         isScrolling,
         activePlasaDoc: activePlasaDoc?.id,
-        url: activePlasaDoc?.url
+        url: activePlasaDoc?.url,
+        type: activePlasaDoc?.type
       });
 
       if (isScrolling) return;
       
       if (!activePlasaDoc || !activePlasaDoc.url) {
-        console.log("❌ PLASA: Nenhum documento PLASA ativo encontrado");
+        console.log("❌ PLASA/BONO: Nenhum documento ativo encontrado");
         setLoading(false);
         setSavedPageUrls([]);
         setDebugInfo({
-          error: "Nenhum documento PLASA ativo",
-          suggestion: "Adicione um PLASA no painel administrativo."
+          error: "Nenhum documento PLASA/BONO ativo",
+          suggestion: "Adicione um PLASA ou BONO no painel administrativo."
         });
         return;
       }
@@ -690,16 +584,18 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       setDebugInfo({});
 
       const docUrl = getBackendUrl(activePlasaDoc.url);
-      console.log("🎯 PLASA: Processando documento:", docUrl);
+      const docType = activePlasaDoc.type; // 'plasa' ou 'bono'
+      
+      console.log(`🎯 ${docType.toUpperCase()}: Processando documento:`, docUrl);
       
       if (isImageFile(docUrl) || (docUrl.startsWith('blob:') && activePlasaDoc.title.match(/\.(jpg|jpeg|png|gif|webp)$/i))) {
-        console.log("🖼️ PLASA: Documento é uma imagem, usando diretamente");
+        console.log(`🖼️ ${docType.toUpperCase()}: Documento é uma imagem, usando diretamente`);
         setSavedPageUrls([docUrl]);
         setTotalPages(1);
         setLoading(false);
       } else {
-        console.log("📄 PLASA: Documento é um PDF, convertendo para imagens");
-        convertPDFToImages(docUrl);
+        console.log(`📄 ${docType.toUpperCase()}: Documento é um PDF, convertendo para imagens`);
+        convertPDFToImages(docUrl, docType);
       }
     }
 
@@ -708,7 +604,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
         clearAllTimers();
       }
     };
-  }, [documentType, activePlasaDoc?.id, activePlasaDoc?.url]);
+  }, [documentType, activePlasaDoc?.id, activePlasaDoc?.url, activePlasaDoc?.type]);
 
   // CORREÇÃO: Inicializar ESCALA com monitoramento do índice de alternância
   useEffect(() => {
@@ -747,471 +643,216 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     }
   }, [documentType, currentEscalaIndex, escalaDocuments]);
 
-  // ✅ FUNÇÃO: Verificar se URL é imagem
-  const checkIfImageFile = async (url: string): Promise<boolean> => {
-    try {
-      const response = await fetch(url, { method: 'HEAD' });
-      const contentType = response.headers.get('content-type');
-      return contentType?.startsWith('image/') || false;
-    } catch {
-      return false;
-    }
-  };
-  
-  // NOVA FUNÇÃO: Converter PDF da escala para imagem
-  const convertEscalaPDFToImage = async (pdfUrl: string) => {
-    try {
-      // ✅ NOVO: Obter documentId para o cache
-      const currentEscala = getCurrentEscalaDoc();
-      if (!currentEscala) {
-        console.log("❌ ESCALA: Nenhuma escala atual encontrada");
-        setLoading(false);
-        return;
-      }
-      
-      const documentId = currentEscala.id;
-      
-      console.log(`🎯 ESCALA: Convertendo PDF: ${pdfUrl} (ID: ${documentId})`);
-      setLoading(true);
-      setLoadingProgress(0);
-  
-      // ✅ NOVO: VERIFICAR CACHE PRIMEIRO
-      console.log(`🔍 Verificando cache para escala: ${documentId}`);
-      
-      try {
-        const cacheResponse = await fetch(getBackendUrl(`/api/check-escala-cache/${documentId}`));
-        const cacheResult = await cacheResponse.json();
-        
-        if (cacheResult.success && cacheResult.exists) {
-          console.log(`💾 ESCALA: Usando imagem já convertida do cache`);
-          const cachedUrl = getBackendUrl(cacheResult.url);
-          setEscalaImageUrl(cachedUrl);
-          setLoading(false);
-          return; // ✅ SAIR AQUI - USA CACHE
-        }
-      } catch (cacheError) {
-        console.log(`⚠️ Erro ao verificar cache, continuando com conversão...`, cacheError);
-      }
-      
-      console.log(`🆕 ESCALA: Cache não encontrado, convertendo...`);
-  
-      // Verificar se não é imagem primeiro
-      if (await checkIfImageFile(pdfUrl)) {
-        console.log("🖼️ ESCALA: URL é uma imagem, não um PDF");
-        setLoading(false);
-        return;
-      }
-  
-      const pdfjsLib = await loadPDFJS();
-      const pdfData = await getPDFData(pdfUrl);
-      
-      const uint8Array = new Uint8Array(pdfData);
-      const header = new TextDecoder().decode(uint8Array.slice(0, 8));
-      
-      if (!header.startsWith('%PDF')) {
-        console.log("⚠️ ESCALA: Não é PDF válido, usando como imagem");
-        setEscalaImageUrl(pdfUrl);
-        setLoading(false);
-        console.log("✅ Escala carregada com sucesso:", pdfUrl);
-        return;
-      }
-      
-      console.log("✅ ESCALA: PDF válido, convertendo...");
-      
-      const loadingTask = pdfjsLib.getDocument({
-        data: pdfData,
-        verbosity: 0,
-        disableAutoFetch: true,
-        disableStream: true,
-        disableRange: true,
-        stopAtErrors: false,
-        maxImageSize: 1024 * 1024 * 10,
-        isEvalSupported: false,
-        fontExtraProperties: false,
-        useSystemFonts: false,
-        standardFontDataUrl: null
-      });
-      
-      const pdf = await loadingTask.promise;
-      console.log(`📄 ESCALA: PDF carregado: ${pdf.numPages} páginas`);
-      
-      const page = await pdf.getPage(1);
-      
-      const originalViewport = page.getViewport({ scale: 1.0 });
-      const scale = Math.min(1.5, 1024 / Math.max(originalViewport.width, originalViewport.height));
-      const viewport = page.getViewport({ scale: scale });
-  
-      console.log(`📐 ESCALA: Página 1 - Escala: ${scale}, Final: ${viewport.width}x${viewport.height}`);
-  
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d', { 
-        alpha: false,
-        willReadFrequently: false
-      })!;
-      
-      canvas.height = Math.floor(viewport.height);
-      canvas.width = Math.floor(viewport.width);
-      
-      context.fillStyle = '#FFFFFF';
-      context.fillRect(0, 0, canvas.width, canvas.height);
-  
-      const renderContext = {
-        canvasContext: context,
-        viewport: viewport,
-        background: '#FFFFFF',
-        intent: 'display'
-      };
-  
-      console.log(`🎨 ESCALA: Renderizando...`);
-      
-      const renderPromise = page.render(renderContext).promise;
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout na renderização')), 60000)
-      );
-      
-      await Promise.race([renderPromise, timeoutPromise]);
-      
-      console.log(`✅ ESCALA: Renderizada com sucesso`);
-      
-      // ✅ NOVO: SALVAR NO CACHE APÓS CONVERSÃO
-      try {
-        console.log(`💾 Salvando escala ${documentId} no cache...`);
-        
-        // CORREÇÃO: Tipagem correta para o Blob
-        const imageBlob = await new Promise<Blob | null>((resolve) => {
-          canvas.toBlob((blob) => {
-            resolve(blob);
-          }, 'image/jpeg', 0.85);
-        });
-        
-        if (!imageBlob) {
-          throw new Error('Falha ao converter canvas para blob');
-        }
-        
-        const formData = new FormData();
-        formData.append('file', imageBlob, `escala-${documentId}.jpg`);
-        formData.append('documentId', documentId);
-        
-        const imageDataUrl = canvas.toDataURL('image/jpeg', 0.85);
-        
-        const saveResponse = await fetch(getBackendUrl('/api/save-escala-cache'), {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            escalId: documentId,
-            imageData: imageDataUrl
-          })
-        });
-        
-        if (saveResponse.ok) {
-          const saveResult = await saveResponse.json();
-          console.log(`💾 ESCALA: Imagem salva no cache: ${saveResult.url}`);
-          
-          // ✅ Usar URL do servidor ao invés de dataURL
-          const cachedUrl = getBackendUrl(saveResult.url);
-          setEscalaImageUrl(cachedUrl);
-        } else {
-          throw new Error('Falha ao salvar no servidor');
-        }
-      } catch (saveError) {
-        console.log(`⚠️ ESCALA: Falha ao salvar cache, usando dataURL:`, saveError);
-        // ✅ Fallback: usar dataURL se não conseguir salvar no servidor
-        const imageDataUrl = canvas.toDataURL('image/jpeg', 0.85);
-        setEscalaImageUrl(imageDataUrl);
-      }
-      
-      page.cleanup();
-      pdf.destroy();
-      
-      setLoading(false);
-      console.log(`🎉 ESCALA: Conversão concluída!`);
-      
-    } catch (error) {
-      console.error('❌ ESCALA: Erro na conversão:', error);
-      setLoading(false);
-    }
-  };
-
-  // Iniciar scroll quando páginas estiverem prontas
+  // Inicializar scroll quando páginas estão prontas
   useEffect(() => {
-    if (!loading && savedPageUrls.length > 0 && !isAutomationPaused && !isScrolling) {
-      const timer = setTimeout(() => {
-        if (!isAutomationPaused && savedPageUrls.length > 0 && !isScrolling) {
-          startContinuousScroll();
-        }
-      }, 3000);
-
-      return () => {
-        clearTimeout(timer);
-      };
+    if (documentType === "plasa" && savedPageUrls.length > 0 && !loading && !isScrolling) {
+      console.log(`🚀 PLASA/BONO: Iniciando automação com ${savedPageUrls.length} páginas`);
+      setTimeout(startContinuousScroll, 2000);
     }
-  }, [loading, savedPageUrls.length, isAutomationPaused, isScrolling, startContinuousScroll]);
+  }, [documentType, savedPageUrls.length, loading, isScrolling, startContinuousScroll]);
 
-  // CORREÇÃO: Renderizar conteúdo com melhor tratamento de erros
+  // Atualizar velocidade do scroller
+  useEffect(() => {
+    if (scrollerRef.current && scrollerRef.current.isActive) {
+      scrollerRef.current.setSpeed(SCROLL_SPEED);
+    }
+  }, [SCROLL_SPEED]);
+
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      clearAllTimers();
+      savedPageUrls.forEach(url => {
+        if (url.startsWith('blob:')) {
+          URL.revokeObjectURL(url);
+        }
+      });
+      if (escalaImageUrl && escalaImageUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(escalaImageUrl);
+      }
+    };
+  }, [clearAllTimers, savedPageUrls, escalaImageUrl]);
+
+  // Controles
+  const toggleAutomation = () => {
+    setIsAutomationPaused(!isAutomationPaused);
+    if (!isAutomationPaused) {
+      clearAllTimers();
+    } else {
+      setTimeout(startContinuousScroll, 500);
+    }
+  };
+
+  const restartScroll = () => {
+    clearAllTimers();
+    if (containerRef.current) {
+      containerRef.current.scrollTop = 0;
+    }
+    setTimeout(startContinuousScroll, 1000);
+  };
+
+  // Renderização
   const renderContent = () => {
-    if (documentType === "plasa" && savedPageUrls.length > 0) {
+    if (loading) {
       return (
-        <div className="w-full">
-          {savedPageUrls.map((pageUrl, index) => (
-            <div key={index} className="w-full mb-4">
-              <img
-                src={pageUrl}
-                alt={`PLASA - Página ${index + 1}`}
-                className="w-full h-auto block shadow-sm"
-                style={{ maxWidth: '100%' }}
-                onError={(e) => {
-                  console.error(`❌ Erro ao carregar página ${index + 1}:`, pageUrl);
-                  (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgZmlsbD0iI2Y4ZjhmOCIvPjx0ZXh0IHg9IjQwMCIgeT0iMzAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkVycm8gYW8gY2FycmVnYXIgcMOhZ2luYSAke2luZGV4ICsgMX08L3RleHQ+PC9zdmc+';
-                }}
-                onLoad={() => {
-                  console.log(`✅ Página ${index + 1} carregada com sucesso`);
-                }}
-              />
-              {index < savedPageUrls.length - 1 && (
-                <div className="w-full h-4 bg-gradient-to-r from-blue-100 to-blue-200 flex items-center justify-center my-2">
-                  <div className="text-xs text-blue-600 font-medium">
-                    ••• Página {index + 2} •••
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-          <div className="w-full h-20 bg-gradient-to-r from-navy/10 to-navy/20 flex items-center justify-center rounded-lg">
-            <div className="text-center">
-              <div className="text-navy font-bold text-lg">📄 FIM DO PLASA</div>
-              <div className="text-navy/70 text-sm">Reiniciando em {autoRestartDelay}s...</div>
-            </div>
-          </div>
-        </div>
-      );
-    } else if (documentType === "escala") {
-      const docUrl = getDocumentUrl();
-      const currentEscala = getCurrentEscalaDoc();
-      
-      // Log removido para evitar renderização infinita
-      
-      return (
-        <div className="w-full h-full flex items-center justify-center p-4">
-          {escalaImageUrl && escalaImageUrl !== 'convertida' && escalaImageUrl !== 'nenhuma' ? (
-            <img
-              src={escalaImageUrl}
-              alt="Escala de Serviço Convertida"
-              className="max-w-full max-h-full object-contain shadow-lg"
-              onLoad={() => {
-                console.log(`✅ Escala convertida carregada com sucesso`);
-              }}
-            />
-          ) : docUrl ? (
-            <img
-              src={docUrl}
-              alt="Escala de Serviço"
-              className="max-w-full max-h-full object-contain shadow-lg"
-              onError={(e) => {
-                console.error("❌ Erro ao carregar escala:", docUrl);
-                (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2Y4ZjhmOCIvPjx0ZXh0IHg9IjIwMCIgeT0iMTUwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkVycm8gYW8gY2FycmVnYXIgZXNjYWxhPC90ZXh0Pjwvc3ZnPg==';
-              }}
-              onLoad={() => {
-                console.log(`✅ Escala carregada com sucesso: ${docUrl}`);
-              }}
-            />
-          ) : (
-            <div className="text-center text-gray-500">
-              <div className="text-4xl mb-4">📋</div>
-              <div>Nenhuma escala ativa</div>
-              <div className="text-sm mt-2">Adicione uma escala no painel administrativo</div>
+        <div className="flex flex-col items-center justify-center h-full space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+          <p className="text-white text-sm">
+            {documentType === "plasa" ? "Processando PLASA/BONO..." : "Carregando Escala..."}
+          </p>
+          {loadingProgress > 0 && (
+            <div className="w-64 bg-gray-700 rounded-full h-2">
+              <div 
+                className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${loadingProgress}%` }}
+              ></div>
             </div>
           )}
         </div>
       );
+    }
+
+    if (debugInfo.error) {
+      return (
+        <div className="p-4 text-white">
+          <h3 className="font-bold text-red-400 mb-2">❌ {debugInfo.error}</h3>
+          {debugInfo.suggestion && (
+            <p className="text-gray-300 mb-2">{debugInfo.suggestion}</p>
+          )}
+          {debugInfo.details && (
+            <p className="text-xs text-gray-400 mb-2">Detalhes: {debugInfo.details}</p>
+          )}
+          {debugInfo.troubleshooting && (
+            <div className="mt-4">
+              <p className="font-semibold text-yellow-400 mb-2">💡 Soluções:</p>
+              <ul className="list-disc pl-5 space-y-1 text-sm text-gray-300">
+                {debugInfo.troubleshooting.map((tip, index) => (
+                  <li key={index}>{tip}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (documentType === "plasa" && savedPageUrls.length > 0) {
+      return (
+        <div className="h-full relative">
+          <div 
+            ref={containerRef}
+            className="h-full overflow-y-auto scrollbar-hide"
+            style={{ scrollBehavior: 'auto' }}
+          >
+            <div className="space-y-1">
+              {savedPageUrls.map((url, index) => (
+                <img
+                  key={index}
+                  src={url}
+                  alt={`Página ${index + 1}`}
+                  className="w-full block"
+                  style={{
+                    maxWidth: '100%',
+                    height: 'auto',
+                    display: 'block'
+                  }}
+                  onLoad={() => {
+                    console.log(`🖼️ PLASA/BONO: Página ${index + 1} carregada`);
+                  }}
+                  onError={(e) => {
+                    console.error(`❌ PLASA/BONO: Erro ao carregar página ${index + 1}`);
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+          
+    
+        </div>
+      );
+    }
+
+    if (documentType === "escala") {
+      const currentEscala = getCurrentEscalaDoc();
+      
+      if (!currentEscala) {
+        return (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center text-white">
+              <h3 className="text-lg font-semibold mb-2">📋 Nenhuma Escala Ativa</h3>
+              <p className="text-gray-300">Adicione uma escala no painel administrativo.</p>
+            </div>
+          </div>
+        );
+      }
+
+      const docUrl = getBackendUrl(currentEscala.url);
+      const isPDF = docUrl.toLowerCase().includes('.pdf');
+      
+      if (isPDF && escalaImageUrl) {
+        return (
+          <div className="h-full flex items-center justify-center bg-gray-900">
+            <img
+              src={escalaImageUrl}
+              alt={currentEscala.title}
+              className="max-w-full max-h-full object-contain"
+              style={{
+                width: 'auto',
+                height: 'auto',
+                maxWidth: '100%',
+                maxHeight: '100%'
+              }}
+            />
+          </div>
+        );
+      } else if (!isPDF) {
+        return (
+          <div className="h-full flex items-center justify-center bg-gray-900">
+            <img
+              src={docUrl}
+              alt={currentEscala.title}
+              className="max-w-full max-h-full object-contain"
+              onError={(e) => {
+                console.error("❌ ESCALA: Erro ao carregar imagem:", docUrl);
+              }}
+            />
+          </div>
+        );
+      }
     }
 
     return (
-      <div className="w-full h-full flex items-center justify-center">
-        <div className="text-center p-6 max-w-lg">
-          {debugInfo.error ? (
-            <>
-              <div className="text-6xl mb-4">⚠️</div>
-              <div className="text-red-600 font-bold text-lg mb-3">{debugInfo.error}</div>
-              <div className="text-sm text-gray-600 mb-4 whitespace-pre-line">{debugInfo.suggestion}</div>
-              {debugInfo.details && (
-                <details className="text-xs text-gray-400 mb-4">
-                  <summary className="cursor-pointer hover:text-gray-600">Detalhes técnicos</summary>
-                  <div className="mt-2 p-2 bg-gray-100 rounded font-mono text-left">
-                    {debugInfo.details}
-                  </div>
-                </details>
-              )}
-              {debugInfo.troubleshooting && (
-                <details className="text-xs text-blue-600 mb-4">
-                  <summary className="cursor-pointer hover:text-blue-800">Guia de solução</summary>
-                  <div className="mt-2 text-left">
-                    {debugInfo.troubleshooting.map((step: string, index: number) => (
-                      <div key={index} className="mb-1">{step}</div>
-                    ))}
-                  </div>
-                </details>
-              )}
-              <div className="flex gap-2 justify-center">
-                <button 
-                  onClick={() => {
-                    setDebugInfo({});
-                    if (activePlasaDoc && activePlasaDoc.url) {
-                      const fullUrl = getBackendUrl(activePlasaDoc.url);
-                      if (isImageFile(fullUrl)) {
-                        setSavedPageUrls([fullUrl]);
-                        setLoading(false);
-                      } else {
-                        convertPDFToImages(fullUrl);
-                      }
-                    }
-                  }}
-                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
-                >
-                  🔄 Tentar Novamente
-                </button>
-                <button 
-                  onClick={() => {
-                    setDebugInfo({});
-                    setSavedPageUrls([]);
-                  }}
-                  className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 text-sm"
-                >
-                  ❌ Cancelar
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="text-6xl mb-4">📄</div>
-              <div className="text-gray-600 text-lg">
-                {documentType === "plasa" && !activePlasaDoc 
-                  ? "Nenhum documento PLASA ativo" 
-                  : loading
-                  ? "Processando documento..."
-                  : "Preparando visualização..."}
-              </div>
-              {documentType === "plasa" && !activePlasaDoc && (
-                <div className="mt-4 text-sm text-gray-500">
-                  Vá para o painel administrativo e faça upload de um documento PLASA
-                </div>
-              )}
-              {activePlasaDoc && (
-                <div className="mt-4 text-xs text-gray-400 bg-gray-50 p-3 rounded">
-                  <div className="font-medium">Documento ativo:</div>
-                  <div className="truncate">{activePlasaDoc.title}</div>
-                  <div className="truncate font-mono">{activePlasaDoc.url}</div>
-                </div>
-              )}
-            </>
-          )}
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center text-white">
+          <h3 className="text-lg font-semibold mb-2">📄 Nenhum Documento</h3>
+          <p className="text-gray-300">
+            {documentType === "plasa" 
+              ? "Adicione um PLASA ou BONO no painel administrativo." 
+              : "Adicione uma escala no painel administrativo."}
+          </p>
         </div>
       </div>
     );
   };
 
-  // CORREÇÃO: Título dinâmico baseado na escala atual
-  const getCurrentTitle = () => {
-    if (documentType === "escala") {
-      const currentEscala = getCurrentEscalaDoc();
-      const activeEscalas = escalaDocuments.filter(doc => doc.active);
-      
-      if (currentEscala) {
-        const categorySubtitle = currentEscala.category
-          ? `(${currentEscala.category === "oficial" ? "Oficiais" : "Praças"})`
-          : "";
-        
-        if (activeEscalas.length > 1) {
-          return `${title} ${categorySubtitle} - ${currentEscalaIndex + 1}/${activeEscalas.length}`;
-        } else {
-          return `${title} ${categorySubtitle}`;
-        }
-      }
-    }
-    
-    return title;
-  };
-
-  const currentEscala = getCurrentEscalaDoc();
-
   return (
-    <Card className="h-full overflow-hidden border-0 shadow-none bg-transparent">
-      {/* Header Estilizado com Gradiente */}
-      <CardHeader className="relative bg-gradient-to-r from-slate-700 via-blue-800 to-slate-700 text-white py-3 px-4 border-b border-blue-400/30">
-        {/* Efeito de brilho */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-400/10 to-transparent"></div>
-        
-        <CardTitle className="relative z-10 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            {/* Ícone do tipo de documento */}
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
-              {documentType === "plasa" ? (
-                <span className="text-white text-sm font-bold">📋</span>
-              ) : (
-                <span className="text-white text-sm font-bold">📅</span>
-              )}
-            </div>
-            
-            {/* Título principal */}
-            <div className="flex flex-col">
-              <span className="font-bold text-sm bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
-                {documentType === "plasa" ? (
-                  activePlasaDoc?.title || "PLASA - Plano de Serviço Semanal"
-                ) : (
-                  currentEscala?.title || "Escala de Serviço Semanal"
-                )}
-              </span>
-              
-              {/* Subtítulo com categoria (apenas para escala) */}
-              {documentType === "escala" && currentEscala?.category && (
-                <span className="text-xs text-blue-200/80 font-medium">
-                  {currentEscala.category === "oficial" ? "Oficiais" : "Praças"}
-                </span>
-              )}
-            </div>
-          </div>
-          
-          {/* Indicadores à direita */}
-          <div className="flex items-center space-x-3">
-            {/* Status de múltiplas escalas */}
-            {documentType === "escala" && escalaDocuments.filter(d => d.active).length > 1 && (
-              <div className="bg-blue-600/50 backdrop-blur-sm rounded-full px-3 py-1 border border-blue-400/30">
-                <span className="text-xs font-medium text-blue-100">
-                  {currentEscalaIndex + 1} de {escalaDocuments.filter(d => d.active).length}
-                </span>
-              </div>
-            )}
-            
-            {/* Indicador de status do PLASA */}
-            {documentType === "plasa" && savedPageUrls.length > 0 && (
-              <div className="bg-green-600/50 backdrop-blur-sm rounded-full px-3 py-1 border border-green-400/30">
-                <span className="text-xs font-medium text-green-100">
-                  {savedPageUrls.length} páginas
-                </span>
-              </div>
-            )}
-          </div>
+    <Card className="h-full bg-gray-800 border-gray-700">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-white text-sm flex items-center justify-between">
+          <span>
+            {documentType === "plasa" 
+              ? `📄 ${activePlasaDoc?.type?.toUpperCase() || 'PLASA'}: ${activePlasaDoc?.title || 'Nenhum documento'}` 
+              : `📋 ${title}: ${getCurrentEscalaDoc()?.title || 'Nenhuma escala'}`}
+          </span>
+          {documentType === "plasa" && totalPages > 1 && (
+            <span className="text-xs text-gray-400">
+              {totalPages} página{totalPages !== 1 ? 's' : ''}
+            </span>
+          )}
         </CardTitle>
       </CardHeader>
-      
-      <CardContent className="p-0 h-[calc(100%-2.5rem)] bg-white">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center h-full">
-            <div className="w-16 h-16 border-4 border-navy border-t-transparent rounded-full animate-spin"></div>
-            <p className="mt-4 text-navy text-sm font-medium">
-              {documentType === "plasa" ? "Processando documento..." : "Carregando..."}
-            </p>
-          </div>
-        ) : (
-          <div
-            className="relative w-full h-full overflow-y-auto"
-            ref={containerRef}
-            style={{ scrollBehavior: "auto" }}
-          >
-            {renderContent()}
-          </div>
-        )}
+      <CardContent className="p-0 h-[calc(100%-4rem)]">
+        {renderContent()}
       </CardContent>
     </Card>
   );

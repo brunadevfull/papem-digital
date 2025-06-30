@@ -31,6 +31,7 @@ export interface DutyOfficer {
   createdAt: Date | null;
   updatedAt: Date | null;
 }
+
 interface DisplayContextType {
   notices: Notice[];
   plasaDocuments: PDFDocument[];
@@ -38,10 +39,12 @@ interface DisplayContextType {
   activePlasaDoc: PDFDocument | null;
   activeEscalaDoc: PDFDocument | null;
   currentEscalaIndex: number;
+  currentPlasaIndex: number;
   documentAlternateInterval: number;
   scrollSpeed: "slow" | "normal" | "fast";
   autoRestartDelay: number;
   isLoading: boolean;
+  advanceToNextPlasaDocument: () => void;
   addNotice: (notice: Omit<Notice, "id" | "createdAt" | "updatedAt">) => Promise<boolean>;
   updateNotice: (notice: Notice) => Promise<boolean>;
   deleteNotice: (id: string) => Promise<boolean>;
@@ -74,6 +77,7 @@ export const DisplayProvider: React.FC<DisplayProviderProps> = ({ children }) =>
   const [plasaDocuments, setPlasaDocuments] = useState<PDFDocument[]>([]);
   const [escalaDocuments, setEscalaDocuments] = useState<PDFDocument[]>([]);
   const [currentEscalaIndex, setCurrentEscalaIndex] = useState(0);
+  const [currentPlasaIndex, setCurrentPlasaIndex] = useState(0);
   const [documentAlternateInterval, setDocumentAlternateInterval] = useState(30000);
   const [scrollSpeed, setScrollSpeed] = useState<"slow" | "normal" | "fast">("normal");
   const [autoRestartDelay, setAutoRestartDelay] = useState(3);
@@ -83,47 +87,42 @@ export const DisplayProvider: React.FC<DisplayProviderProps> = ({ children }) =>
   const escalaTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isInitializingRef = useRef(true);
 
-  // CORREÇÃO: Função para obter URL completa do backend - DETECTAR AMBIENTE
- const getBackendUrl = (path: string): string => {
-  if (path.startsWith('http') || path.startsWith('blob:') || path.startsWith('data:')) {
-    return path;
-  }
-  
-  // 🚨 CORREÇÃO: Usar IP real do servidor para acesso em rede
-  const currentHost = window.location.hostname;
-  const currentPort = window.location.port;
-  
-  // Se estamos acessando via IP da rede, usar o mesmo IP para backend
-  if (currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
-    console.log(`🌐 DisplayContext: Detectado acesso via rede: ${currentHost}`);
-    
-    if (path.startsWith('/')) {
-      return `http://${currentHost}:5000${path}`;
+  // Função para obter URL completa do backend
+  const getBackendUrl = (path: string): string => {
+    if (path.startsWith('http') || path.startsWith('blob:') || path.startsWith('data:')) {
+      return path;
     }
-    return `http://${currentHost}:5000/${path}`;
-  }
-  
-  // Detectar se estamos no Replit
-  const isReplit = currentHost.includes('replit.dev') || currentHost.includes('replit.co');
-  
-  if (isReplit) {
-    const currentOrigin = window.location.origin;
-    console.log(`🌐 DisplayContext Backend URL (Replit): ${currentOrigin}`);
     
-    if (path.startsWith('/')) {
-      return `${currentOrigin}${path}`;
-    }
-    return `${currentOrigin}/${path}`;
-  } else {
-    // Desenvolvimento local
-    console.log(`🌐 DisplayContext Backend URL (Local): localhost:5000`);
+    const currentHost = window.location.hostname;
     
-    if (path.startsWith('/')) {
-      return `http://localhost:5000${path}`;
+    if (currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
+      console.log(`🌐 DisplayContext: Detectado acesso via rede: ${currentHost}`);
+      
+      if (path.startsWith('/')) {
+        return `http://${currentHost}:5000${path}`;
+      }
+      return `http://${currentHost}:5000/${path}`;
     }
-    return `http://localhost:5000/${path}`;
-  }
-};
+    
+    const isReplit = currentHost.includes('replit.dev') || currentHost.includes('replit.co');
+    
+    if (isReplit) {
+      const currentOrigin = window.location.origin;
+      console.log(`🌐 DisplayContext Backend URL (Replit): ${currentOrigin}`);
+      
+      if (path.startsWith('/')) {
+        return `${currentOrigin}${path}`;
+      }
+      return `${currentOrigin}/${path}`;
+    } else {
+      console.log(`🌐 DisplayContext Backend URL (Local): localhost:5000`);
+      
+      if (path.startsWith('/')) {
+        return `http://localhost:5000${path}`;
+      }
+      return `http://localhost:5000/${path}`;
+    }
+  };
 
   // Função para gerar ID único
   const generateUniqueId = (): string => {
@@ -134,7 +133,6 @@ export const DisplayProvider: React.FC<DisplayProviderProps> = ({ children }) =>
   const normalizeDocumentUrl = (url: string): string => {
     if (!url) return url;
     
-    // Se é uma URL local incorreta (localhost), corrigir para o ambiente atual
     if (url.includes('localhost:')) {
       const pathMatch = url.match(/\/uploads\/.*$/);
       if (pathMatch) {
@@ -145,7 +143,7 @@ export const DisplayProvider: React.FC<DisplayProviderProps> = ({ children }) =>
     return url;
   };
 
-  // CORREÇÃO: Conversão de aviso do servidor para local
+  // Conversão de aviso do servidor para local
   const convertServerNoticeToLocal = (serverNotice: any): Notice => {
     return {
       id: String(serverNotice.id), 
@@ -160,23 +158,20 @@ export const DisplayProvider: React.FC<DisplayProviderProps> = ({ children }) =>
     };
   };
 
-// ✅ DEPOIS (completo):
-const convertLocalNoticeToServer = (localNotice: Omit<Notice, "id" | "createdAt" | "updatedAt">): any => {
-  console.log("🔄 Convertendo aviso para formato do servidor:", localNotice);
-  
-  return {
-    title: localNotice.title.trim(),
-    content: localNotice.content.trim(),
-    priority: localNotice.priority,
-    startDate: localNotice.startDate.toISOString(),
-    endDate: localNotice.endDate.toISOString(),
-    active: localNotice.active !== false // Garantir que seja boolean
+  const convertLocalNoticeToServer = (localNotice: Omit<Notice, "id" | "createdAt" | "updatedAt">): any => {
+    console.log("🔄 Convertendo aviso para formato do servidor:", localNotice);
+    
+    return {
+      title: localNotice.title.trim(),
+      content: localNotice.content.trim(),
+      priority: localNotice.priority,
+      startDate: localNotice.startDate.toISOString(),
+      endDate: localNotice.endDate.toISOString(),
+      active: localNotice.active !== false
+    };
   };
-};
 
-
-
-  // CORREÇÃO: Carregar avisos do servidor com melhor tratamento de erro
+  // Carregar avisos do servidor
   const loadNoticesFromServer = async (): Promise<void> => {
     try {
       console.log("📢 Carregando avisos do servidor...");
@@ -211,57 +206,27 @@ const convertLocalNoticeToServer = (localNotice: Omit<Notice, "id" | "createdAt"
       } else {
         const errorText = await response.text();
         console.error(`❌ Erro ao carregar avisos: ${response.status} - ${errorText}`);
-        // Manter avisos locais se servidor falhar
       }
     } catch (error) {
       console.error("❌ Erro de conexão com servidor:", error);
-      console.error("❌ Detalhes do erro:", {
-        name: error instanceof Error ? error.name : 'Unknown',
-        message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
-      });
-      // Manter avisos locais se servidor falhar
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Refresh avisos (função pública)
+  // Refresh avisos
   const refreshNotices = async (): Promise<void> => {
     await loadNoticesFromServer();
   };
 
-  // CORREÇÃO: Criar aviso no servidor com melhor tratamento de erro
+  // Criar aviso no servidor
   const addNotice = async (noticeData: Omit<Notice, "id" | "createdAt" | "updatedAt">): Promise<boolean> => {
     try {
       console.log("📢 Criando aviso no servidor:", noticeData.title);
       setIsLoading(true);
       
       const serverData = convertLocalNoticeToServer(noticeData);
-      console.log("📢 Dados para enviar:", serverData);
-  // ✅ ADICIONAR ESTE DEBUG TEMPORÁRIO:
-    console.log("🔍 DEBUG - Dados originais:", {
-      title: noticeData.title,
-      content: noticeData.content,
-      priority: noticeData.priority,
-      startDate: noticeData.startDate,
-      startDateType: typeof noticeData.startDate,
-      startDateValid: noticeData.startDate instanceof Date,
-      endDate: noticeData.endDate,
-      endDateType: typeof noticeData.endDate,
-      endDateValid: noticeData.endDate instanceof Date,
-      active: noticeData.active
-    });
-    
-    console.log("🔍 DEBUG - Dados convertidos:", {
-      ...serverData,
-      startDateLength: serverData.startDate?.length,
-      endDateLength: serverData.endDate?.length
-    });
-    
       const backendUrl = getBackendUrl('/api/notices');
-      console.log("📢 Enviando para:", backendUrl);
-
       
       const response = await fetch(backendUrl, {
         method: 'POST',
@@ -272,41 +237,25 @@ const convertLocalNoticeToServer = (localNotice: Omit<Notice, "id" | "createdAt"
         body: JSON.stringify(serverData)
       });
       
-      console.log("📢 Resposta:", response.status, response.statusText);
-
-      // ✅ ADICIONAR ESTE DEBUG PARA VER O ERRO:
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
-      console.error("❌ Erro HTTP detalhado:", {
-        status: response.status,
-        statusText: response.statusText,
-        errorData: errorData
-      });
-      throw new Error(errorData.error || `Erro HTTP: ${response.status}`);
-    }
-      
-      if (response.ok) {
-        const result = await response.json();
-        console.log("📢 Resultado:", result);
-        
-        if (result.success && result.notice) {
-          const newNotice = convertServerNoticeToLocal(result.notice);
-          setNotices(prev => [...prev, newNotice]);
-          
-          console.log(`✅ Aviso criado no servidor: ${newNotice.id}`);
-          return true;
-        } else {
-          throw new Error(result.error || 'Resposta inválida do servidor');
-        }
-      } else {
+      if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
-        console.error("❌ Erro HTTP:", response.status, errorData);
         throw new Error(errorData.error || `Erro HTTP: ${response.status}`);
+      }
+        
+      const result = await response.json();
+      
+      if (result.success && result.notice) {
+        const newNotice = convertServerNoticeToLocal(result.notice);
+        setNotices(prev => [...prev, newNotice]);
+        
+        console.log(`✅ Aviso criado no servidor: ${newNotice.id}`);
+        return true;
+      } else {
+        throw new Error(result.error || 'Resposta inválida do servidor');
       }
     } catch (error) {
       console.error("❌ Erro ao criar aviso:", error);
       
-      // Fallback: adicionar localmente se servidor falhar
       const localNotice: Notice = {
         ...noticeData,
         id: `local-${generateUniqueId()}`,
@@ -323,120 +272,112 @@ const convertLocalNoticeToServer = (localNotice: Omit<Notice, "id" | "createdAt"
     }
   };
 
-  // CORREÇÃO: Atualizar aviso no servidor
- // CORREÇÃO: Atualizar aviso no servidor
-const updateNotice = async (updatedNotice: Notice): Promise<boolean> => {
-  try {
-    console.log("📝 Atualizando aviso no servidor:", updatedNotice.id);
-    setIsLoading(true);
-    
-    // 🔥 CORREÇÃO: Garantir que ID seja string antes de usar .startsWith()
-    const stringId = String(updatedNotice.id);
-    
-    // Se é um aviso local, não tentar atualizar no servidor
-    if (stringId.startsWith('local-')) {
+  // Atualizar aviso no servidor
+  const updateNotice = async (updatedNotice: Notice): Promise<boolean> => {
+    try {
+      console.log("📝 Atualizando aviso no servidor:", updatedNotice.id);
+      setIsLoading(true);
+      
+      const stringId = String(updatedNotice.id);
+      
+      if (stringId.startsWith('local-')) {
+        setNotices(prev => prev.map(notice => 
+          notice.id === updatedNotice.id ? updatedNotice : notice
+        ));
+        console.log("📝 Aviso local atualizado");
+        return true;
+      }
+      
+      const serverData = convertLocalNoticeToServer(updatedNotice);
+      
+      const response = await fetch(getBackendUrl(`/api/notices/${updatedNotice.id}`), {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(serverData)
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        
+        if (result.success && result.notice) {
+          const updated = convertServerNoticeToLocal(result.notice);
+          setNotices(prev => prev.map(notice => 
+            notice.id === updated.id ? updated : notice
+          ));
+          
+          console.log(`✅ Aviso atualizado no servidor: ${updated.id}`);
+          return true;
+        } else {
+          throw new Error(result.error || 'Resposta inválida do servidor');
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Erro HTTP: ${response.status}`);
+      }
+    } catch (error) {
+      console.error("❌ Erro ao atualizar aviso:", error);
+      
       setNotices(prev => prev.map(notice => 
         notice.id === updatedNotice.id ? updatedNotice : notice
       ));
-      console.log("📝 Aviso local atualizado");
-      return true;
-    }
-    
-    const serverData = convertLocalNoticeToServer(updatedNotice);
-    
-    const response = await fetch(getBackendUrl(`/api/notices/${updatedNotice.id}`), {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify(serverData)
-    });
-    
-    if (response.ok) {
-      const result = await response.json();
+      console.log("⚠️ Aviso atualizado apenas localmente devido a erro no servidor");
       
-      if (result.success && result.notice) {
-        const updated = convertServerNoticeToLocal(result.notice);
-        setNotices(prev => prev.map(notice => 
-          notice.id === updated.id ? updated : notice
-        ));
-        
-        console.log(`✅ Aviso atualizado no servidor: ${updated.id}`);
-        return true;
-      } else {
-        throw new Error(result.error || 'Resposta inválida do servidor');
-      }
-    } else {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || `Erro HTTP: ${response.status}`);
+      return false;
+    } finally {
+      setIsLoading(false);
     }
-  } catch (error) {
-    console.error("❌ Erro ao atualizar aviso:", error);
-    
-    // Fallback: atualizar localmente se servidor falhar
-    setNotices(prev => prev.map(notice => 
-      notice.id === updatedNotice.id ? updatedNotice : notice
-    ));
-    console.log("⚠️ Aviso atualizado apenas localmente devido a erro no servidor");
-    
-    return false;
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
-  // CORREÇÃO: Deletar aviso do servidor
- // CORREÇÃO: Deletar aviso do servidor
-const deleteNotice = async (id: string): Promise<boolean> => {
-  try {
-    console.log("🗑️ Deletando aviso do servidor:", id);
-    setIsLoading(true);
-    
-    // 🔥 CORREÇÃO: Garantir que ID seja string antes de usar .startsWith()
-    const stringId = String(id);
-    
-    // Se é um aviso local, apenas remover localmente
-    if (stringId.startsWith('local-')) {
-      setNotices(prev => prev.filter(notice => String(notice.id) !== stringId));
-      console.log("🗑️ Aviso local removido");
-      return true;
-    }
-    
-    const response = await fetch(getBackendUrl(`/api/notices/${id}`), {
-      method: 'DELETE'
-    });
-    
-    if (response.ok) {
-      const result = await response.json();
+  // Deletar aviso do servidor
+  const deleteNotice = async (id: string): Promise<boolean> => {
+    try {
+      console.log("🗑️ Deletando aviso do servidor:", id);
+      setIsLoading(true);
       
-      if (result.success) {
+      const stringId = String(id);
+      
+      if (stringId.startsWith('local-')) {
         setNotices(prev => prev.filter(notice => String(notice.id) !== stringId));
-        
-        console.log(`✅ Aviso deletado do servidor: ${id}`);
+        console.log("🗑️ Aviso local removido");
         return true;
-      } else {
-        throw new Error(result.error || 'Resposta inválida do servidor');
       }
-    } else {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || `Erro HTTP: ${response.status}`);
+      
+      const response = await fetch(getBackendUrl(`/api/notices/${id}`), {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        
+        if (result.success) {
+          setNotices(prev => prev.filter(notice => String(notice.id) !== stringId));
+          
+          console.log(`✅ Aviso deletado do servidor: ${id}`);
+          return true;
+        } else {
+          throw new Error(result.error || 'Resposta inválida do servidor');
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Erro HTTP: ${response.status}`);
+      }
+    } catch (error) {
+      console.error("❌ Erro ao deletar aviso:", error);
+      
+      const stringId = String(id);
+      setNotices(prev => prev.filter(notice => String(notice.id) !== stringId));
+      console.log("⚠️ Aviso removido apenas localmente devido a erro no servidor");
+      
+      return false;
+    } finally {
+      setIsLoading(false);
     }
-  } catch (error) {
-    console.error("❌ Erro ao deletar aviso:", error);
-    
-    // Fallback: remover localmente se servidor falhar
-    const stringId = String(id);
-    setNotices(prev => prev.filter(notice => String(notice.id) !== stringId));
-    console.log("⚠️ Aviso removido apenas localmente devido a erro no servidor");
-    
-    return false;
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
-  // Função addDocument (mantida igual)
+  // Função addDocument
   const addDocument = (docData: Omit<PDFDocument, "id" | "uploadDate">) => {
     const fullUrl = getBackendUrl(docData.url);
     const id = generateUniqueId();
@@ -490,7 +431,7 @@ const deleteNotice = async (id: string): Promise<boolean> => {
 
   const updateDocument = (updatedDoc: PDFDocument) => {
     console.log("📝 Atualizando documento:", updatedDoc.title);
-    if (updatedDoc.type === "plasa") {
+    if (updatedDoc.type === "plasa" || updatedDoc.type === "bono") {
       setPlasaDocuments(prev => prev.map(doc => 
         doc.id === updatedDoc.id ? updatedDoc : doc
       ));
@@ -501,25 +442,54 @@ const deleteNotice = async (id: string): Promise<boolean> => {
     }
   };
 
- const deleteDocument = (id: string) => {
-  console.log("🗑️ Removendo do estado:", id);
-  
-  // Apenas mexer no estado React - SEM servidor
-  setPlasaDocuments(prev => prev.filter(doc => doc.id !== id));
-  setEscalaDocuments(prev => prev.filter(doc => doc.id !== id));
-};
+  const deleteDocument = (id: string) => {
+    console.log("🗑️ Removendo do estado:", id);
+    
+    setPlasaDocuments(prev => prev.filter(doc => doc.id !== id));
+    setEscalaDocuments(prev => prev.filter(doc => doc.id !== id));
+  };
 
-  // Computed values com alternância automática para escalas
-  // Para PLASA/BONO: pegar todos os documentos ativos e alternar entre eles
+  // Computed values com alternância automática
   const activePlasaDocuments = plasaDocuments.filter(doc => doc.active);
   const activePlasaDoc = activePlasaDocuments.length > 0 
-    ? activePlasaDocuments[0] // Por enquanto, use apenas o primeiro ativo
+    ? activePlasaDocuments[currentPlasaIndex % activePlasaDocuments.length]
     : null;
-  
+
   const activeEscalaDocuments = escalaDocuments.filter(doc => doc.active);
   const activeEscalaDoc = activeEscalaDocuments.length > 0 
-    ? activeEscalaDocuments[currentEscalaIndex % activeEscalaDocuments.length] 
+    ? activeEscalaDocuments[currentEscalaIndex % activeEscalaDocuments.length]
     : null;
+
+  // Effect para alternância automática entre PLASA e BONO - SEM TIMER AUTOMÁTICO
+  useEffect(() => {
+    if (activePlasaDocuments.length <= 1) {
+      setCurrentPlasaIndex(0);
+      return;
+    }
+
+    console.log(`📋 ${activePlasaDocuments.length} documentos PLASA/BONO disponíveis:`, 
+      activePlasaDocuments.map(d => `${d.type.toUpperCase()}: ${d.title}`)
+    );
+
+    return () => {
+      // Cleanup se necessário
+    };
+  }, [activePlasaDocuments.length]);
+
+  // 🔥 FUNÇÃO PARA AVANÇAR PARA PRÓXIMO DOCUMENTO PLASA/BONO
+  const advanceToNextPlasaDocument = () => {
+    if (activePlasaDocuments.length > 1) {
+      setCurrentPlasaIndex(prev => {
+        const nextIndex = (prev + 1) % activePlasaDocuments.length;
+        console.log(`🔄 PLASA/BONO concluído - Avançando para: ${nextIndex + 1}/${activePlasaDocuments.length}`, {
+          atual: activePlasaDocuments[prev]?.title,
+          proximo: activePlasaDocuments[nextIndex]?.title,
+          tipo: activePlasaDocuments[nextIndex]?.type
+        });
+        return nextIndex;
+      });
+    }
+  };
 
   // Effect para alternar escalas automaticamente
   useEffect(() => {
@@ -562,6 +532,7 @@ const deleteNotice = async (id: string): Promise<boolean> => {
         escalaTotal: escalaDocuments.length,
         escalaAtivos: escalaDocuments.filter(d => d.active).length,
         currentEscalaIndex,
+        currentPlasaIndex,
         activePlasa: activePlasaDoc?.title || 'nenhum',
         activeEscala: activeEscalaDoc?.title || 'nenhum',
         activeEscalaCategory: activeEscalaDoc?.category || 'sem categoria',
@@ -571,9 +542,9 @@ const deleteNotice = async (id: string): Promise<boolean> => {
         noticesLocal: notices.filter(n => String(n.id).startsWith('local-')).length
       });
     }
-  }, [plasaDocuments, escalaDocuments, activePlasaDoc, activeEscalaDoc, currentEscalaIndex, notices]);
+  }, [plasaDocuments, escalaDocuments, activePlasaDoc, activeEscalaDoc, currentEscalaIndex, currentPlasaIndex, notices]);
 
-  // CORREÇÃO: Persistir apenas documentos no localStorage (não avisos)
+  // Persistir documentos no localStorage
   useEffect(() => {
     if (isInitializingRef.current) {
       return;
@@ -590,25 +561,27 @@ const deleteNotice = async (id: string): Promise<boolean> => {
           uploadDate: doc.uploadDate.toISOString()
         })),
         currentEscalaIndex,
+        currentPlasaIndex,
         documentAlternateInterval,
         scrollSpeed,
         autoRestartDelay,
         lastUpdate: new Date().toISOString(),
-        version: '3.0' // Avisos agora no servidor
+        version: '3.1'
       };
       
       localStorage.setItem('display-context', JSON.stringify(contextData, null, 2));
       
-      console.log("💾 Contexto salvo no localStorage (sem avisos):", {
+      console.log("💾 Contexto salvo no localStorage:", {
         plasa: plasaDocuments.length,
         escala: escalaDocuments.length,
-        escalaIndex: currentEscalaIndex
+        escalaIndex: currentEscalaIndex,
+        plasaIndex: currentPlasaIndex
       });
       
     } catch (error) {
       console.error("❌ Erro ao salvar contexto:", error);
     }
-  }, [plasaDocuments, escalaDocuments, currentEscalaIndex, documentAlternateInterval, scrollSpeed, autoRestartDelay]);
+  }, [plasaDocuments, escalaDocuments, currentEscalaIndex, currentPlasaIndex, documentAlternateInterval, scrollSpeed, autoRestartDelay]);
 
   // Função auxiliar para determinar categoria
   const determineCategory = (filename: string): "oficial" | "praca" | undefined => {
@@ -636,20 +609,73 @@ const deleteNotice = async (id: string): Promise<boolean> => {
             const existsInEscala = escalaDocuments.some(doc => doc.url === fullUrl);
             
             if (!existsInPlasa && !existsInEscala) {
+              const filename = serverDoc.filename.toLowerCase();
+              
               const isPlasa = serverDoc.type === 'plasa' || 
-                             serverDoc.filename.toLowerCase().includes('plasa');
+                             filename.includes('plasa');
+              
+              const isBono = serverDoc.type === 'bono' || 
+                            filename.includes('bono') ||
+                            filename.includes('bno');
+              
+              const isEscala = serverDoc.type === 'escala' || 
+                              filename.includes('escala');
+              
+              const isCardapio = serverDoc.type === 'cardapio' || 
+                                filename.includes('cardapio') ||
+                                filename.includes('cardápio');
+              
+              console.log(`🔍 Analisando arquivo: ${serverDoc.filename}`, {
+                isPlasa,
+                isBono,
+                isEscala,
+                isCardapio,
+                serverType: serverDoc.type
+              });
               
               const category = determineCategory(serverDoc.filename);
               
+              let docType: "plasa" | "bono" | "escala" | "cardapio" = 'escala';
+              let docTitle = `Documento - ${new Date(serverDoc.created).toLocaleDateString('pt-BR')}`;
+              
+              // PRIORIDADE: BONO > PLASA > CARDAPIO > ESCALA
+              if (isBono) {
+                docType = 'bono';
+                docTitle = `BONO - ${new Date(serverDoc.created).toLocaleDateString('pt-BR')}`;
+              } else if (isPlasa) {
+                docType = 'plasa';
+                docTitle = `PLASA - ${new Date(serverDoc.created).toLocaleDateString('pt-BR')}`;
+              } else if (isCardapio) {
+                docType = 'cardapio';
+                docTitle = `Cardápio - ${new Date(serverDoc.created).toLocaleDateString('pt-BR')}`;
+              } else if (isEscala) {
+                docType = 'escala';
+                docTitle = `Escala - ${new Date(serverDoc.created).toLocaleDateString('pt-BR')}`;
+              } else {
+                if (filename.includes('plasa')) {
+                  docType = 'plasa';
+                  docTitle = `PLASA - ${new Date(serverDoc.created).toLocaleDateString('pt-BR')}`;
+                } else if (filename.includes('bono') || filename.includes('bno')) {
+                  docType = 'bono';
+                  docTitle = `BONO - ${new Date(serverDoc.created).toLocaleDateString('pt-BR')}`;
+                }
+              }
+              
               const docData: Omit<PDFDocument, "id" | "uploadDate"> = {
-                title: `${isPlasa ? 'PLASA' : 'Escala'} - ${new Date(serverDoc.created).toLocaleDateString('pt-BR')}`,
+                title: docTitle,
                 url: fullUrl,
-                type: isPlasa ? 'plasa' : 'escala',
-                category: isPlasa ? undefined : category,
+                type: docType,
+                category: (docType === 'escala') ? category : undefined,
                 active: true
               };
               
-              console.log("📁 Auto-adicionando documento do servidor:", docData.title);
+              console.log(`📁 Auto-adicionando documento do servidor:`, {
+                filename: serverDoc.filename,
+                detectedType: docType,
+                title: docTitle,
+                category: docData.category
+              });
+              
               addDocument(docData);
             }
           });
@@ -660,20 +686,18 @@ const deleteNotice = async (id: string): Promise<boolean> => {
     }
   };
 
-  // CORREÇÃO: Inicialização robusta com fallback para erros de documento
+  // Inicialização robusta
   useEffect(() => {
     const initializeContext = async () => {
       console.log("🚀 Inicializando DisplayContext...");
       
       try {
-        // Carregar configurações do localStorage
         const saved = localStorage.getItem('display-context');
         if (saved) {
           try {
             const data = JSON.parse(saved);
             console.log("📥 Dados encontrados no localStorage");
 
-            // Carregar documentos PLASA com correção de URL
             if (data.plasaDocuments && Array.isArray(data.plasaDocuments)) {
               const validPlasaDocs = data.plasaDocuments
                 .filter((doc: any) => doc && doc.id && doc.title && doc.url)
@@ -692,7 +716,6 @@ const deleteNotice = async (id: string): Promise<boolean> => {
               }
             }
 
-            // Carregar documentos Escala com correção de URL
             if (data.escalaDocuments && Array.isArray(data.escalaDocuments)) {
               const validEscalaDocs = data.escalaDocuments
                 .filter((doc: any) => doc && doc.id && doc.title && doc.url)
@@ -711,9 +734,11 @@ const deleteNotice = async (id: string): Promise<boolean> => {
               }
             }
 
-            // Carregar configurações
             if (typeof data.currentEscalaIndex === 'number') {
               setCurrentEscalaIndex(data.currentEscalaIndex);
+            }
+            if (typeof data.currentPlasaIndex === 'number') {
+              setCurrentPlasaIndex(data.currentPlasaIndex);
             }
             if (data.documentAlternateInterval) setDocumentAlternateInterval(data.documentAlternateInterval);
             if (data.scrollSpeed) setScrollSpeed(data.scrollSpeed);
@@ -741,7 +766,6 @@ const deleteNotice = async (id: string): Promise<boolean> => {
       } catch (error) {
         console.error("❌ Erro na inicialização:", error);
         
-        // Fallback: tentar carregar apenas avisos
         try {
           await loadNoticesFromServer();
         } catch (fallbackError) {
@@ -767,6 +791,15 @@ const deleteNotice = async (id: string): Promise<boolean> => {
     }
   }, [activeEscalaDocuments.length, currentEscalaIndex]);
 
+  // Effect para resetar índice quando não há documentos PLASA/BONO ativos
+  useEffect(() => {
+    if (activePlasaDocuments.length === 0) {
+      setCurrentPlasaIndex(0);
+    } else if (currentPlasaIndex >= activePlasaDocuments.length) {
+      setCurrentPlasaIndex(0);
+    }
+  }, [activePlasaDocuments.length, currentPlasaIndex]);
+
   const value: DisplayContextType = {
     notices,
     plasaDocuments,
@@ -774,10 +807,12 @@ const deleteNotice = async (id: string): Promise<boolean> => {
     activePlasaDoc,
     activeEscalaDoc,
     currentEscalaIndex,
+    currentPlasaIndex,
     documentAlternateInterval,
     scrollSpeed,
     autoRestartDelay,
     isLoading,
+    advanceToNextPlasaDocument,
     addNotice,
     updateNotice,
     deleteNotice,
