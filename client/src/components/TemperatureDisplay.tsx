@@ -95,20 +95,20 @@ export const TemperatureDisplay = () => {
 
   if (!weather) {
     return (
-      <div className="flex items-center gap-3 bg-gradient-to-r from-gray-800/20 to-gray-900/20 backdrop-blur-sm rounded-lg border border-gray-400/20 px-4 py-2 shadow-lg">
-        <div className="p-1.5 bg-gray-500/20 rounded-full">
-          <Thermometer className="w-4 h-4 text-gray-300" />
+      <div className="flex items-center gap-3 bg-gradient-to-r from-slate-800/20 to-slate-900/20 backdrop-blur-sm rounded-lg border border-slate-400/20 px-4 py-2 shadow-lg">
+        <div className="p-1.5 bg-slate-500/20 rounded-full">
+          <Thermometer className="w-4 h-4 text-slate-300" />
         </div>
-        <span className="text-gray-200 text-sm font-medium">Carregando...</span>
+        <span className="text-slate-200 text-sm font-medium">Carregando...</span>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-3 bg-gradient-to-r from-orange-800/20 to-red-900/20 backdrop-blur-sm rounded-lg border border-orange-400/20 px-4 py-2 shadow-lg">
+    <div className="flex items-center gap-3 bg-gradient-to-r from-slate-800/20 to-slate-900/20 backdrop-blur-sm rounded-lg border border-slate-400/20 px-4 py-2 shadow-lg">
       {/* Ícone */}
-      <div className="p-1.5 bg-orange-500/20 rounded-full">
-        <Thermometer className="w-4 h-4 text-orange-300" />
+      <div className="p-1.5 bg-slate-500/20 rounded-full">
+        <Thermometer className="w-4 h-4 text-slate-300" />
       </div>
       
       {/* Informações da temperatura */}
@@ -117,11 +117,11 @@ export const TemperatureDisplay = () => {
           <span className="text-lg font-bold text-white">
             {weather.temp}°C
           </span>
-          <span className="text-xs text-orange-300">
+          <span className="text-xs text-slate-300">
             Sensação {weather.feelsLike}°C
           </span>
         </div>
-        <div className="flex items-center gap-3 text-xs text-orange-400/70">
+        <div className="flex items-center gap-3 text-xs text-slate-400/70">
           <span className="capitalize">{weather.description}</span>
           <span>Umidade: {weather.humidity}%</span>
         </div>
@@ -130,11 +130,11 @@ export const TemperatureDisplay = () => {
       {/* Botão de refresh */}
       <button 
         onClick={handleRefresh}
-        className="p-1.5 hover:bg-orange-500/20 rounded-full transition-all duration-200 hover:scale-110"
+        className="p-1.5 hover:bg-slate-500/20 rounded-full transition-all duration-200 hover:scale-110"
         disabled={loading}
         title="Atualizar temperatura"
       >
-        <RefreshCw className={`w-3 h-3 text-orange-300 ${loading ? 'animate-spin' : ''}`} />
+        <RefreshCw className={`w-3 h-3 text-slate-300 ${loading ? 'animate-spin' : ''}`} />
       </button>
     </div>
   );
