@@ -9,9 +9,12 @@ import { getSunsetWithLabel } from "@/utils/sunsetUtils";
 const Index = () => {
   const {
     activePlasaDoc,
+    activeBonoDoc,
     activeEscalaDoc,
+    currentMainDocType,
     scrollSpeed = "normal",
-    autoRestartDelay = 3
+    autoRestartDelay = 3,
+    handleScrollComplete
   } = useDisplay();
 
   const [sunsetTime, setSunsetTime] = useState<string>("--:--");
@@ -73,9 +76,17 @@ const Index = () => {
     return () => clearInterval(clockInterval);
   }, []);
 
+  // Determinar qual documento principal mostrar
+  const currentMainDoc = currentMainDocType === "plasa" ? activePlasaDoc : activeBonoDoc;
+  const mainDocTitle = currentMainDoc?.title || 
+    (currentMainDocType === "plasa" ? "PLASA - Plano de Serviço Semanal" : "BONO - Boletim de Ocorrências");
+
   console.log("🏠 Index: Renderizando página principal", {
     activePlasa: activePlasaDoc?.title || 'nenhum',
+    activeBono: activeBonoDoc?.title || 'nenhum',
     activeEscala: activeEscalaDoc?.title || 'nenhum',
+    currentMainDocType,
+    currentMainDoc: currentMainDoc?.title || 'nenhum',
     scrollSpeed,
     autoRestartDelay
   });
@@ -160,10 +171,11 @@ const Index = () => {
         <div className="xl:w-3/5 w-full h-[45vh] xl:h-[calc(100vh-8rem)] min-h-[300px] xl:min-h-[500px]">
           <div className="h-full bg-gradient-to-br from-white/5 via-blue-900/20 to-white/5 backdrop-blur-sm rounded-xl lg:rounded-2xl border border-blue-400/25 shadow-2xl hover:border-blue-400/40 transition-all duration-500 overflow-hidden">
             <PDFViewer
-              documentType="plasa"
-              title={activePlasaDoc?.title || "PLASA - Plano de Serviço Semanal"}
+              documentType={currentMainDocType}
+              title={mainDocTitle}
               scrollSpeed={scrollSpeed}
               autoRestartDelay={autoRestartDelay}
+              onScrollComplete={handleScrollComplete}
             />
           </div>
         </div>

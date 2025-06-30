@@ -21,10 +21,11 @@ interface DebugInfo {
 }
 
 interface PDFViewerProps {
-  documentType: "plasa" | "escala";
+  documentType: "plasa" | "escala" | "bono";
   title: string;
   scrollSpeed?: "slow" | "normal" | "fast";
   autoRestartDelay?: number;
+  onScrollComplete?: () => void;
 }
 
 // Classe para controlar o scroll automático contínuo
@@ -117,10 +118,11 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   documentType, 
   title, 
   scrollSpeed = "normal",
-  autoRestartDelay = 3
+  autoRestartDelay = 3,
+  onScrollComplete
 }) => {
   // CORREÇÃO: Usar currentEscalaIndex do contexto
-  const { activeEscalaDoc, activePlasaDoc, currentEscalaIndex, escalaDocuments } = useDisplay();
+  const { activeEscalaDoc, activePlasaDoc, activeBonoDoc, currentEscalaIndex, escalaDocuments } = useDisplay();
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(false);
   const [isScrolling, setIsScrolling] = useState(false);
@@ -623,8 +625,14 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
 
   // Callback quando scroll completa
   const handleScrollComplete = useCallback(() => {
-    console.log(`✅ PLASA: Documento visualizado completamente`);
+    console.log(`✅ ${documentType.toUpperCase()}: Documento visualizado completamente`);
     setIsScrolling(false);
+    
+    // Chamar callback externo se fornecido (para alternância PLASA/BONO)
+    if (onScrollComplete && (documentType === "plasa" || documentType === "bono")) {
+      onScrollComplete();
+      return; // Não reiniciar automaticamente, deixar o contexto controlar
+    }
     
     if (!isAutomationPaused) {
       restartTimerRef.current = setTimeout(() => {
@@ -633,7 +641,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
         }
       }, RESTART_DELAY);
     }
-  }, [isAutomationPaused, RESTART_DELAY]);
+  }, [isAutomationPaused, RESTART_DELAY, documentType, onScrollComplete]);
 
   // Iniciar scroll contínuo
   const startContinuousScroll = useCallback(() => {
