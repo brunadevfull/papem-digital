@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import PDFViewer from "@/components/PDFViewer";
 import NoticeDisplay from "@/components/NoticeDisplay";
+import { TemperatureDisplay } from "@/components/TemperatureDisplay";
+import { DutyOfficersDisplay } from "@/components/DutyOfficersDisplay";
 import { useDisplay } from "@/context/DisplayContext";
 import { getSunsetWithLabel } from "@/utils/sunsetUtils";
 
@@ -99,36 +101,55 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Data e Hora Compacta */}
-        <div className="flex items-center space-x-4 relative z-10">
-          {/* Data Compacta */}
-          <div className="text-right">
-            <div className="text-blue-200 text-xs font-medium tracking-widest uppercase">
-              {currentDate.weekday}
-            </div>
-            <div className="text-white text-sm font-semibold">
-              {new Date().toLocaleDateString('pt-BR', { 
-                day: '2-digit', 
-                month: 'short', 
-                year: 'numeric' 
-              })}
-            </div>
+        {/* Informações de Status e Temperatura */}
+        <div className="flex flex-col lg:flex-row items-center space-y-3 lg:space-y-0 lg:space-x-6 relative z-10">
+          {/* Temperatura */}
+          <div className="bg-slate-900/60 backdrop-blur-sm rounded-lg p-3 border border-blue-400/30 shadow-inner min-w-[200px]">
+            <TemperatureDisplay />
           </div>
           
-          {/* Separador compacto */}
-          <div className="w-px h-10 bg-gradient-to-b from-transparent via-blue-400/60 to-transparent shadow-lg"></div>
+          {/* Separador */}
+          <div className="hidden lg:block w-px h-16 bg-gradient-to-b from-transparent via-blue-400/60 to-transparent shadow-lg"></div>
           
-          {/* Horário Digital Compacto */}
-          <div className="bg-slate-900/60 backdrop-blur-sm rounded-lg px-4 py-2 border border-blue-400/30 shadow-inner">
-            <div className="text-blue-200 text-xs font-medium tracking-widest uppercase text-center">
-              Hora Oficial
+          {/* Oficiais de Serviço */}
+          <div className="bg-slate-900/60 backdrop-blur-sm rounded-lg p-3 border border-blue-400/30 shadow-inner min-w-[300px]">
+            <DutyOfficersDisplay />
+          </div>
+          
+          {/* Separador */}
+          <div className="hidden lg:block w-px h-16 bg-gradient-to-b from-transparent via-blue-400/60 to-transparent shadow-lg"></div>
+          
+          {/* Data e Hora */}
+          <div className="flex items-center space-x-4">
+            {/* Data Compacta */}
+            <div className="text-right">
+              <div className="text-blue-200 text-xs font-medium tracking-widest uppercase">
+                {currentDate.weekday}
+              </div>
+              <div className="text-white text-sm font-semibold">
+                {new Date().toLocaleDateString('pt-BR', { 
+                  day: '2-digit', 
+                  month: 'short', 
+                  year: 'numeric' 
+                })}
+              </div>
             </div>
-            <div className="text-white font-mono font-bold tracking-wider text-center text-xl">
-              {currentTime}
-            </div>
-            {/* Horário do Pôr do Sol */}
-            <div className="text-amber-300 text-xs font-medium text-center mt-1 opacity-90">
-              🌅 {sunsetTime}
+            
+            {/* Separador compacto */}
+            <div className="w-px h-10 bg-gradient-to-b from-transparent via-blue-400/60 to-transparent shadow-lg"></div>
+            
+            {/* Horário Digital Compacto */}
+            <div className="bg-slate-900/60 backdrop-blur-sm rounded-lg px-4 py-2 border border-blue-400/30 shadow-inner">
+              <div className="text-blue-200 text-xs font-medium tracking-widest uppercase text-center">
+                Hora Oficial
+              </div>
+              <div className="text-white font-mono font-bold tracking-wider text-center text-xl">
+                {currentTime}
+              </div>
+              {/* Horário do Pôr do Sol */}
+              <div className="text-amber-300 text-xs font-medium text-center mt-1 opacity-90">
+                🌅 {sunsetTime}
+              </div>
             </div>
           </div>
         </div>

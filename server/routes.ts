@@ -871,6 +871,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 🔥 NOVO: System info com informações de cache
+  // Duty Officers API
+  app.get('/api/duty-officers', async (req, res) => {
+    try {
+      console.log('👮 GET /api/duty-officers - Buscando oficiais de serviço...');
+      
+      const officers = await storage.getDutyOfficers();
+      
+      const result = {
+        success: true,
+        officers: officers,
+        timestamp: new Date().toISOString()
+      };
+      
+      console.log('👮 Oficiais de serviço encontrados:', officers ? 'dados disponíveis' : 'dados não encontrados');
+      res.json(result);
+      
+    } catch (error) {
+      console.error('❌ Erro ao buscar oficiais de serviço:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to get duty officers',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.put('/api/duty-officers', async (req, res) => {
+    try {
+      console.log('👮 PUT /api/duty-officers - Atualizando oficiais de serviço...');
+      console.log('📝 Dados recebidos:', req.body);
+      
+      // Validar dados de entrada
+      const validatedData = insertDutyOfficersSchema.parse(req.body);
+      
+      const updatedOfficers = await storage.updateDutyOfficers(validatedData);
+      
+      const result = {
+        success: true,
+        officers: updatedOfficers,
+        message: 'Oficiais de serviço atualizados com sucesso',
+        timestamp: new Date().toISOString()
+      };
+      
+      console.log('✅ Oficiais de serviço atualizados:', updatedOfficers);
+      res.json(result);
+      
+    } catch (error) {
+      console.error('❌ Erro ao atualizar oficiais de serviço:', error);
+      
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Validation error',
+          details: error.errors 
+        });
+      }
+      
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to update duty officers',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   app.get('/api/system-info', async (req, res) => {
     try {
       const uploadsDir = path.join(process.cwd(), 'uploads');
