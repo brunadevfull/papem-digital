@@ -141,6 +141,15 @@ export const DutyOfficersDisplay = () => {
         {officers.officerName && (
           <div className="flex items-center gap-2">
             <span className="text-xs text-white/60">Oficial de Serviço:</span>
+            <img 
+              src={`/rank-insignias/${officers.officerRank}.svg`}
+              alt={`Patente ${officers.officerRank.toUpperCase()}`}
+              className="w-8 h-4 object-contain"
+              onError={(e) => {
+                // Fallback se imagem não carregar
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
             <span className="font-medium text-sm">
               {translateRank(officers.officerRank)} {officers.officerName}
             </span>
@@ -149,6 +158,15 @@ export const DutyOfficersDisplay = () => {
         {officers.masterName && (
           <div className="flex items-center gap-2">
             <span className="text-xs text-white/60">Contramestre de Serviço:</span>
+            <img 
+              src={`/rank-insignias/${officers.masterRank}.svg`}
+              alt={`Patente ${officers.masterRank.toUpperCase()}`}
+              className="w-8 h-4 object-contain"
+              onError={(e) => {
+                // Fallback se imagem não carregar
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
             <span className="font-medium text-sm">
               {translateRank(officers.masterRank)} {officers.masterName}
             </span>

@@ -44,7 +44,48 @@ import {
   SheetTrigger 
 } from "@/components/ui/sheet";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { OFFICERS_LIST, MASTERS_LIST, RANK_DISPLAY_MAP, getOfficersByRank, getMastersByRank } from '@/data/officersData';
+// Dados dos oficiais baseados no quadro da Marinha
+const OFFICERS_DATA = [
+  // Capitães-Tenentes (CT)
+  { name: "KLEBER", rank: "ct", specialty: "IM" },
+  { name: "CRISTIANE MORETTO", rank: "ct", specialty: "IM" },
+  { name: "PAULA BALLARD", rank: "ct", specialty: "T" },
+  { name: "REJANE AMARAL", rank: "ct", specialty: "T" },
+  { name: "ROGÉRIO RIBEIRO", rank: "ct", specialty: "T" },
+  { name: "ELAINE ANDRADE", rank: "ct", specialty: "T" },
+  { name: "CAMILA", rank: "ct", specialty: "IM" },
+  { name: "AZEVEDO", rank: "ct", specialty: "IM" },
+  { name: "REGINA GRISI", rank: "ct", specialty: "IM" },
+  { name: "WILLIAM", rank: "ct", specialty: "T" },
+  { name: "YAGO", rank: "ct", specialty: "IM" },
+  { name: "MATEUS BARBOSA", rank: "ct", specialty: "IM" },
+  
+  // Capitães-de-Corveta (CC)
+  { name: "TAMIRES", rank: "cc", specialty: "QC-IM" },
+  { name: "CHAVES", rank: "cc", specialty: "QC-IM" },
+  { name: "VIANA", rank: "cc", specialty: "RM2-T" },
+  { name: "PINA TRIGO", rank: "cc", specialty: "RM2-T" },
+  
+  // Primeiros-Tenentes (1T)
+  { name: "KARINE", rank: "1t", specialty: "RM2-T" },
+  { name: "LEONARDO ANDRADE", rank: "1t", specialty: "IM" },
+  { name: "ELIEZER", rank: "1t", specialty: "IM" },
+  { name: "LARISSA CASTRO", rank: "1t", specialty: "RM2-T" },
+  { name: "ALEXANDRIA", rank: "1t", specialty: "IM" },
+  
+  // Segundos-Tenentes (2T)
+  { name: "MARCO MARTINS", rank: "2t", specialty: "AA" },
+  { name: "MACHADO", rank: "2t", specialty: "AA" },
+];
+
+const MASTERS_DATA = [
+  { name: "SILVA SANTOS", rank: "1sg", specialty: "Administração" },
+  { name: "OLIVEIRA COSTA", rank: "1sg", specialty: "Logística" },
+  { name: "SOUZA LIMA", rank: "2sg", specialty: "Comunicações" },
+  { name: "PEREIRA ROCHA", rank: "2sg", specialty: "Administração" },
+  { name: "FERREIRA ALVES", rank: "3sg", specialty: "Apoio" },
+  { name: "RODRIGUES NUNES", rank: "3sg", specialty: "Manutenção" },
+];
 
 const Admin: React.FC = () => {
   const { 
@@ -1706,13 +1747,29 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
 
                       <div className="space-y-2">
                         <Label htmlFor="officerName">Nome do Oficial</Label>
-                        <Input 
-                          id="officerName" 
-                          placeholder="Nome completo do oficial"
-                          value={dutyOfficers.officerName}
-                          onChange={(e) => setDutyOfficers({...dutyOfficers, officerName: e.target.value})}
+                        <Select 
+                          value={dutyOfficers.officerName} 
+                          onValueChange={(value) => {
+                            const officer = OFFICERS_DATA.find(o => o.name === value);
+                            setDutyOfficers({
+                              ...dutyOfficers, 
+                              officerName: value,
+                              officerRank: officer?.rank as "1t" | "2t" | "ct" || dutyOfficers.officerRank
+                            });
+                          }}
                           disabled={isLoadingOfficers}
-                        />
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o oficial" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {OFFICERS_DATA.map((officer) => (
+                              <SelectItem key={officer.name} value={officer.name}>
+                                {officer.rank.toUpperCase()} {officer.name} ({officer.specialty})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
 
@@ -1744,13 +1801,29 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
 
                       <div className="space-y-2">
                         <Label htmlFor="masterName">Nome do Contramestre</Label>
-                        <Input 
-                          id="masterName" 
-                          placeholder="Nome completo do contramestre"
-                          value={dutyOfficers.masterName}
-                          onChange={(e) => setDutyOfficers({...dutyOfficers, masterName: e.target.value})}
+                        <Select 
+                          value={dutyOfficers.masterName} 
+                          onValueChange={(value) => {
+                            const master = MASTERS_DATA.find(m => m.name === value);
+                            setDutyOfficers({
+                              ...dutyOfficers, 
+                              masterName: value,
+                              masterRank: master?.rank as "3sg" | "2sg" | "1sg" || dutyOfficers.masterRank
+                            });
+                          }}
                           disabled={isLoadingOfficers}
-                        />
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o contramestre" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {MASTERS_DATA.map((master) => (
+                              <SelectItem key={master.name} value={master.name}>
+                                {master.rank.toUpperCase()} {master.name} ({master.specialty})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                   </div>
