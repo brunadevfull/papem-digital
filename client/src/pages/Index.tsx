@@ -116,31 +116,23 @@ const Index = () => {
             <TemperatureDisplay />
           </div>
           
-          {/* Data e Hora */}
-          <div className="flex items-center space-x-3">
-            <div className="text-right">
-              <div className="text-blue-200 text-xs font-medium uppercase">
-                {currentDate.weekday}
-              </div>
-              <div className="text-white text-sm font-semibold">
-                {new Date().toLocaleDateString('pt-BR', { 
-                  day: '2-digit', 
-                  month: 'short', 
-                  year: 'numeric' 
-                })}
-              </div>
+          {/* Data e Hora - Estilo sutil */}
+          <div className="flex flex-col items-end text-right">
+            <div className="text-blue-200 text-xs font-medium uppercase mb-1">
+              {currentDate.weekday}
             </div>
-            
-            <div className="bg-slate-900/60 backdrop-blur-sm rounded-lg px-3 py-2 border border-blue-400/30">
-              <div className="text-blue-200 text-xs uppercase text-center">
-                Hora Oficial
-              </div>
-              <div className="text-white font-mono font-bold text-center text-lg">
-                {currentTime}
-              </div>
-              <div className="text-amber-300 text-xs text-center opacity-90">
-                🌅 {sunsetTime}
-              </div>
+            <div className="text-white text-sm font-semibold mb-1">
+              {new Date().toLocaleDateString('pt-BR', { 
+                day: '2-digit', 
+                month: 'short', 
+                year: 'numeric' 
+              })}
+            </div>
+            <div className="text-white font-mono font-bold text-lg mb-1">
+              {currentTime}
+            </div>
+            <div className="text-amber-300 text-xs opacity-90">
+              🌅 {sunsetTime}
             </div>
           </div>
         </div>
