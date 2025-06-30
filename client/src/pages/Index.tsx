@@ -107,7 +107,7 @@ const Index = () => {
             <DutyOfficersDisplay />
           </div>
 
-          {/* Dia da semana - 2 colunas (centro) */}
+          {/* Dia da semana e Data - 2 colunas (centro) */}
           <div className="col-span-12 lg:col-span-2 flex justify-center">
             <div className="bg-gradient-to-r from-blue-600/30 to-blue-800/30 backdrop-blur-sm rounded-lg px-4 py-2 border border-blue-400/40 shadow-lg">
               <div className="text-blue-100 text-xs uppercase text-center font-medium mb-1">
@@ -115,6 +115,13 @@ const Index = () => {
               </div>
               <div className="text-white text-lg font-bold text-center tracking-wide">
                 {currentDate.weekday}
+              </div>
+              <div className="text-blue-200 text-xs text-center mt-1 font-medium">
+                {new Date().toLocaleDateString('pt-BR', { 
+                  day: '2-digit', 
+                  month: 'short', 
+                  year: 'numeric' 
+                })}
               </div>
             </div>
           </div>
@@ -124,18 +131,11 @@ const Index = () => {
             <TemperatureDisplay />
           </div>
           
-          {/* Data e Hora - 2 colunas */}
+          {/* Hora Oficial - 2 colunas */}
           <div className="col-span-12 lg:col-span-2 flex justify-center lg:justify-end">
             <div className="bg-slate-900/60 backdrop-blur-sm rounded-lg px-3 py-2 border border-blue-400/30">
               <div className="text-blue-200 text-xs uppercase text-center mb-1">
                 Hora Oficial
-              </div>
-              <div className="text-white text-xs text-center mb-1 font-medium">
-                {new Date().toLocaleDateString('pt-BR', { 
-                  day: '2-digit', 
-                  month: 'short', 
-                  year: 'numeric' 
-                })}
               </div>
               <div className="text-white font-mono font-bold text-center text-lg">
                 {currentTime}
