@@ -27,6 +27,55 @@ let temperatureCache: TemperatureCache = {
 };
 
 /**
+ * Traduz descrições do clima do inglês para português
+ */
+const translateWeatherDescription = (description: string): string => {
+  const translations: { [key: string]: string } = {
+    // Condições básicas
+    'clear': 'ensolarado',
+    'sunny': 'ensolarado', 
+    'clear sky': 'céu limpo',
+    'few clouds': 'poucas nuvens',
+    'scattered clouds': 'nuvens dispersas',
+    'broken clouds': 'nuvens fragmentadas',
+    'overcast clouds': 'nublado',
+    'cloudy': 'nublado',
+    
+    // Chuva
+    'light rain': 'chuva fraca',
+    'moderate rain': 'chuva moderada',
+    'heavy rain': 'chuva forte',
+    'shower rain': 'chuva rápida',
+    'rain': 'chuva',
+    'drizzle': 'garoa',
+    
+    // Tempestades
+    'thunderstorm': 'tempestade',
+    'thunderstorm with light rain': 'tempestade com chuva fraca',
+    'thunderstorm with rain': 'tempestade com chuva',
+    'thunderstorm with heavy rain': 'tempestade com chuva forte',
+    
+    // Neblina e névoa
+    'mist': 'névoa',
+    'fog': 'neblina',
+    'haze': 'nebulosidade',
+    
+    // Outras condições
+    'partly cloudy': 'parcialmente nublado',
+    'mostly cloudy': 'muito nublado',
+    'light intensity drizzle': 'garoa fraca',
+    'heavy intensity drizzle': 'garoa forte',
+    
+    // Fallbacks comuns da API
+    'temperature not available': 'temperatura não disponível',
+    'weather data unavailable': 'dados meteorológicos indisponíveis'
+  };
+
+  const lowerDescription = description.toLowerCase().trim();
+  return translations[lowerDescription] || lowerDescription;
+};
+
+/**
  * Obtém temperatura atual do Rio de Janeiro
  * Retorna dados do cache se ainda válidos (menos de 30 min)
  */
@@ -100,7 +149,7 @@ const getTemperatureFromAlternativeAPI = async (): Promise<WeatherData | null> =
     
     const weatherData: WeatherData = {
       temp: parseInt(current.temp_C),
-      description: current.weatherDesc[0].value.toLowerCase(),
+      description: translateWeatherDescription(current.weatherDesc[0].value),
       icon: '01d', // ícone padrão
       humidity: parseInt(current.humidity),
       feelsLike: parseInt(current.FeelsLikeC)
@@ -165,3 +214,4 @@ export const getMinutesUntilNextUpdate = (): number => {
   
   return Math.max(0, Math.ceil(remaining / (60 * 1000)));
 };
+

@@ -151,6 +151,58 @@ const Admin: React.FC = () => {
   });
   const [isLoadingOfficers, setIsLoadingOfficers] = useState(false);
 
+  // Estados para edição de militares
+  const [editableOfficers, setEditableOfficers] = useState([...OFFICERS_DATA]);
+  const [editableMasters, setEditableMasters] = useState([...MASTERS_DATA]);
+  const [newOfficerName, setNewOfficerName] = useState("");
+  const [newMasterName, setNewMasterName] = useState("");
+
+  // Funções para gerenciar oficiais
+  const addOfficer = () => {
+    if (newOfficerName.trim()) {
+      const newOfficer = { name: newOfficerName.trim(), rank: "1t" as const };
+      setEditableOfficers([...editableOfficers, newOfficer]);
+      setNewOfficerName("");
+      toast({
+        title: "Oficial adicionado",
+        description: `${newOfficer.name} foi adicionado à lista`,
+      });
+    }
+  };
+
+  const removeOfficer = (index: number) => {
+    const officer = editableOfficers[index];
+    setEditableOfficers(editableOfficers.filter((_, i) => i !== index));
+    toast({
+      title: "Oficial removido",
+      description: `${officer.name} foi removido da lista`,
+      variant: "destructive",
+    });
+  };
+
+  // Funções para gerenciar contramesres
+  const addMaster = () => {
+    if (newMasterName.trim()) {
+      const newMaster = { name: newMasterName.trim(), rank: "1sg" as const };
+      setEditableMasters([...editableMasters, newMaster]);
+      setNewMasterName("");
+      toast({
+        title: "Contramestre adicionado",
+        description: `${newMaster.name} foi adicionado à lista`,
+      });
+    }
+  };
+
+  const removeMaster = (index: number) => {
+    const master = editableMasters[index];
+    setEditableMasters(editableMasters.filter((_, i) => i !== index));
+    toast({
+      title: "Contramestre removido",
+      description: `${master.name} foi removido da lista`,
+      variant: "destructive",
+    });
+  };
+
   // Estados para status do sistema
   const [serverStatus, setServerStatus] = useState<{
     connected: boolean;
@@ -1997,18 +2049,34 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                               </SheetDescription>
                             </SheetHeader>
                             <div className="mt-6 space-y-4 max-h-96 overflow-y-auto">
-                              {OFFICERS_DATA.map((officer, index) => (
+                              {editableOfficers.map((officer, index) => (
                                 <div key={index} className="flex items-center justify-between p-2 border rounded">
                                   <span className="text-sm">{officer.name}</span>
-                                  <Button size="sm" variant="destructive" className="text-xs">
+                                  <Button 
+                                    size="sm" 
+                                    variant="destructive" 
+                                    className="text-xs"
+                                    onClick={() => removeOfficer(index)}
+                                  >
                                     🗑️
                                   </Button>
                                 </div>
                               ))}
                             </div>
                             <div className="mt-4 pt-4 border-t">
-                              <Input placeholder="Adicionar novo oficial (ex: CT (IM) NOME)" className="mb-2" />
-                              <Button className="w-full" variant="outline">
+                              <Input 
+                                placeholder="Adicionar novo oficial (ex: CT (IM) NOME)" 
+                                className="mb-2"
+                                value={newOfficerName}
+                                onChange={(e) => setNewOfficerName(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && addOfficer()}
+                              />
+                              <Button 
+                                className="w-full" 
+                                variant="outline"
+                                onClick={addOfficer}
+                                disabled={!newOfficerName.trim()}
+                              >
                                 ➕ Adicionar Oficial
                               </Button>
                             </div>
@@ -2044,18 +2112,34 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                               </SheetDescription>
                             </SheetHeader>
                             <div className="mt-6 space-y-4 max-h-96 overflow-y-auto">
-                              {MASTERS_DATA.map((master, index) => (
+                              {editableMasters.map((master, index) => (
                                 <div key={index} className="flex items-center justify-between p-2 border rounded">
                                   <span className="text-sm">{master.name}</span>
-                                  <Button size="sm" variant="destructive" className="text-xs">
+                                  <Button 
+                                    size="sm" 
+                                    variant="destructive" 
+                                    className="text-xs"
+                                    onClick={() => removeMaster(index)}
+                                  >
                                     🗑️
                                   </Button>
                                 </div>
                               ))}
                             </div>
                             <div className="mt-4 pt-4 border-t">
-                              <Input placeholder="Adicionar novo contramestre (ex: 1SG NOME)" className="mb-2" />
-                              <Button className="w-full" variant="outline">
+                              <Input 
+                                placeholder="Adicionar novo contramestre (ex: 1SG NOME)" 
+                                className="mb-2"
+                                value={newMasterName}
+                                onChange={(e) => setNewMasterName(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && addMaster()}
+                              />
+                              <Button 
+                                className="w-full" 
+                                variant="outline"
+                                onClick={addMaster}
+                                disabled={!newMasterName.trim()}
+                              >
                                 ➕ Adicionar Contramestre
                               </Button>
                             </div>
