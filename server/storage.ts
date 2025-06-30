@@ -1,4 +1,4 @@
-import { users, notices, documents, type User, type InsertUser, type Notice, type InsertNotice, type PDFDocument, type InsertDocument } from "@shared/schema";
+import { users, notices, documents, dutyOfficers, type User, type InsertUser, type Notice, type InsertNotice, type PDFDocument, type InsertDocument, type DutyOfficers, type InsertDutyOfficers } from "@shared/schema";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -18,6 +18,10 @@ export interface IStorage {
   createDocument(document: InsertDocument): Promise<PDFDocument>;
   updateDocument(document: PDFDocument): Promise<PDFDocument>;
   deleteDocument(id: number): Promise<boolean>;
+  
+  // Duty Officers methods
+  getDutyOfficers(): Promise<DutyOfficers | null>;
+  updateDutyOfficers(officers: InsertDutyOfficers): Promise<DutyOfficers>;
 }
 
 export class MemStorage implements IStorage {
