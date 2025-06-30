@@ -44,6 +44,7 @@ import {
   SheetTrigger 
 } from "@/components/ui/sheet";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { OFFICERS_LIST, MASTERS_LIST, RANK_DISPLAY_MAP, getOfficersByRank, getMastersByRank } from '@/data/officersData';
 
 const Admin: React.FC = () => {
   const { 
