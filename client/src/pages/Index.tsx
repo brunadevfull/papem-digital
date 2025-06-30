@@ -83,8 +83,8 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-950 flex flex-col p-2 sm:p-3 lg:p-4">
       {/* Header Reorganizado */}
-      <header className="relative mb-3 p-4 bg-gradient-to-r from-slate-800/80 to-blue-900/80 backdrop-blur-xl rounded-lg shadow-xl border border-blue-400/30">
-        <div className="grid grid-cols-12 gap-4 items-center">
+      <header className="relative mb-3 px-4 py-2 bg-gradient-to-r from-slate-800/80 to-blue-900/80 backdrop-blur-xl rounded-lg shadow-xl border border-blue-400/30">
+        <div className="grid grid-cols-12 gap-3 items-center">
           {/* Logo e título - 3 colunas */}
           <div className="col-span-12 lg:col-span-3 flex items-center justify-center lg:justify-start space-x-3">
             <div className="relative">
