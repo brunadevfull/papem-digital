@@ -7,6 +7,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { promisify } from "util";
+import { bonoAutomation } from "./bono-automation.js";
 
 // Promisify fs functions for async/await
 const writeFile = promisify(fs.writeFile);
@@ -1022,6 +1023,156 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('❌ Erro ao obter informações do sistema:', error);
       res.status(500).json({ 
         error: 'Failed to get system info',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // =================== BONO AUTOMATION ROUTES ===================
+  
+  // Baixar BONO automaticamente
+  app.post("/api/bono/download", async (req, res) => {
+    try {
+      console.log("🤖 Iniciando download automático do BONO...");
+      
+      const result = await bonoAutomation.manualDownload();
+      
+      if (result.success) {
+        console.log("✅ BONO baixado automaticamente com sucesso");
+        res.json({
+          success: true,
+          message: result.message,
+          filename: result.filename,
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        console.log("❌ Falha no download automático do BONO");
+        res.status(500).json({
+          success: false,
+          error: result.message
+        });
+      }
+    } catch (error) {
+      console.error("❌ Erro no download automático:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro interno no download automático",
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Status do sistema de automação BONO
+  app.get("/api/bono/status", async (req, res) => {
+    try {
+      const status = bonoAutomation.getStatus();
+      
+      res.json({
+        success: true,
+        ...status,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("❌ Erro ao obter status BONO:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro ao obter status",
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Configurar URL do BONO
+  app.post("/api/bono/config", async (req, res) => {
+    try {
+      const { url } = req.body;
+      
+      if (!url || typeof url !== 'string') {
+        return res.status(400).json({
+          success: false,
+          error: "URL é obrigatória"
+        });
+      }
+
+      // Validar URL
+      try {
+        new URL(url);
+      } catch {
+        return res.status(400).json({
+          success: false,
+          error: "URL inválida"
+        });
+      }
+
+      bonoAutomation.setBonoUrl(url);
+      
+      console.log(`🔗 URL do BONO configurada: ${url}`);
+      
+      res.json({
+        success: true,
+        message: "URL configurada com sucesso",
+        url: url,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("❌ Erro ao configurar URL:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro ao configurar URL",
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Verificar se wkhtmltopdf está instalado
+  app.get("/api/bono/check-tools", async (req, res) => {
+    try {
+      const hasWkhtmltopdf = await bonoAutomation.checkWkhtmltopdf();
+      
+      res.json({
+        success: true,
+        tools: {
+          wkhtmltopdf: hasWkhtmltopdf
+        },
+        message: hasWkhtmltopdf 
+          ? "Todas as ferramentas estão disponíveis"
+          : "wkhtmltopdf não está instalado",
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("❌ Erro ao verificar ferramentas:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro ao verificar ferramentas",
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Instalar ferramentas necessárias
+  app.post("/api/bono/install-tools", async (req, res) => {
+    try {
+      console.log("📦 Instalando ferramentas para automação BONO...");
+      
+      const installed = await bonoAutomation.installWkhtmltopdf();
+      
+      if (installed) {
+        res.json({
+          success: true,
+          message: "Ferramentas instaladas com sucesso",
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          error: "Falha na instalação das ferramentas"
+        });
+      }
+    } catch (error) {
+      console.error("❌ Erro na instalação:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro na instalação das ferramentas",
         details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
