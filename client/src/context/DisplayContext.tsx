@@ -45,6 +45,7 @@ interface DisplayContextType {
   setScrollSpeed: (speed: "slow" | "normal" | "fast") => void;
   setAutoRestartDelay: (delay: number) => void;
   refreshNotices: () => Promise<void>;
+  handleScrollComplete: () => void;
 }
 
 const DisplayContext = createContext<DisplayContextType | undefined>(undefined);
@@ -76,7 +77,41 @@ export const DisplayProvider: React.FC<DisplayProviderProps> = ({ children }) =>
 
   // Ref para o timer de alternância
   const escalaTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const mainDocTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isInitializingRef = useRef(true);
+  
+  // Callback para alternância PLASA/BONO após completar scroll
+  const handleScrollComplete = () => {
+    console.log("🔄 Scroll completado, verificando alternância PLASA/BONO...");
+    
+    // Limpar timer anterior se existir
+    if (mainDocTimerRef.current) {
+      clearTimeout(mainDocTimerRef.current);
+    }
+    
+    // Agendar alternância após o delay de restart
+    mainDocTimerRef.current = setTimeout(() => {
+      if (activePlasaDoc && activeBonoDoc) {
+        // Alternar entre PLASA e BONO
+        setCurrentMainDocType(prev => {
+          const next = prev === "plasa" ? "bono" : "plasa";
+          console.log(`🔄 Alternando documento principal: ${prev} → ${next}`);
+          return next;
+        });
+      } else if (activePlasaDoc && !activeBonoDoc) {
+        // Apenas PLASA ativo, manter PLASA
+        console.log("📋 Apenas PLASA ativo, mantendo exibição");
+        setCurrentMainDocType("plasa");
+      } else if (!activePlasaDoc && activeBonoDoc) {
+        // Apenas BONO ativo, manter BONO
+        console.log("📋 Apenas BONO ativo, mantendo exibição");
+        setCurrentMainDocType("bono");
+      } else {
+        // Nenhum documento principal ativo
+        console.log("⚠️ Nenhum documento principal (PLASA/BONO) ativo");
+      }
+    }, autoRestartDelay * 1000);
+  };
 
   // CORREÇÃO: Função para obter URL completa do backend - DETECTAR AMBIENTE
  const getBackendUrl = (path: string): string => {
@@ -830,6 +865,7 @@ const deleteNotice = async (id: string): Promise<boolean> => {
     setScrollSpeed,
     setAutoRestartDelay,
     refreshNotices,
+    handleScrollComplete,
   };
 
   return (
