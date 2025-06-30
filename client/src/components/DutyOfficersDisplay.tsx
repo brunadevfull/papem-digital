@@ -135,77 +135,58 @@ export const DutyOfficersDisplay = () => {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center bg-gradient-to-br from-blue-800/30 to-blue-900/30 backdrop-blur-sm rounded-lg border border-blue-400/20 p-4 shadow-lg min-w-[320px]">
-      {/* Cabeçalho com ícone e título */}
-      <div className="flex items-center gap-2 mb-3">
-        <div className="p-2 bg-blue-500/20 rounded-full">
-          <Users className="w-5 h-5 text-blue-300" />
-        </div>
-        <h3 className="text-blue-200 text-sm font-semibold uppercase tracking-wide">
-          Oficiais de Serviço
-        </h3>
-        <button 
-          onClick={loadOfficers}
-          className="p-1.5 hover:bg-blue-500/20 rounded-full transition-all duration-200 hover:scale-110"
-          title="Atualizar oficiais de serviço"
-          disabled={loading}
-        >
-          <RefreshCw className={`w-3 h-3 text-blue-300 ${loading ? 'animate-spin' : ''}`} />
-        </button>
+    <div className="flex items-center gap-3 bg-gradient-to-r from-blue-800/20 to-blue-900/20 backdrop-blur-sm rounded-lg border border-blue-400/20 px-4 py-2 shadow-lg">
+      {/* Ícone */}
+      <div className="p-1.5 bg-blue-500/20 rounded-full">
+        <Users className="w-4 h-4 text-blue-300" />
       </div>
-
+      
       {/* Informações dos oficiais */}
-      <div className="w-full space-y-3">
+      <div className="flex flex-col gap-1">
         {officers.officerName && (
-          <div className="bg-slate-900/40 rounded-lg p-3 border border-blue-500/20">
-            <div className="text-xs text-blue-300 font-medium uppercase tracking-wider mb-1">
-              Oficial de Serviço
-            </div>
-            <div className="flex items-center gap-3">
-              <img 
-                src={`/rank-insignias/${officers.officerRank}.svg`}
-                alt={`Patente ${officers.officerRank.toUpperCase()}`}
-                className="w-10 h-5 object-contain"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
-              />
-              <span className="text-white font-semibold text-base">
-                {translateRank(officers.officerRank)} {officers.officerName}
-              </span>
-            </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-blue-300 font-medium">Oficial:</span>
+            <img 
+              src={`/rank-insignias/${officers.officerRank}.svg`}
+              alt={`Patente ${officers.officerRank.toUpperCase()}`}
+              className="w-8 h-4 object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
+            <span className="text-white font-semibold text-sm">
+              {translateRank(officers.officerRank)} {officers.officerName}
+            </span>
           </div>
         )}
         
         {officers.masterName && (
-          <div className="bg-slate-900/40 rounded-lg p-3 border border-blue-500/20">
-            <div className="text-xs text-blue-300 font-medium uppercase tracking-wider mb-1">
-              Contramestre de Serviço
-            </div>
-            <div className="flex items-center gap-3">
-              <img 
-                src={`/rank-insignias/${officers.masterRank}.svg`}
-                alt={`Patente ${officers.masterRank.toUpperCase()}`}
-                className="w-10 h-5 object-contain"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
-              />
-              <span className="text-white font-semibold text-base">
-                {translateRank(officers.masterRank)} {officers.masterName}
-              </span>
-            </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-blue-300 font-medium">Contramestre:</span>
+            <img 
+              src={`/rank-insignias/${officers.masterRank}.svg`}
+              alt={`Patente ${officers.masterRank.toUpperCase()}`}
+              className="w-8 h-4 object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
+            <span className="text-white font-semibold text-sm">
+              {translateRank(officers.masterRank)} {officers.masterName}
+            </span>
           </div>
         )}
       </div>
-
-      {/* Última atualização */}
-      {officers.updatedAt && (
-        <div className="mt-3 text-xs text-blue-400/70 flex items-center gap-1">
-          <Clock className="w-3 h-3" />
-          <span>Atualizado: {new Date(officers.updatedAt).toLocaleTimeString('pt-BR')}</span>
-        </div>
-      )}
+      
+      {/* Botão de refresh */}
+      <button 
+        onClick={loadOfficers}
+        className="p-1.5 hover:bg-blue-500/20 rounded-full transition-all duration-200 hover:scale-110"
+        title="Atualizar oficiais de serviço"
+        disabled={loading}
+      >
+        <RefreshCw className={`w-3 h-3 text-blue-300 ${loading ? 'animate-spin' : ''}`} />
+      </button>
     </div>
   );
 };
