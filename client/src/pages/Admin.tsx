@@ -1738,25 +1738,7 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                         🎖️ Oficial do Dia
                       </h3>
                       
-                      <div className="space-y-2">
-                        <Label htmlFor="officerRank">Posto</Label>
-                        <Select 
-                          value={dutyOfficers.officerRank} 
-                          onValueChange={(value: "1t" | "2t" | "ct") => 
-                            setDutyOfficers({...dutyOfficers, officerRank: value})
-                          }
-                          disabled={isLoadingOfficers}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione o posto" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="1t">1º Tenente</SelectItem>
-                            <SelectItem value="2t">2º Tenente</SelectItem>
-                            <SelectItem value="ct">Capitão-Tenente</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+
 
                       <div className="space-y-2">
                         <Label htmlFor="officerName">Nome do Oficial</Label>
@@ -1792,25 +1774,7 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                         ⚓ Contramestre do Serviço
                       </h3>
                       
-                      <div className="space-y-2">
-                        <Label htmlFor="masterRank">Graduação</Label>
-                        <Select 
-                          value={dutyOfficers.masterRank} 
-                          onValueChange={(value: "3sg" | "2sg" | "1sg") => 
-                            setDutyOfficers({...dutyOfficers, masterRank: value})
-                          }
-                          disabled={isLoadingOfficers}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione a graduação" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="3sg">3º Sargento</SelectItem>
-                            <SelectItem value="2sg">2º Sargento</SelectItem>
-                            <SelectItem value="1sg">1º Sargento</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+
 
                       <div className="space-y-2">
                         <Label htmlFor="masterName">Nome do Contramestre</Label>
@@ -2017,7 +1981,40 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                 <CardContent className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-3">
-                      <h3 className="font-medium text-blue-700">🎖️ Oficiais Disponíveis</h3>
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-medium text-blue-700">🎖️ Oficiais Disponíveis</h3>
+                        <Sheet>
+                          <SheetTrigger asChild>
+                            <Button size="sm" variant="outline" className="text-blue-600 border-blue-600">
+                              ✏️ Editar
+                            </Button>
+                          </SheetTrigger>
+                          <SheetContent>
+                            <SheetHeader>
+                              <SheetTitle>Gerenciar Oficiais</SheetTitle>
+                              <SheetDescription>
+                                Adicione, edite ou remova oficiais da lista
+                              </SheetDescription>
+                            </SheetHeader>
+                            <div className="mt-6 space-y-4 max-h-96 overflow-y-auto">
+                              {OFFICERS_DATA.map((officer, index) => (
+                                <div key={index} className="flex items-center justify-between p-2 border rounded">
+                                  <span className="text-sm">{officer.name}</span>
+                                  <Button size="sm" variant="destructive" className="text-xs">
+                                    🗑️
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                            <div className="mt-4 pt-4 border-t">
+                              <Input placeholder="Adicionar novo oficial (ex: CT (IM) NOME)" className="mb-2" />
+                              <Button className="w-full" variant="outline">
+                                ➕ Adicionar Oficial
+                              </Button>
+                            </div>
+                          </SheetContent>
+                        </Sheet>
+                      </div>
                       <div className="bg-blue-50 p-3 rounded-lg text-sm space-y-1 max-h-48 overflow-y-auto">
                         {OFFICERS_DATA.map((officer, index) => (
                           <div key={index} className="text-blue-800">
@@ -2031,7 +2028,40 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                     </div>
                     
                     <div className="space-y-3">
-                      <h3 className="font-medium text-green-700">⭐ Contramesres Disponíveis</h3>
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-medium text-green-700">⭐ Contramesres Disponíveis</h3>
+                        <Sheet>
+                          <SheetTrigger asChild>
+                            <Button size="sm" variant="outline" className="text-green-600 border-green-600">
+                              ✏️ Editar
+                            </Button>
+                          </SheetTrigger>
+                          <SheetContent>
+                            <SheetHeader>
+                              <SheetTitle>Gerenciar Contramesres</SheetTitle>
+                              <SheetDescription>
+                                Adicione, edite ou remova contramesres da lista
+                              </SheetDescription>
+                            </SheetHeader>
+                            <div className="mt-6 space-y-4 max-h-96 overflow-y-auto">
+                              {MASTERS_DATA.map((master, index) => (
+                                <div key={index} className="flex items-center justify-between p-2 border rounded">
+                                  <span className="text-sm">{master.name}</span>
+                                  <Button size="sm" variant="destructive" className="text-xs">
+                                    🗑️
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                            <div className="mt-4 pt-4 border-t">
+                              <Input placeholder="Adicionar novo contramestre (ex: 1SG NOME)" className="mb-2" />
+                              <Button className="w-full" variant="outline">
+                                ➕ Adicionar Contramestre
+                              </Button>
+                            </div>
+                          </SheetContent>
+                        </Sheet>
+                      </div>
                       <div className="bg-green-50 p-3 rounded-lg text-sm space-y-1 max-h-48 overflow-y-auto">
                         {MASTERS_DATA.map((master, index) => (
                           <div key={index} className="text-green-800">
