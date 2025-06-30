@@ -1,7 +1,7 @@
 /**
  * Sistema de Automação BONO
  * Converte páginas HTML do portal da Marinha em PDF automaticamente
- * Usa wkhtmltopdf para renderização precisa
+ * Usa Puppeteer para renderização precisa
  */
 
 import { spawn } from 'child_process';
@@ -139,10 +139,10 @@ export class BonoAutomation {
    */
   async downloadCurrentBono(): Promise<boolean> {
     try {
-      // Verificar se wkhtmltopdf está disponível
-      const hasWkhtmltopdf = await this.checkWkhtmltopdf();
-      if (!hasWkhtmltopdf) {
-        console.log('❌ wkhtmltopdf não encontrado');
+      // Verificar se Puppeteer está disponível
+      const hasPuppeteer = await this.checkWkhtmltopdf();
+      if (!hasPuppeteer) {
+        console.log('❌ Puppeteer não encontrado');
         const installed = await this.installWkhtmltopdf();
         if (!installed) {
           return false;

@@ -6,6 +6,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { bonoAutomation } from "./bono-automation.js";
 import os from "os";
 
 const app = express();
@@ -150,5 +151,26 @@ app.use((req, res, next) => {
     console.log('   Todas as restrições foram removidas');
     console.log('   Use apenas em redes confiáveis');
     console.log('========================================\n');
+
+    // Inicializar sistema de automação BONO (async)
+    setImmediate(async () => {
+      try {
+        console.log('🤖 Inicializando sistema de automação BONO...');
+        
+        // Verificar se Puppeteer está funcionando
+        const hasPuppeteer = await bonoAutomation.checkWkhtmltopdf();
+        if (hasPuppeteer) {
+          console.log('✅ Puppeteer está disponível');
+          
+          // Iniciar agendamento diário
+          bonoAutomation.startDailySchedule();
+          console.log('⏰ Agendamento diário do BONO ativado');
+        } else {
+          console.log('⚠️ Puppeteer não está funcionando corretamente');
+        }
+      } catch (error) {
+        console.error('❌ Erro ao inicializar automação BONO:', error);
+      }
+    });
   });
 })();
