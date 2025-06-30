@@ -442,15 +442,26 @@ const deleteNotice = async (id: string): Promise<boolean> => {
       url: newDoc.url
     });
 
-    if (docData.type === "plasa" || docData.type === "bono") {
+    if (docData.type === "plasa") {
       setPlasaDocuments(prev => {
         const exists = prev.some(doc => doc.url === fullUrl || doc.url === docData.url);
         if (exists) {
-          console.log("📄 Documento PLASA/BONO já existe, ignorando:", fullUrl);
+          console.log("📄 Documento PLASA já existe, ignorando:", fullUrl);
           return prev;
         }
         
-        console.log("📄 Adicionando novo PLASA/BONO:", newDoc.title);
+        console.log("📄 Adicionando novo PLASA:", newDoc.title);
+        return [...prev, newDoc];
+      });
+    } else if (docData.type === "bono") {
+      setPlasaDocuments(prev => {
+        const exists = prev.some(doc => doc.url === fullUrl || doc.url === docData.url);
+        if (exists) {
+          console.log("📋 Documento BONO já existe, ignorando:", fullUrl);
+          return prev;
+        }
+        
+        console.log("📋 Adicionando novo BONO:", newDoc.title);
         return [...prev, newDoc];
       });
     } else {
@@ -476,7 +487,7 @@ const deleteNotice = async (id: string): Promise<boolean> => {
 
   const updateDocument = (updatedDoc: PDFDocument) => {
     console.log("📝 Atualizando documento:", updatedDoc.title);
-    if (updatedDoc.type === "plasa") {
+    if (updatedDoc.type === "plasa" || updatedDoc.type === "bono") {
       setPlasaDocuments(prev => prev.map(doc => 
         doc.id === updatedDoc.id ? updatedDoc : doc
       ));

@@ -122,9 +122,6 @@ export const TemperatureDisplay = () => {
         <div className="flex items-center gap-3 text-xs text-white/60">
           <span className="capitalize">{weather.description}</span>
           <span>Umidade: {weather.humidity}%</span>
-          {nextUpdate > 0 && (
-            <span>Próx. atualização: {nextUpdate}min</span>
-          )}
         </div>
       </div>
     </div>
