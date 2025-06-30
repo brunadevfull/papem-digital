@@ -645,7 +645,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
 
   // Iniciar scroll contínuo
   const startContinuousScroll = useCallback(() => {
-    if (documentType !== "plasa" || !containerRef.current || savedPageUrls.length === 0 || isAutomationPaused) {
+    if ((documentType !== "plasa" && documentType !== "bono") || !containerRef.current || savedPageUrls.length === 0 || isAutomationPaused) {
       return;
     }
 
@@ -682,24 +682,26 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     }, 1000);
   }, [documentType, savedPageUrls.length, isAutomationPaused, handleScrollComplete, SCROLL_SPEED]);
 
-  // CORREÇÃO: INICIALIZAR PLASA com melhor verificação
+  // CORREÇÃO: INICIALIZAR PLASA/BONO com melhor verificação
   useEffect(() => {
-    if (documentType === "plasa") {
-      console.log("🔄 PLASA Effect triggered:", {
+    if (documentType === "plasa" || documentType === "bono") {
+      const activeMainDoc = documentType === "plasa" ? activePlasaDoc : activeBonoDoc;
+      
+      console.log(`🔄 ${documentType.toUpperCase()} Effect triggered:`, {
         isScrolling,
-        activePlasaDoc: activePlasaDoc?.id,
-        url: activePlasaDoc?.url
+        activeDoc: activeMainDoc?.id,
+        url: activeMainDoc?.url
       });
 
       if (isScrolling) return;
       
-      if (!activePlasaDoc || !activePlasaDoc.url) {
-        console.log("❌ PLASA: Nenhum documento PLASA ativo encontrado");
+      if (!activeMainDoc || !activeMainDoc.url) {
+        console.log(`❌ ${documentType.toUpperCase()}: Nenhum documento ${documentType.toUpperCase()} ativo encontrado`);
         setLoading(false);
         setSavedPageUrls([]);
         setDebugInfo({
-          error: "Nenhum documento PLASA ativo",
-          suggestion: "Adicione um PLASA no painel administrativo."
+          error: `Nenhum documento ${documentType.toUpperCase()} ativo`,
+          suggestion: `Adicione um ${documentType.toUpperCase()} no painel administrativo.`
         });
         return;
       }
@@ -709,26 +711,26 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
       clearAllTimers();
       setDebugInfo({});
 
-      const docUrl = getBackendUrl(activePlasaDoc.url);
-      console.log("🎯 PLASA: Processando documento:", docUrl);
+      const docUrl = getBackendUrl(activeMainDoc.url);
+      console.log(`🎯 ${documentType.toUpperCase()}: Processando documento:`, docUrl);
       
-      if (isImageFile(docUrl) || (docUrl.startsWith('blob:') && activePlasaDoc.title.match(/\.(jpg|jpeg|png|gif|webp)$/i))) {
-        console.log("🖼️ PLASA: Documento é uma imagem, usando diretamente");
+      if (isImageFile(docUrl) || (docUrl.startsWith('blob:') && activeMainDoc.title.match(/\.(jpg|jpeg|png|gif|webp)$/i))) {
+        console.log(`🖼️ ${documentType.toUpperCase()}: Documento é uma imagem, usando diretamente`);
         setSavedPageUrls([docUrl]);
         setTotalPages(1);
         setLoading(false);
       } else {
-        console.log("📄 PLASA: Documento é um PDF, convertendo para imagens");
+        console.log(`📄 ${documentType.toUpperCase()}: Documento é um PDF, convertendo para imagens`);
         convertPDFToImages(docUrl);
       }
     }
 
     return () => {
-      if (documentType === "plasa") {
+      if (documentType === "plasa" || documentType === "bono") {
         clearAllTimers();
       }
     };
-  }, [documentType, activePlasaDoc?.id, activePlasaDoc?.url]);
+  }, [documentType, activePlasaDoc?.id, activePlasaDoc?.url, activeBonoDoc?.id, activeBonoDoc?.url]);
 
   // CORREÇÃO: Inicializar ESCALA com monitoramento do índice de alternância
   useEffect(() => {
