@@ -116,12 +116,16 @@ const Index = () => {
             <TemperatureDisplay />
           </div>
           
+          {/* Dia da semana centralizado */}
+          <div className="flex flex-col items-center">
+            <div className="text-blue-200 text-xs font-medium uppercase mb-2">
+              {currentDate.weekday}
+            </div>
+          </div>
+          
           {/* Data e Hora */}
           <div className="flex items-center space-x-3">
             <div className="text-right">
-              <div className="text-blue-200 text-xs font-medium uppercase">
-                {currentDate.weekday}
-              </div>
               <div className="text-white text-sm font-semibold">
                 {new Date().toLocaleDateString('pt-BR', { 
                   day: '2-digit', 
