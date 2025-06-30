@@ -118,8 +118,13 @@ const Index = () => {
           
           {/* Dia da semana centralizado */}
           <div className="flex flex-col items-center">
-            <div className="text-blue-200 text-xs font-medium uppercase mb-2">
-              {currentDate.weekday}
+            <div className="bg-gradient-to-r from-blue-600/30 to-blue-800/30 backdrop-blur-sm rounded-lg px-4 py-2 border border-blue-400/40 shadow-lg">
+              <div className="text-blue-100 text-xs uppercase text-center font-medium mb-1">
+                Hoje
+              </div>
+              <div className="text-white text-lg font-bold text-center tracking-wide">
+                {currentDate.weekday}
+              </div>
             </div>
           </div>
           
