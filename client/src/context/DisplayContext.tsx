@@ -494,7 +494,7 @@ const deleteNotice = async (id: string): Promise<boolean> => {
         return [...prev, newDoc];
       });
     } else if (docData.type === "bono") {
-      setPlasaDocuments(prev => {
+      setBonoDocuments(prev => {
         const exists = prev.some(doc => doc.url === fullUrl || doc.url === docData.url);
         if (exists) {
           console.log("📋 Documento BONO já existe, ignorando:", fullUrl);
@@ -527,8 +527,12 @@ const deleteNotice = async (id: string): Promise<boolean> => {
 
   const updateDocument = (updatedDoc: PDFDocument) => {
     console.log("📝 Atualizando documento:", updatedDoc.title);
-    if (updatedDoc.type === "plasa" || updatedDoc.type === "bono") {
+    if (updatedDoc.type === "plasa") {
       setPlasaDocuments(prev => prev.map(doc => 
+        doc.id === updatedDoc.id ? updatedDoc : doc
+      ));
+    } else if (updatedDoc.type === "bono") {
+      setBonoDocuments(prev => prev.map(doc => 
         doc.id === updatedDoc.id ? updatedDoc : doc
       ));
     } else {
@@ -542,7 +546,7 @@ const deleteNotice = async (id: string): Promise<boolean> => {
     console.log("🗑️ Removendo documento:", id);
     
     // Encontrar o documento para obter o filename
-    const allDocs = [...plasaDocuments, ...escalaDocuments];
+    const allDocs = [...plasaDocuments, ...bonoDocuments, ...escalaDocuments];
     const docToDelete = allDocs.find(doc => doc.id === id);
     
     if (docToDelete && docToDelete.url.includes('/uploads/')) {
@@ -572,6 +576,7 @@ const deleteNotice = async (id: string): Promise<boolean> => {
     
     // Remover da lista local independentemente do resultado do servidor
     setPlasaDocuments(prev => prev.filter(doc => doc.id !== id));
+    setBonoDocuments(prev => prev.filter(doc => doc.id !== id));
     setEscalaDocuments(prev => {
       const newList = prev.filter(doc => doc.id !== id);
       const activeEscalas = newList.filter(doc => doc.active);
@@ -656,6 +661,10 @@ const deleteNotice = async (id: string): Promise<boolean> => {
           ...doc,
           uploadDate: doc.uploadDate.toISOString()
         })),
+        bonoDocuments: bonoDocuments.map(doc => ({
+          ...doc,
+          uploadDate: doc.uploadDate.toISOString()
+        })),
         escalaDocuments: escalaDocuments.map(doc => ({
           ...doc,
           uploadDate: doc.uploadDate.toISOString()
@@ -672,6 +681,7 @@ const deleteNotice = async (id: string): Promise<boolean> => {
       
       console.log("💾 Contexto salvo no localStorage (sem avisos):", {
         plasa: plasaDocuments.length,
+        bono: bonoDocuments.length,
         escala: escalaDocuments.length,
         escalaIndex: currentEscalaIndex
       });
@@ -679,7 +689,7 @@ const deleteNotice = async (id: string): Promise<boolean> => {
     } catch (error) {
       console.error("❌ Erro ao salvar contexto:", error);
     }
-  }, [plasaDocuments, escalaDocuments, currentEscalaIndex, documentAlternateInterval, scrollSpeed, autoRestartDelay]);
+  }, [plasaDocuments, bonoDocuments, escalaDocuments, currentEscalaIndex, documentAlternateInterval, scrollSpeed, autoRestartDelay]);
 
   // Função auxiliar para determinar categoria
   const determineCategory = (filename: string): "oficial" | "praca" | undefined => {
@@ -761,6 +771,25 @@ const deleteNotice = async (id: string): Promise<boolean> => {
               if (validPlasaDocs.length > 0) {
                 setPlasaDocuments(validPlasaDocs);
                 console.log(`✅ ${validPlasaDocs.length} documentos PLASA carregados`);
+              }
+            }
+
+            // Carregar documentos BONO com correção de URL
+            if (data.bonoDocuments && Array.isArray(data.bonoDocuments)) {
+              const validBonoDocs = data.bonoDocuments
+                .filter((doc: any) => doc && doc.id && doc.title && doc.url)
+                .map((doc: any) => {
+                  return {
+                    ...doc,
+                    url: normalizeDocumentUrl(doc.url),
+                    uploadDate: new Date(doc.uploadDate),
+                    active: doc.active !== false
+                  };
+                });
+              
+              if (validBonoDocs.length > 0) {
+                setBonoDocuments(validBonoDocs);
+                console.log(`✅ ${validBonoDocs.length} documentos BONO carregados`);
               }
             }
 
