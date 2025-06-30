@@ -550,7 +550,12 @@ const deleteNotice = async (id: string): Promise<boolean> => {
   };
 
   // Computed values com alternância automática para escalas  
+  const activePlasaDoc = plasaDocuments.find(doc => doc.active) || null;
+  const activeBonoDoc = bonoDocuments.find(doc => doc.active) || null;
   const activeEscalaDocuments = escalaDocuments.filter(doc => doc.active);
+  const activeEscalaDoc = activeEscalaDocuments.length > 0 
+    ? activeEscalaDocuments[currentEscalaIndex % activeEscalaDocuments.length] 
+    : null;
 
   // Effect para alternar escalas automaticamente
   useEffect(() => {
@@ -799,12 +804,7 @@ const deleteNotice = async (id: string): Promise<boolean> => {
     }
   }, [activeEscalaDocuments.length, currentEscalaIndex]);
 
-  // Documentos ativos derivados
-  const activePlasaDoc = plasaDocuments.find(doc => doc.active) || null;
-  const activeBonoDoc = bonoDocuments.find(doc => doc.active) || null;
-  const activeEscalaDoc = activeEscalaDocuments.length > 0 
-    ? activeEscalaDocuments[currentEscalaIndex % activeEscalaDocuments.length] 
-    : null;
+
 
   const value: DisplayContextType = {
     notices,
