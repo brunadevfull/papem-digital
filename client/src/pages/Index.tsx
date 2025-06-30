@@ -82,42 +82,33 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-950 flex flex-col p-2 sm:p-3 lg:p-4">
-      {/* Header Compacto */}
-      <header className="relative flex flex-col lg:flex-row items-center justify-between mb-3 p-3 bg-gradient-to-r from-slate-800/80 to-blue-900/80 backdrop-blur-xl rounded-lg shadow-xl border border-blue-400/30">
-        {/* Logo e título */}
-        <div className="flex items-center space-x-3 mb-2 lg:mb-0">
-          <div className="relative">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-sm">⚓</span>
+      {/* Header Reorganizado */}
+      <header className="relative mb-3 p-4 bg-gradient-to-r from-slate-800/80 to-blue-900/80 backdrop-blur-xl rounded-lg shadow-xl border border-blue-400/30">
+        <div className="grid grid-cols-12 gap-4 items-center">
+          {/* Logo e título - 3 colunas */}
+          <div className="col-span-12 lg:col-span-3 flex items-center justify-center lg:justify-start space-x-3">
+            <div className="relative">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-lg">⚓</span>
+              </div>
+              <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full border border-white shadow-lg animate-pulse"></div>
             </div>
-            <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full border border-white shadow-lg animate-pulse"></div>
+            
+            <div className="text-center lg:text-left">
+              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-300 to-white bg-clip-text text-transparent">
+                MARINHA DO BRASIL
+              </h1>
+              <p className="text-blue-200/80 text-sm">Sistema de Visualização Naval</p>
+            </div>
           </div>
-          
-          <div>
-            <h1 className="text-lg font-bold bg-gradient-to-r from-blue-300 to-white bg-clip-text text-transparent">
-              PAPEM - Sistema Operacional
-            </h1>
-            <p className="text-blue-200/80 text-xs">Sistema de Visualização de Documentos</p>
-          </div>
-        </div>
 
-        {/* Informações em linha horizontal - Layout corrigido */}
-        <div className="flex flex-col lg:flex-row items-center gap-3 lg:gap-6 w-full">
-          {/* Espaço vazio à esquerda para centralizar oficiais */}
-          <div className="hidden lg:block flex-1"></div>
-          
-          {/* Oficiais de Serviço - Posição central */}
-          <div className="flex-shrink-0">
+          {/* Oficiais de Serviço - 3 colunas */}
+          <div className="col-span-12 lg:col-span-3 flex justify-center">
             <DutyOfficersDisplay />
           </div>
-          
-          {/* Temperatura - Direita */}
-          <div className="flex-1 flex justify-end">
-            <TemperatureDisplay />
-          </div>
-          
-          {/* Dia da semana centralizado */}
-          <div className="flex flex-col items-center">
+
+          {/* Dia da semana - 2 colunas (centro) */}
+          <div className="col-span-12 lg:col-span-2 flex justify-center">
             <div className="bg-gradient-to-r from-blue-600/30 to-blue-800/30 backdrop-blur-sm rounded-lg px-4 py-2 border border-blue-400/40 shadow-lg">
               <div className="text-blue-100 text-xs uppercase text-center font-medium mb-1">
                 Hoje
@@ -127,28 +118,35 @@ const Index = () => {
               </div>
             </div>
           </div>
+
+          {/* Temperatura - 2 colunas */}
+          <div className="col-span-12 lg:col-span-2 flex justify-center">
+            <TemperatureDisplay />
+          </div>
           
-          {/* Data e Hora */}
-          <div className="flex items-center space-x-3">
-            <div className="text-right">
-              <div className="text-white text-sm font-semibold">
-                {new Date().toLocaleDateString('pt-BR', { 
-                  day: '2-digit', 
-                  month: 'short', 
-                  year: 'numeric' 
-                })}
+          {/* Data e Hora - 2 colunas */}
+          <div className="col-span-12 lg:col-span-2 flex justify-center lg:justify-end">
+            <div className="flex items-center space-x-3">
+              <div className="text-center lg:text-right">
+                <div className="text-white text-sm font-semibold">
+                  {new Date().toLocaleDateString('pt-BR', { 
+                    day: '2-digit', 
+                    month: 'short', 
+                    year: 'numeric' 
+                  })}
+                </div>
               </div>
-            </div>
-            
-            <div className="bg-slate-900/60 backdrop-blur-sm rounded-lg px-3 py-2 border border-blue-400/30">
-              <div className="text-blue-200 text-xs uppercase text-center">
-                Hora Oficial
-              </div>
-              <div className="text-white font-mono font-bold text-center text-lg">
-                {currentTime}
-              </div>
-              <div className="text-amber-300 text-xs text-center opacity-90">
-                🌅 {sunsetTime}
+              
+              <div className="bg-slate-900/60 backdrop-blur-sm rounded-lg px-3 py-2 border border-blue-400/30">
+                <div className="text-blue-200 text-xs uppercase text-center">
+                  Hora Oficial
+                </div>
+                <div className="text-white font-mono font-bold text-center text-lg">
+                  {currentTime}
+                </div>
+                <div className="text-amber-300 text-xs text-center opacity-90">
+                  🌅 {sunsetTime}
+                </div>
               </div>
             </div>
           </div>
