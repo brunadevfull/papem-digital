@@ -42,45 +42,41 @@ export class BonoAutomation {
   }
 
   /**
-   * Verifica se wkhtmltopdf está instalado
+   * Verifica se Puppeteer está disponível
    */
   async checkWkhtmltopdf(): Promise<boolean> {
-    return new Promise((resolve) => {
-      const process = spawn('wkhtmltopdf', ['--version']);
-      
-      process.on('close', (code) => {
-        resolve(code === 0);
+    try {
+      const browser = await puppeteer.launch({ 
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox'] 
       });
-      
-      process.on('error', () => {
-        resolve(false);
-      });
-    });
+      await browser.close();
+      return true;
+    } catch (error) {
+      console.error('❌ Erro ao verificar Puppeteer:', error);
+      return false;
+    }
   }
 
   /**
-   * Instala wkhtmltopdf no sistema
+   * Instala dependências do Puppeteer (já instalado via npm)
    */
   async installWkhtmltopdf(): Promise<boolean> {
-    console.log('📦 Instalando wkhtmltopdf...');
-    
-    return new Promise((resolve) => {
-      // Para sistemas Linux/Ubuntu
-      const process = spawn('apt-get', ['update', '&&', 'apt-get', 'install', '-y', 'wkhtmltopdf'], {
-        shell: true,
-        stdio: 'inherit'
-      });
+    try {
+      console.log('📦 Verificando instalação do Puppeteer...');
       
-      process.on('close', (code) => {
-        if (code === 0) {
-          console.log('✅ wkhtmltopdf instalado com sucesso');
-          resolve(true);
-        } else {
-          console.log('❌ Falha na instalação do wkhtmltopdf');
-          resolve(false);
-        }
+      const browser = await puppeteer.launch({ 
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox'] 
       });
-    });
+      await browser.close();
+      
+      console.log('✅ Puppeteer está funcionando corretamente');
+      return true;
+    } catch (error) {
+      console.error('❌ Erro na verificação do Puppeteer:', error);
+      return false;
+    }
   }
 
   /**
@@ -93,41 +89,49 @@ export class BonoAutomation {
     }
 
     this.isRunning = true;
-    console.log(`🔄 Convertendo ${url} para PDF...`);
+    console.log(`🔄 Convertendo ${url} para PDF usando Puppeteer...`);
 
-    return new Promise((resolve) => {
-      const args = [
-        ...this.config.wkhtmltopdfOptions,
-        url,
-        outputPath
-      ];
-
-      const process = spawn('wkhtmltopdf', args);
-      
-      let errorOutput = '';
-      
-      process.stderr.on('data', (data) => {
-        errorOutput += data.toString();
+    try {
+      const browser = await puppeteer.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
       });
+
+      const page = await browser.newPage();
       
-      process.on('close', (code) => {
-        this.isRunning = false;
-        
-        if (code === 0) {
-          console.log(`✅ PDF gerado com sucesso: ${outputPath}`);
-          resolve(true);
-        } else {
-          console.log(`❌ Erro na conversão: ${errorOutput}`);
-          resolve(false);
+      // Configurar viewport e timeout
+      await page.setViewport({ width: 1920, height: 1080 });
+      
+      // Navegar para a página
+      await page.goto(url, { 
+        waitUntil: 'networkidle2',
+        timeout: 30000 
+      });
+
+      // Gerar PDF
+      await page.pdf({
+        path: outputPath,
+        format: 'A4',
+        printBackground: true,
+        margin: {
+          top: '20mm',
+          bottom: '20mm',
+          left: '15mm',
+          right: '15mm'
         }
       });
 
-      process.on('error', (error) => {
-        this.isRunning = false;
-        console.log(`❌ Erro no processo: ${error.message}`);
-        resolve(false);
-      });
-    });
+      await browser.close();
+      this.isRunning = false;
+
+      console.log(`✅ PDF gerado com sucesso: ${outputPath}`);
+      return true;
+
+    } catch (error) {
+      this.isRunning = false;
+      console.log(`❌ Erro na conversão com Puppeteer:`, error);
+      return false;
+    }
   }
 
   /**
