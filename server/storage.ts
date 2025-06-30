@@ -28,6 +28,7 @@ export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private notices: Map<number, Notice>;
   private documents: Map<number, PDFDocument>;
+  private dutyOfficers: DutyOfficers | null;
   private currentUserId: number;
   private currentNoticeId: number;
   private currentDocumentId: number;
@@ -36,6 +37,7 @@ export class MemStorage implements IStorage {
     this.users = new Map();
     this.notices = new Map();
     this.documents = new Map();
+    this.dutyOfficers = null; // Inicializar como null, será criado quando necessário
     this.currentUserId = 1;
     this.currentNoticeId = 1;
     this.currentDocumentId = 1;
@@ -397,6 +399,42 @@ export class MemStorage implements IStorage {
 
   async deleteDocument(id: number): Promise<boolean> {
     return this.documents.delete(id);
+  }
+
+  // Duty Officers methods
+  async getDutyOfficers(): Promise<DutyOfficers | null> {
+    return this.dutyOfficers;
+  }
+
+  async updateDutyOfficers(officers: InsertDutyOfficers): Promise<DutyOfficers> {
+    // Validar ranks
+    const validOfficerRanks = ["1t", "2t", "ct"] as const;
+    const validMasterRanks = ["3sg", "2sg", "1sg"] as const;
+    
+    const officerRank = validOfficerRanks.includes(officers.officerRank as any) 
+      ? officers.officerRank as "1t" | "2t" | "ct" 
+      : "1t";
+      
+    const masterRank = validMasterRanks.includes(officers.masterRank as any) 
+      ? officers.masterRank as "3sg" | "2sg" | "1sg" 
+      : "3sg";
+
+    const updatedOfficers: DutyOfficers = {
+      id: 1, // Sempre ID 1 pois só temos um registro
+      officerName: officers.officerName || "",
+      officerRank: officerRank,
+      masterName: officers.masterName || "",
+      masterRank: masterRank,
+      updatedAt: new Date()
+    };
+
+    this.dutyOfficers = updatedOfficers;
+    console.log('👮 Oficiais de serviço atualizados:', {
+      oficial: `${updatedOfficers.officerRank} ${updatedOfficers.officerName}`,
+      contramestre: `${updatedOfficers.masterRank} ${updatedOfficers.masterName}`
+    });
+    
+    return updatedOfficers;
   }
 }
 
