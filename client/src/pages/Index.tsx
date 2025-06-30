@@ -126,27 +126,22 @@ const Index = () => {
           
           {/* Data e Hora - 2 colunas */}
           <div className="col-span-12 lg:col-span-2 flex justify-center lg:justify-end">
-            <div className="flex items-center space-x-3">
-              <div className="text-center lg:text-right">
-                <div className="text-white text-sm font-semibold">
-                  {new Date().toLocaleDateString('pt-BR', { 
-                    day: '2-digit', 
-                    month: 'short', 
-                    year: 'numeric' 
-                  })}
-                </div>
+            <div className="bg-slate-900/60 backdrop-blur-sm rounded-lg px-3 py-2 border border-blue-400/30">
+              <div className="text-blue-200 text-xs uppercase text-center mb-1">
+                Hora Oficial
               </div>
-              
-              <div className="bg-slate-900/60 backdrop-blur-sm rounded-lg px-3 py-2 border border-blue-400/30">
-                <div className="text-blue-200 text-xs uppercase text-center">
-                  Hora Oficial
-                </div>
-                <div className="text-white font-mono font-bold text-center text-lg">
-                  {currentTime}
-                </div>
-                <div className="text-amber-300 text-xs text-center opacity-90">
-                  🌅 {sunsetTime}
-                </div>
+              <div className="text-white text-xs text-center mb-1 font-medium">
+                {new Date().toLocaleDateString('pt-BR', { 
+                  day: '2-digit', 
+                  month: 'short', 
+                  year: 'numeric' 
+                })}
+              </div>
+              <div className="text-white font-mono font-bold text-center text-lg">
+                {currentTime}
+              </div>
+              <div className="text-amber-300 text-xs text-center opacity-90">
+                🌅 {sunsetTime}
               </div>
             </div>
           </div>
