@@ -42,7 +42,14 @@ export class DatabaseStorage implements IStorage {
   async createNotice(insertNotice: InsertNotice): Promise<Notice> {
     const [notice] = await db
       .insert(notices)
-      .values([insertNotice])
+      .values({
+        title: insertNotice.title,
+        content: insertNotice.content,
+        priority: insertNotice.priority as "high" | "medium" | "low",
+        startDate: insertNotice.startDate,
+        endDate: insertNotice.endDate,
+        active: insertNotice.active
+      })
       .returning();
     return notice;
   }
@@ -66,7 +73,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteNotice(id: number): Promise<boolean> {
     const result = await db.delete(notices).where(eq(notices.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount || 0) > 0;
   }
 
   // Document methods
@@ -82,7 +89,13 @@ export class DatabaseStorage implements IStorage {
   async createDocument(insertDocument: InsertDocument): Promise<PDFDocument> {
     const [document] = await db
       .insert(documents)
-      .values(insertDocument)
+      .values({
+        title: insertDocument.title,
+        url: insertDocument.url,
+        type: insertDocument.type as "plasa" | "bono" | "escala" | "cardapio",
+        category: insertDocument.category as "oficial" | "praca" | null,
+        active: insertDocument.active
+      })
       .returning();
     return document;
   }
@@ -104,7 +117,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteDocument(id: number): Promise<boolean> {
     const result = await db.delete(documents).where(eq(documents.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount || 0) > 0;
   }
 
   // Duty Officers methods - Estrutura simplificada
