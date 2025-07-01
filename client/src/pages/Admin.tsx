@@ -2023,6 +2023,94 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
               {/* Sub-aba Sistema */}
               <TabsContent value="sistema">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Card de Configurações do Sistema */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>⚙️ Configurações do Sistema</CardTitle>
+                      <CardDescription>
+                        Ajuste os parâmetros de funcionamento do sistema de visualização
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="scrollSpeed">
+                          🏃‍♂️ Velocidade de Rolagem do PLASA
+                        </Label>
+                        <div className="flex items-center space-x-2">
+                          <Select value={scrollSpeed} onValueChange={handleScrollSpeedChange}>
+                            <SelectTrigger className="w-32">
+                              <SelectValue placeholder="Velocidade" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="slow">🐌 Lenta</SelectItem>
+                              <SelectItem value="normal">🚶‍♂️ Normal</SelectItem>
+                              <SelectItem value="fast">🏃‍♂️ Rápida</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <span className="text-sm text-muted-foreground">velocidade de scroll</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Define a velocidade com que o PLASA rola automaticamente pela tela.
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div className="flex items-center">
+                          <Label htmlFor="documentAlternateInterval">
+                            ⏱️ Intervalo de Alternância entre Escalas (segundos)
+                          </Label>
+                          <HoverCard>
+                            <HoverCardTrigger asChild>
+                              <span className="ml-2 text-blue-500 cursor-help text-sm">[?]</span>
+                            </HoverCardTrigger>
+                            <HoverCardContent className="w-80">
+                              <p className="text-sm">
+                                Define quanto tempo cada escala (Oficiais/Praças) será exibida antes de alternar para a outra. 
+                                Esta configuração só tem efeito quando há mais de uma escala ativa.
+                              </p>
+                            </HoverCardContent>
+                          </HoverCard>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Input 
+                            id="documentAlternateInterval" 
+                            type="number" 
+                            min="5" 
+                            max="60" 
+                            className="w-24"
+                            value={documentAlternateInterval}
+                            onChange={handleDocumentAlternateIntervalChange}
+                          />
+                          <span className="text-sm text-muted-foreground">segundos entre escalas</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Tempo que cada escala fica visível antes de alternar para a próxima.
+                        </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="autoRestart">
+                          🔄 Reinício Automático do PLASA
+                        </Label>
+                        <div className="flex items-center space-x-2">
+                          <Input 
+                            id="autoRestart" 
+                            type="number" 
+                            min="2" 
+                            max="10" 
+                            className="w-24"
+                            value={autoRestartDelay}
+                            onChange={handleAutoRestartChange}
+                          />
+                          <span className="text-sm text-muted-foreground">segundos no final</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Tempo de pausa no final do PLASA antes de reiniciar do topo.
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
                   {/* Card de Debug do Sistema */}
                   <Card>
                     <CardHeader>
