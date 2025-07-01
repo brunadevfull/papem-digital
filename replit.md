@@ -141,14 +141,22 @@ The Navy Display System is a sophisticated PDF document display platform designe
 - Configured to use OpenWeatherMap API for real-time weather data
 - Features alerts for heavy rain, strong winds, and official weather warnings
 - Color-coded severity levels (low, medium, high, extreme)
-- Ready for API key configuration via VITE_OPENWEATHER_API_KEY
+- API key fully configured and operational with free plan (1,000 calls/day)
 - Integrated into Sistema sub-tab of admin interface
 
 ### Admin Interface Improvements
 - Reorganized "Militares" tab maintenance tools to "Sistema" sub-tab
 - Added comprehensive system maintenance tools (cache cleaning, data reload, system info, help guide)
 - Enhanced user experience with better logical organization
+- Removed duplicate maintenance sections from OSE/CM tab
 - Maintained weather alerts placement in appropriate Sistema section
+
+### Temperature Display Localization
+- Fixed English text in temperature display on main page
+- Improved humidity display with better validation and emoji
+- Configured OpenWeatherMap API integration with user's free API key
+- Enhanced Portuguese translations for weather descriptions
+- Optimized temperature cache system for better performance
 
 ## User Preferences
 

@@ -121,9 +121,11 @@ export const TemperatureDisplay = () => {
             Sensação {weather.feelsLike}°C
           </span>
         </div>
-        <div className="flex items-center gap-3 text-xs text-slate-400/70">
+        <div className="flex items-center gap-3 text-xs text-slate-400">
           <span className="capitalize">{weather.description}</span>
-          <span>Umidade: {weather.humidity}%</span>
+          {weather.humidity > 0 && weather.humidity <= 100 && (
+            <span>💧 {weather.humidity}%</span>
+          )}
         </div>
       </div>
       

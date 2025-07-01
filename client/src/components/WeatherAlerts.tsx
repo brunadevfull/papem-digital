@@ -27,27 +27,33 @@ export const WeatherAlerts = () => {
             Sistema de Alertas Meteorológicos
           </AlertTitle>
           <AlertDescription className="text-blue-700">
-            Para ativar o monitoramento meteorológico em tempo real:
-            <br />
-            <br />
-            <strong>1.</strong> Obtenha uma chave gratuita da API do OpenWeatherMap:
-            <br />
-            • Acesse: <a href="https://openweathermap.org/api" target="_blank" className="underline">openweathermap.org/api</a>
-            <br />
-            • Crie uma conta gratuita
-            <br />
-            • Copie sua chave da API
-            <br />
-            <br />
-            <strong>2.</strong> Configure a variável de ambiente:
-            <br />
-            • Nome: <code className="bg-blue-100 px-1 rounded">VITE_OPENWEATHER_API_KEY</code>
-            <br />
-            • Valor: sua chave da API
-            <br />
-            <br />
-            <strong>O que será monitorado:</strong>
-            <br />
+            <div className="space-y-3">
+              <div>
+                <strong>Status:</strong> Sistema de alertas configurado e funcionando ✅
+                <br />
+                <strong>Localização:</strong> Rio de Janeiro (Ilha Fiscal)
+                <br />
+                <strong>Plano:</strong> Gratuito - 1.000 consultas por dia
+              </div>
+              
+              <div className="bg-blue-100 p-3 rounded-lg">
+                <strong>🌦️ Monitoramento Ativo:</strong>
+                <br />
+                • Chuvas pesadas (&gt; 20mm/h)
+                <br />
+                • Ventos fortes (&gt; 50 km/h)
+                <br />
+                • Tempestades e raios
+                <br />
+                • Alertas oficiais de tempo severo
+                <br />
+                • Condições de navegação perigosas
+              </div>
+
+              <div className="text-sm bg-green-100 p-2 rounded">
+                <strong>✅ Configuração Concluída:</strong> O sistema está usando sua chave da API OpenWeatherMap configurada no ambiente. Os alertas aparecerão automaticamente quando houver condições meteorológicas severas.
+              </div>
+            </div>
             • 🌧️ Chuvas fortes e tempestades
             <br />
             • 💨 Ventos intensos

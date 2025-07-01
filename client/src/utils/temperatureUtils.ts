@@ -61,6 +61,7 @@ const translateWeatherDescription = (description: string): string => {
     'haze': 'nebulosidade',
     
     // Outras condições
+    'overcast': 'nublado',
     'partly cloudy': 'parcialmente nublado',
     'mostly cloudy': 'muito nublado',
     'light intensity drizzle': 'garoa fraca',
@@ -92,8 +93,13 @@ export const getCurrentTemperature = async (): Promise<WeatherData | null> => {
     console.log("🌡️ Buscando temperatura atualizada...");
     
     // Usar API gratuita do OpenWeatherMap
-    // Nota: Esta API requer uma chave, mas tem versão gratuita
-    const API_KEY = 'demo'; // Usuário deve fornecer chave real
+    const API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY;
+    
+    if (!API_KEY || API_KEY === 'demo') {
+      console.log("🌡️ Chave da API não configurada, usando API alternativa...");
+      return await getTemperatureFromAlternativeAPI();
+    }
+    
     const url = `https://api.openweathermap.org/data/2.5/weather?lat=${RIO_COORDS.lat}&lon=${RIO_COORDS.lon}&appid=${API_KEY}&units=metric&lang=pt_br`;
     
     const response = await fetch(url);
