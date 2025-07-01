@@ -1111,12 +1111,12 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
         {/* Status Panel */}
         <ServerStatusIndicator />
         
-        <Tabs defaultValue="avisos" className="w-full">
+        <Tabs defaultValue="documentos" className="w-full">
           <TabsList className="w-full mb-6">
-            <TabsTrigger value="avisos" className="flex-1">📢 Avisos</TabsTrigger>
             <TabsTrigger value="documentos" className="flex-1">📄 Documentos</TabsTrigger>
-            <TabsTrigger value="oficiais" className="flex-1">👮 OSE/CM</TabsTrigger>
-            <TabsTrigger value="configuracoes" className="flex-1">⚙️ Configurações</TabsTrigger>
+            <TabsTrigger value="avisos" className="flex-1">📢 Avisos</TabsTrigger>
+            <TabsTrigger value="militares" className="flex-1">👮 Militares</TabsTrigger>
+            <TabsTrigger value="sistema" className="flex-1">⚙️ Sistema</TabsTrigger>
           </TabsList>
           
           {/* Aba de Avisos */}
@@ -1930,8 +1930,8 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
 
 
 
-          {/* Aba de Oficiais de Serviço */}
-          <TabsContent value="oficiais">
+          {/* Aba de Militares */}
+          <TabsContent value="militares">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Formulário de Oficiais */}
               <Card className="border-navy">
@@ -2092,8 +2092,8 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
             </div>
           </TabsContent>
 
-          {/* Aba de Configurações */}
-          <TabsContent value="configuracoes">
+          {/* Aba de Sistema */}
+          <TabsContent value="sistema">
             <Tabs defaultValue="sistema" className="w-full">
               <TabsList className="w-full mb-4">
                 <TabsTrigger value="sistema" className="flex-1">⚙️ Sistema</TabsTrigger>
