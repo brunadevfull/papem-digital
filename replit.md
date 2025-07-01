@@ -129,9 +129,26 @@ The Navy Display System is a sophisticated PDF document display platform designe
 - **Browser**: Modern browsers with PDF.js support
 
 ## Changelog
+- July 1, 2025. Weather alerts system added for Rio de Janeiro monitoring and improved admin interface organization with moved maintenance tools to proper Sistema sub-tab
 - July 1, 2025. Enhanced admin interface with reorganized configuration tabs and daily motivational quotes system
 - June 30, 2025. Complete BONO automation system implemented with Puppeteer
 - June 27, 2025. Initial setup
+
+## Recent Updates (July 1, 2025)
+
+### Weather Alerts System
+- Created WeatherAlerts component for Rio de Janeiro weather monitoring
+- Configured to use OpenWeatherMap API for real-time weather data
+- Features alerts for heavy rain, strong winds, and official weather warnings
+- Color-coded severity levels (low, medium, high, extreme)
+- Ready for API key configuration via VITE_OPENWEATHER_API_KEY
+- Integrated into Sistema sub-tab of admin interface
+
+### Admin Interface Improvements
+- Reorganized "Militares" tab maintenance tools to "Sistema" sub-tab
+- Added comprehensive system maintenance tools (cache cleaning, data reload, system info, help guide)
+- Enhanced user experience with better logical organization
+- Maintained weather alerts placement in appropriate Sistema section
 
 ## User Preferences
 

@@ -44,6 +44,7 @@ import {
   SheetTrigger 
 } from "@/components/ui/sheet";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import WeatherAlerts from "@/components/WeatherAlerts";
 // Dados dos oficiais baseados no quadro da Marinha
 const OFFICERS_DATA = [
   { name: "CT (IM) YAGO", rank: "ct" as const },
@@ -2185,6 +2186,11 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                       </div>
                     </CardContent>
                   </Card>
+
+                  {/* Alertas Meteorológicos */}
+                  <div className="lg:col-span-2">
+                    <WeatherAlerts />
+                  </div>
 
                   {/* Card de Manutenção do Sistema */}
                   <Card className="lg:col-span-2">
