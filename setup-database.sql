@@ -3,10 +3,10 @@
 -- Execute este script para criar todas as tabelas necessárias
 
 -- Criar banco de dados (se necessário)
--- CREATE DATABASE navy_system;
+-- CREATE DATABASE marinha_display;
 
 -- Usar o banco
--- \c navy_system;
+-- \c marinha_display;
 
 -- Tabela de usuários
 CREATE TABLE IF NOT EXISTS users (
