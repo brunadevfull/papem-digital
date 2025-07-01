@@ -151,6 +151,16 @@ const Admin: React.FC = () => {
   });
   const [isLoadingOfficers, setIsLoadingOfficers] = useState(false);
 
+  // Estados para automação BONO
+  const [bonoStatus, setBonoStatus] = useState({
+    isRunning: false,
+    isEnabled: true,
+    currentUrl: "",
+    nextScheduled: "",
+    lastCheck: ""
+  });
+  const [isLoadingBono, setIsLoadingBono] = useState(false);
+
   // Estados para edição de militares
   const [editableOfficers, setEditableOfficers] = useState([...OFFICERS_DATA]);
   const [editableMasters, setEditableMasters] = useState([...MASTERS_DATA]);
@@ -395,9 +405,99 @@ const Admin: React.FC = () => {
     }
   };
 
+  // Funções para automação BONO
+  const loadBonoStatus = async () => {
+    try {
+      const response = await fetch(getBackendUrl('/api/bono/status'));
+      const data = await response.json();
+      
+      if (data.success) {
+        setBonoStatus({
+          isRunning: data.isRunning,
+          isEnabled: data.isEnabled,
+          currentUrl: data.currentUrl,
+          nextScheduled: data.nextScheduled,
+          lastCheck: data.timestamp
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao carregar status BONO:', error);
+    }
+  };
+
+  const toggleBonoAutomation = async () => {
+    setIsLoadingBono(true);
+    try {
+      const response = await fetch(getBackendUrl('/api/bono/toggle'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ enabled: !bonoStatus.isEnabled }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setBonoStatus(prev => ({
+          ...prev,
+          isEnabled: data.enabled
+        }));
+        
+        toast({
+          title: data.enabled ? "Automação Ativada" : "Automação Desativada",
+          description: data.message,
+        });
+      } else {
+        throw new Error(data.error || 'Erro ao alterar automação');
+      }
+    } catch (error) {
+      console.error('Erro ao alterar automação BONO:', error);
+      toast({
+        title: "Erro",
+        description: "Falha ao alterar configuração da automação.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoadingBono(false);
+    }
+  };
+
+  const triggerManualBono = async () => {
+    setIsLoadingBono(true);
+    try {
+      const response = await fetch(getBackendUrl('/api/bono/download'), {
+        method: 'POST',
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        toast({
+          title: "Download Manual Concluído",
+          description: `BONO baixado: ${data.filename}`,
+        });
+        // Recarregar o status
+        loadBonoStatus();
+      } else {
+        throw new Error(data.error || 'Erro no download manual');
+      }
+    } catch (error) {
+      console.error('Erro no download manual BONO:', error);
+      toast({
+        title: "Erro",
+        description: "Falha no download manual do BONO.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoadingBono(false);
+    }
+  };
+
   useEffect(() => {
     console.log("🔧 Admin carregado, avisos serão carregados do servidor");
     loadDutyOfficers();
+    loadBonoStatus();
   }, []);
   
   // Form handler para avisos com servidor
@@ -957,6 +1057,7 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
           <TabsList className="w-full mb-6">
             <TabsTrigger value="avisos" className="flex-1">📢 Avisos</TabsTrigger>
             <TabsTrigger value="documentos" className="flex-1">📄 Documentos</TabsTrigger>
+            <TabsTrigger value="bono" className="flex-1">🤖 BONO</TabsTrigger>
             <TabsTrigger value="oficiais" className="flex-1">👮 Oficiais</TabsTrigger>
             <TabsTrigger value="configuracoes" className="flex-1">⚙️ Configurações</TabsTrigger>
             <TabsTrigger value="debug" className="flex-1">🔍 Debug</TabsTrigger>
@@ -1770,6 +1871,207 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
     </CardContent>
   </Card>
 </TabsContent>
+
+          {/* Aba de Automação BONO */}
+          <TabsContent value="bono">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Status da Automação BONO */}
+              <Card className="border-purple-200">
+                <CardHeader className="bg-purple-600 text-white">
+                  <CardTitle className="flex items-center gap-2">
+                    🤖 Status da Automação BONO
+                  </CardTitle>
+                  <CardDescription className="text-purple-100">
+                    Sistema de download automático de BONOs
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 pt-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Status Atual */}
+                    <div className={`p-4 rounded-lg border ${
+                      bonoStatus.isEnabled 
+                        ? 'bg-green-50 border-green-200' 
+                        : 'bg-red-50 border-red-200'
+                    }`}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className={`w-3 h-3 rounded-full ${
+                          bonoStatus.isEnabled ? 'bg-green-500' : 'bg-red-500'
+                        }`}></div>
+                        <span className="font-medium">
+                          {bonoStatus.isEnabled ? 'Ativo' : 'Inativo'}
+                        </span>
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        Automação {bonoStatus.isEnabled ? 'ligada' : 'desligada'}
+                      </div>
+                    </div>
+
+                    {/* Próximo Download */}
+                    <div className="p-4 rounded-lg border bg-blue-50 border-blue-200">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-lg">⏰</span>
+                        <span className="font-medium">Próximo Download</span>
+                      </div>
+                      <div className="text-sm text-blue-700">
+                        {bonoStatus.nextScheduled 
+                          ? new Date(bonoStatus.nextScheduled).toLocaleString('pt-BR')
+                          : 'Não agendado'
+                        }
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* URL Atual */}
+                  <div className="p-4 rounded-lg border bg-gray-50">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-lg">🔗</span>
+                      <span className="font-medium">URL do BONO</span>
+                    </div>
+                    <div className="text-sm text-gray-600 font-mono break-all">
+                      {bonoStatus.currentUrl || 'URL não configurada'}
+                    </div>
+                  </div>
+
+                  {/* Última Verificação */}
+                  <div className="p-4 rounded-lg border bg-yellow-50 border-yellow-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-lg">📊</span>
+                      <span className="font-medium">Última Verificação</span>
+                    </div>
+                    <div className="text-sm text-yellow-700">
+                      {bonoStatus.lastCheck 
+                        ? new Date(bonoStatus.lastCheck).toLocaleString('pt-BR')
+                        : 'Nunca verificado'
+                      }
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Controles da Automação */}
+              <Card className="border-purple-200">
+                <CardHeader className="bg-purple-600 text-white">
+                  <CardTitle className="flex items-center gap-2">
+                    ⚙️ Controles da Automação
+                  </CardTitle>
+                  <CardDescription className="text-purple-100">
+                    Gerencie a automação BONO
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 pt-6">
+                  {/* Toggle Principal */}
+                  <div className="flex items-center justify-between p-4 rounded-lg border bg-white">
+                    <div>
+                      <h3 className="font-medium">Automação BONO</h3>
+                      <p className="text-sm text-gray-600">
+                        {bonoStatus.isEnabled 
+                          ? 'Downloads automáticos às 6:00h diariamente' 
+                          : 'Automação desabilitada - apenas uploads manuais'
+                        }
+                      </p>
+                    </div>
+                    <Button
+                      onClick={toggleBonoAutomation}
+                      disabled={isLoadingBono}
+                      variant={bonoStatus.isEnabled ? "destructive" : "default"}
+                      className={`min-w-[120px] ${
+                        bonoStatus.isEnabled 
+                          ? 'bg-red-600 hover:bg-red-700' 
+                          : 'bg-green-600 hover:bg-green-700'
+                      }`}
+                    >
+                      {isLoadingBono ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      ) : (
+                        bonoStatus.isEnabled ? 'Desativar' : 'Ativar'
+                      )}
+                    </Button>
+                  </div>
+
+                  {/* Download Manual */}
+                  <div className="flex items-center justify-between p-4 rounded-lg border bg-blue-50">
+                    <div>
+                      <h3 className="font-medium">Download Manual</h3>
+                      <p className="text-sm text-gray-600">
+                        Força o download do BONO atual agora
+                      </p>
+                    </div>
+                    <Button
+                      onClick={triggerManualBono}
+                      disabled={isLoadingBono}
+                      variant="outline"
+                      className="min-w-[120px] border-blue-300 text-blue-700 hover:bg-blue-100"
+                    >
+                      {isLoadingBono ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      ) : (
+                        'Baixar Agora'
+                      )}
+                    </Button>
+                  </div>
+
+                  {/* Atualizar Status */}
+                  <div className="flex items-center justify-between p-4 rounded-lg border bg-gray-50">
+                    <div>
+                      <h3 className="font-medium">Atualizar Status</h3>
+                      <p className="text-sm text-gray-600">
+                        Recarrega informações da automação
+                      </p>
+                    </div>
+                    <Button
+                      onClick={loadBonoStatus}
+                      disabled={isLoadingBono}
+                      variant="secondary"
+                      className="min-w-[120px]"
+                    >
+                      Atualizar
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Informações do Sistema */}
+            <Card className="mt-6 border-purple-200">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  Como Funciona a Automação BONO
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-purple-800">Sistema Híbrido</h4>
+                    <ul className="list-disc pl-5 space-y-1 text-sm text-gray-700">
+                      <li><strong>Upload Manual:</strong> Sempre tem prioridade máxima</li>
+                      <li><strong>Download Automático:</strong> Funciona como backup</li>
+                      <li><strong>Agendamento:</strong> Todos os dias às 6:00h da manhã</li>
+                      <li><strong>Fallback:</strong> Se manual falhar, usa automático</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-purple-800">Configurações</h4>
+                    <ul className="list-disc pl-5 space-y-1 text-sm text-gray-700">
+                      <li><strong>Ativar/Desativar:</strong> Controle total da automação</li>
+                      <li><strong>Download Manual:</strong> Força download imediato</li>
+                      <li><strong>Cache Inteligente:</strong> Evita downloads desnecessários</li>
+                      <li><strong>Logs Detalhados:</strong> Rastreamento completo</li>
+                    </ul>
+                  </div>
+                </div>
+                
+                <div className="mt-6 p-4 bg-purple-50 rounded-lg border-l-4 border-purple-500">
+                  <h4 className="font-medium mb-2 text-purple-800">Dica de Uso</h4>
+                  <p className="text-sm text-purple-700">
+                    A automação BONO garante que sempre haja um BONO disponível no sistema, mesmo 
+                    que ninguém faça upload manual. O sistema prioriza uploads manuais, mas 
+                    automaticamente baixa BONOs como backup para garantir continuidade do serviço.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           {/* Aba de Oficiais de Serviço */}
           <TabsContent value="oficiais">
