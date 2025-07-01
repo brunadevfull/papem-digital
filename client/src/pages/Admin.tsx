@@ -2211,20 +2211,29 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                             <h4 className="font-medium text-yellow-800">Limpeza de Cache</h4>
                           </div>
                           <p className="text-sm text-yellow-700 mb-3">
-                            Limpa páginas PLASA salvas no servidor se houver problemas de visualização.
+                            Limpa cache de PDFs e páginas processadas no servidor.
                           </p>
                           <Button
                             onClick={async () => {
                               try {
-                                // Implementar limpeza de cache se necessário
-                                toast({
-                                  title: "Cache limpo",
-                                  description: "Cache do sistema foi limpo com sucesso"
-                                });
+                                const response = await fetch(getBackendUrl('/api/clear-cache'), { method: 'POST' });
+                                if (response.ok) {
+                                  // Limpar também cache do localStorage
+                                  localStorage.removeItem('documentContext');
+                                  localStorage.removeItem('noticeContext');
+                                  localStorage.removeItem('lastDisplayState');
+                                  
+                                  toast({
+                                    title: "Cache limpo",
+                                    description: "Cache do servidor e navegador foi limpo com sucesso"
+                                  });
+                                } else {
+                                  throw new Error('Falha na requisição');
+                                }
                               } catch (error) {
                                 toast({
                                   title: "Erro na limpeza",
-                                  description: "Não foi possível limpar o cache",
+                                  description: "Não foi possível limpar o cache do servidor",
                                   variant: "destructive"
                                 });
                               }
@@ -2234,6 +2243,41 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                             className="w-full border-yellow-300 text-yellow-700 hover:bg-yellow-100"
                           >
                             Limpar Cache
+                          </Button>
+                        </div>
+
+                        {/* Limpar Cache do Navegador */}
+                        <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className="text-lg">💻</span>
+                            <h4 className="font-medium text-purple-800">Cache do Navegador</h4>
+                          </div>
+                          <p className="text-sm text-purple-700 mb-3">
+                            Limpa dados salvos localmente no navegador.
+                          </p>
+                          <Button
+                            onClick={() => {
+                              // Limpar localStorage
+                              localStorage.clear();
+                              
+                              // Limpar sessionStorage
+                              sessionStorage.clear();
+                              
+                              // Forçar reload da página
+                              toast({
+                                title: "Cache limpo",
+                                description: "Recarregando página..."
+                              });
+                              
+                              setTimeout(() => {
+                                window.location.reload();
+                              }, 1000);
+                            }}
+                            variant="outline"
+                            size="sm"
+                            className="w-full border-purple-300 text-purple-700 hover:bg-purple-100"
+                          >
+                            Limpar e Recarregar
                           </Button>
                         </div>
 
