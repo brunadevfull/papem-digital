@@ -20,38 +20,23 @@ export const WeatherAlerts = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Estado Atual */}
-        <Alert className="border-blue-200 bg-blue-50">
-          <AlertTitle className="text-blue-800 flex items-center gap-2">
-            <span className="text-lg">ℹ️</span>
-            Sistema de Alertas Meteorológicos
+        {/* Status do Sistema */}
+        <Alert className="border-green-200 bg-green-50">
+          <AlertTitle className="text-green-800 flex items-center gap-2">
+            <span className="text-lg">✅</span>
+            Sistema Ativo - Rio de Janeiro
           </AlertTitle>
-          <AlertDescription className="text-blue-700">
-            <div className="space-y-3">
+          <AlertDescription className="text-green-700">
+            <div className="space-y-2">
               <div>
-                <strong>Status:</strong> Sistema de alertas configurado e funcionando ✅
-                <br />
-                <strong>Localização:</strong> Rio de Janeiro (Ilha Fiscal)
-                <br />
-                <strong>Plano:</strong> Gratuito - 1.000 consultas por dia
+                Monitoramento meteorológico ativo para a região do Rio de Janeiro.
+                Os alertas aparecerão automaticamente quando houver condições climáticas severas.
               </div>
               
-              <div className="bg-blue-100 p-3 rounded-lg">
-                <strong>🌦️ Monitoramento Ativo:</strong>
+              <div className="bg-green-100 p-3 rounded-lg text-sm">
+                <strong>🌦️ Condições Monitoradas:</strong>
                 <br />
-                • Chuvas pesadas (&gt; 20mm/h)
-                <br />
-                • Ventos fortes (&gt; 50 km/h)
-                <br />
-                • Tempestades e raios
-                <br />
-                • Alertas oficiais de tempo severo
-                <br />
-                • Condições de navegação perigosas
-              </div>
-
-              <div className="text-sm bg-green-100 p-2 rounded">
-                <strong>✅ Configuração Concluída:</strong> O sistema está usando sua chave da API OpenWeatherMap configurada no ambiente. Os alertas aparecerão automaticamente quando houver condições meteorológicas severas.
+                • Chuvas intensas • Ventos fortes • Tempestades • Alertas oficiais
               </div>
             </div>
           </AlertDescription>
