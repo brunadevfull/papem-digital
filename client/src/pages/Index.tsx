@@ -5,6 +5,7 @@ import { TemperatureDisplay } from "@/components/TemperatureDisplay";
 import { DutyOfficersDisplay } from "@/components/DutyOfficersDisplay";
 import { useDisplay } from "@/context/DisplayContext";
 import { getSunsetWithLabel } from "@/utils/sunsetUtils";
+import logoPAPEM from "@assets/logoPAPEM_1751352314977.png";
 
 const Index = () => {
   const {
@@ -99,8 +100,12 @@ const Index = () => {
           {/* Logo e título - 3 colunas */}
           <div className="col-span-12 lg:col-span-3 flex items-center justify-center lg:justify-start space-x-3">
             <div className="relative">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-lg">⚓</span>
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center shadow-lg p-1">
+                <img 
+                  src={logoPAPEM} 
+                  alt="Logo PAPEM" 
+                  className="w-full h-full object-contain"
+                />
               </div>
               <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full border border-white shadow-lg animate-pulse"></div>
             </div>

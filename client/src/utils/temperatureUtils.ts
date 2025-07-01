@@ -18,7 +18,7 @@ interface TemperatureCache {
 }
 
 const CACHE_DURATION = 30 * 60 * 1000; // 30 minutos em millisegundos
-const RIO_COORDS = { lat: -22.9068, lon: -43.1729 }; // Rio de Janeiro
+const RIO_COORDS = { lat: -22.8975, lon: -43.1641 }; // Ilha Fiscal
 
 // Cache local para evitar muitas requisições
 let temperatureCache: TemperatureCache = {
