@@ -61,50 +61,7 @@ const OFFICERS_DATA = [
   { name: "2T (AA) MACHADO", rank: "2t" as const }
 ];
 
-// Sistema de Frases Motivacionais da Marinha do Brasil
-const MOTIVATIONAL_QUOTES = [
-  { quote: "O mar não perdoa os imprevidentes, mas recompensa os corajosos.", author: "Tradição Naval Brasileira" },
-  { quote: "Navegar é preciso, viver não é preciso.", author: "Fernando Pessoa (adaptado pela MB)" },
-  { quote: "A disciplina é a base de toda ação naval eficaz.", author: "Escola Naval" },
-  { quote: "O marinheiro que teme a tempestade não merece a bonança.", author: "Doutrina Naval" },
-  { quote: "Honrar a Pátria, servir com lealdade, defender com valor.", author: "Lema da Marinha do Brasil" },
-  { quote: "No mar, a união da tripulação é a força do navio.", author: "Manual do Marinheiro" },
-  { quote: "A coragem não é a ausência do medo, mas a ação apesar dele.", author: "Tradição Naval" },
-  { quote: "Cada marinheiro é um elo na corrente que protege o Brasil.", author: "Código de Honra Naval" },
-  { quote: "O oceano ensina humildade, mas forja caracteres.", author: "Filosofia Naval" },
-  { quote: "Servir à Pátria é servir ao futuro das próximas gerações.", author: "Doutrina Militar Naval" },
-  { quote: "A vigilância constante é o preço da soberania marítima.", author: "Estratégia Naval Brasileira" },
-  { quote: "O verdadeiro marinheiro navega tanto nas águas quanto nos valores.", author: "Ética Naval" },
-  { quote: "Disciplina, hierarquia e camaradagem: os três pilares navais.", author: "Regulamento da MB" },
-  { quote: "O mar une todos os continentes, como a Marinha une todos os brasileiros.", author: "Integração Nacional" },
-  { quote: "A responsabilidade do marinheiro transcende as fronteiras do navio.", author: "Compromisso Naval" },
-  { quote: "Em cada missão, a excelência é o único padrão aceitável.", author: "Padrão de Qualidade Naval" },
-  { quote: "O conhecimento é a bússola que guia o marinheiro moderno.", author: "Educação Naval" },
-  { quote: "Tradição e inovação caminham juntas na Marinha do Brasil.", author: "Modernização Naval" },
-  { quote: "O respeito mútuo é a âncora da hierarquia naval.", author: "Relacionamento Hierárquico" },
-  { quote: "Cada dia no mar é uma oportunidade de superação.", author: "Crescimento Pessoal Naval" },
-  { quote: "A segurança no mar começa com a preparação em terra.", author: "Prevenção Naval" },
-  { quote: "O orgulho de servir é o combustível da dedicação naval.", author: "Motivação de Serviço" },
-  { quote: "Nas águas brasileiras, cada marinheiro é guardião da soberania.", author: "Defesa Nacional" },
-  { quote: "A pontualidade naval é reflexo do respeito ao serviço.", author: "Disciplina Operacional" },
-  { quote: "O trabalho em equipe multiplica a força individual.", author: "Cooperação Naval" },
-  { quote: "A precisão técnica é inseparável da conduta ética.", author: "Profissionalismo Naval" },
-  { quote: "O mar ensina que a preparação é fundamental para o sucesso.", author: "Planejamento Naval" },
-  { quote: "Cada missão cumprida fortalece a confiança da Nação.", author: "Credibilidade Institucional" },
-  { quote: "A liderança naval se constrói com exemplo, não com palavras.", author: "Liderança por Exemplo" },
-  { quote: "O compromisso com a excelência define o marinheiro brasileiro.", author: "Identidade Naval" }
-];
 
-function getMotivationalQuotes() {
-  return MOTIVATIONAL_QUOTES;
-}
-
-function getDailyMotivationalQuote() {
-  const today = new Date();
-  const dayOfYear = today.getDate() + (today.getMonth() * 31);
-  const index = dayOfYear % MOTIVATIONAL_QUOTES.length;
-  return MOTIVATIONAL_QUOTES[index];
-}
 
 const MASTERS_DATA = [
   { name: "1SG SALES", rank: "1sg" as const },
