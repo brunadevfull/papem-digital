@@ -54,63 +54,34 @@ export const WeatherAlerts = () => {
                 <strong>✅ Configuração Concluída:</strong> O sistema está usando sua chave da API OpenWeatherMap configurada no ambiente. Os alertas aparecerão automaticamente quando houver condições meteorológicas severas.
               </div>
             </div>
-            • 🌧️ Chuvas fortes e tempestades
-            <br />
-            • 💨 Ventos intensos
-            <br />
-            • ⚠️ Alertas oficiais do Rio de Janeiro
-            <br />
-            • 📊 Condições atuais (temperatura, umidade, etc.)
           </AlertDescription>
         </Alert>
 
-        {/* Informações do Sistema */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-          <div className="text-center p-3 bg-gray-50 rounded-lg border">
-            <div className="font-semibold text-gray-600">Status</div>
-            <div className="text-gray-700">Aguardando configuração</div>
-          </div>
-          <div className="text-center p-3 bg-gray-50 rounded-lg border">
-            <div className="font-semibold text-gray-600">Localização</div>
-            <div className="text-gray-700">Rio de Janeiro</div>
-          </div>
-          <div className="text-center p-3 bg-gray-50 rounded-lg border">
-            <div className="font-semibold text-gray-600">Atualização</div>
-            <div className="text-gray-700">A cada 10 min</div>
-          </div>
-          <div className="text-center p-3 bg-gray-50 rounded-lg border">
-            <div className="font-semibold text-gray-600">Fonte</div>
-            <div className="text-gray-700">OpenWeatherMap</div>
-          </div>
-        </div>
-
-        {/* Exemplo de Alerta */}
+        {/* Demonstração de Alertas */}
         <div className="space-y-3">
-          <h4 className="font-semibold text-gray-800 flex items-center gap-2">
-            🚨 Exemplo de Alerta Ativo
-          </h4>
-          <Alert className="border-l-4 bg-red-100 border-red-500 text-red-800">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <AlertTitle className="flex items-center gap-2">
-                  🌧️ Chuva Forte no Rio de Janeiro
-                  <Badge variant="destructive">ALTO</Badge>
-                </AlertTitle>
-                <AlertDescription className="mt-2 text-red-700">
-                  Chuva intensa detectada: 15.2mm/h. Evite deslocamentos desnecessários.
-                  Alagamentos possíveis em pontos baixos da cidade.
-                  <div className="mt-2 text-xs opacity-75">
-                    <strong>Início:</strong> 01/07/2025 14:30 | <strong>Fim:</strong> Em análise
-                  </div>
-                </AlertDescription>
-              </div>
-            </div>
+          <h3 className="font-medium text-gray-800">Tipos de Alertas:</h3>
+          
+          <Alert className="border-yellow-200 bg-yellow-50">
+            <AlertTitle className="text-yellow-800 flex items-center gap-2">
+              <span>⚠️</span>
+              Chuva Moderada
+            </AlertTitle>
+            <AlertDescription className="text-yellow-700">
+              Precipitação de 15mm/h detectada. Condições de navegação podem ser afetadas.
+              <Badge className="ml-2 bg-yellow-200 text-yellow-800">Baixo</Badge>
+            </AlertDescription>
           </Alert>
-        </div>
 
-        {/* Rodapé */}
-        <div className="pt-3 border-t text-xs text-gray-500 text-center">
-          Configure a API para ativar alertas em tempo real para o Rio de Janeiro
+          <Alert className="border-orange-200 bg-orange-50">
+            <AlertTitle className="text-orange-800 flex items-center gap-2">
+              <span>🌬️</span>
+              Ventos Fortes
+            </AlertTitle>
+            <AlertDescription className="text-orange-700">
+              Rajadas de vento de 45 km/h registradas na Baía de Guanabara.
+              <Badge className="ml-2 bg-orange-200 text-orange-800">Médio</Badge>
+            </AlertDescription>
+          </Alert>
         </div>
       </CardContent>
     </Card>
