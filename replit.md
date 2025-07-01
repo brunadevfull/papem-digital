@@ -129,6 +129,7 @@ The Navy Display System is a sophisticated PDF document display platform designe
 - **Browser**: Modern browsers with PDF.js support
 
 ## Changelog
+- July 1, 2025. Sistema BONO automático removido por problemas de renderização; Correção da duplicação de graduação dos militares
 - July 1, 2025. Weather alerts system added for Rio de Janeiro monitoring and improved admin interface organization with moved maintenance tools to proper Sistema sub-tab
 - July 1, 2025. Enhanced admin interface with reorganized configuration tabs and daily motivational quotes system
 - June 30, 2025. Complete BONO automation system implemented with Puppeteer
