@@ -20,6 +20,7 @@ interface BonoConfig {
 export class BonoAutomation {
   private config: BonoConfig;
   private isRunning: boolean = false;
+  private isEnabled: boolean = true;
 
   constructor() {
     this.config = {
@@ -138,6 +139,11 @@ export class BonoAutomation {
    * Baixa o BONO atual e adiciona ao sistema
    */
   async downloadCurrentBono(): Promise<boolean> {
+    if (!this.isEnabled) {
+      console.log('⚠️ Automação BONO está desativada');
+      return false;
+    }
+    
     try {
       // Verificar se Puppeteer está disponível
       const hasPuppeteer = await this.checkWkhtmltopdf();
@@ -228,6 +234,21 @@ export class BonoAutomation {
   }
 
   /**
+   * Ativar/desativar automação
+   */
+  setEnabled(enabled: boolean): void {
+    this.isEnabled = enabled;
+    console.log(`🤖 Automação BONO ${enabled ? 'ATIVADA' : 'DESATIVADA'}`);
+  }
+
+  /**
+   * Verificar se automação está ativa
+   */
+  getEnabled(): boolean {
+    return this.isEnabled;
+  }
+
+  /**
    * Download manual do BONO
    */
   async manualDownload(): Promise<{ success: boolean; message: string; filename?: string }> {
@@ -267,6 +288,7 @@ export class BonoAutomation {
    */
   getStatus(): {
     isRunning: boolean;
+    isEnabled: boolean;
     currentUrl: string;
     nextScheduled: string;
   } {
@@ -277,6 +299,7 @@ export class BonoAutomation {
 
     return {
       isRunning: this.isRunning,
+      isEnabled: this.isEnabled,
       currentUrl: this.config.url,
       nextScheduled: tomorrow.toISOString()
     };
