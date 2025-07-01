@@ -1210,6 +1210,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Rota para limpar cache do sistema
+  app.post('/api/clear-cache', async (req, res) => {
+    try {
+      console.log('🧹 POST /api/clear-cache - Limpando cache do sistema...');
+      
+      const fs = await import('fs/promises');
+      const path = await import('path');
+      
+      let filesRemoved = 0;
+      
+      // Limpar cache de páginas PDF
+      const cacheDirectories = [
+        path.resolve('./cache/pdf-pages'),
+        path.resolve('./uploads/plasa-pages'),
+        path.resolve('./uploads/escala-cache')
+      ];
+      
+      for (const cacheDir of cacheDirectories) {
+        try {
+          const files = await fs.readdir(cacheDir);
+          for (const file of files) {
+            await fs.unlink(path.join(cacheDir, file));
+            filesRemoved++;
+          }
+          console.log(`🗑️ ${files.length} arquivos removidos de ${cacheDir}`);
+        } catch (error) {
+          console.log(`📁 Diretório ${cacheDir} não existe ou vazio`);
+        }
+      }
+      
+      res.json({
+        success: true,
+        message: 'Cache limpo com sucesso',
+        filesRemoved: filesRemoved,
+        directoriesChecked: cacheDirectories.length,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('❌ Erro ao limpar cache:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro ao limpar cache',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

@@ -1952,30 +1952,21 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
 
 
                       <div className="space-y-2">
-                        <Label htmlFor="officerName">Nome do Oficial</Label>
-                        <Select 
-                          value={dutyOfficers.officerName} 
-                          onValueChange={(value) => {
-                            const officer = OFFICERS_DATA.find(o => o.name === value);
-                            setDutyOfficers({
-                              ...dutyOfficers, 
-                              officerName: value,
-                              officerRank: officer?.rank as "1t" | "2t" | "ct" || dutyOfficers.officerRank
-                            });
-                          }}
+                        <Label htmlFor="officerName">Nome Completo do Oficial</Label>
+                        <Input
+                          id="officerName"
+                          value={dutyOfficers.officerName}
+                          onChange={(e) => setDutyOfficers({
+                            ...dutyOfficers,
+                            officerName: e.target.value
+                          })}
+                          placeholder="Ex: 1º Tenente KARINE"
                           disabled={isLoadingOfficers}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione o oficial" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {OFFICERS_DATA.map((officer) => (
-                              <SelectItem key={officer.name} value={officer.name}>
-                                {officer.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          className="font-medium"
+                        />
+                        <p className="text-xs text-blue-600">
+                          💡 Inclua a graduação: "1º Tenente NOME" ou "Capitão-Tenente NOME"
+                        </p>
                       </div>
                     </div>
 
@@ -1988,30 +1979,21 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
 
 
                       <div className="space-y-2">
-                        <Label htmlFor="masterName">Nome do Contramestre</Label>
-                        <Select 
-                          value={dutyOfficers.masterName} 
-                          onValueChange={(value) => {
-                            const master = MASTERS_DATA.find(m => m.name === value);
-                            setDutyOfficers({
-                              ...dutyOfficers, 
-                              masterName: value,
-                              masterRank: master?.rank as "3sg" | "2sg" | "1sg" || dutyOfficers.masterRank
-                            });
-                          }}
+                        <Label htmlFor="masterName">Nome Completo do Contramestre</Label>
+                        <Input
+                          id="masterName"
+                          value={dutyOfficers.masterName}
+                          onChange={(e) => setDutyOfficers({
+                            ...dutyOfficers,
+                            masterName: e.target.value
+                          })}
+                          placeholder="Ex: 1º Sargento RAFAELA"
                           disabled={isLoadingOfficers}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione o contramestre" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {MASTERS_DATA.map((master) => (
-                              <SelectItem key={master.name} value={master.name}>
-                                {master.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          className="font-medium"
+                        />
+                        <p className="text-xs text-green-600">
+                          💡 Inclua a graduação: "1º Sargento NOME" ou "3º Sargento NOME"
+                        </p>
                       </div>
                     </div>
                   </div>
