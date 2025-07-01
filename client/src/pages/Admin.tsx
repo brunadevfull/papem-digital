@@ -172,17 +172,7 @@ const Admin: React.FC = () => {
   const [editingOfficer, setEditingOfficer] = useState<{index: number, name: string} | null>(null);
   const [editingMaster, setEditingMaster] = useState<{index: number, name: string} | null>(null);
 
-  // Sistema de Frases Motivacionais da Marinha do Brasil
-  const getMotivationalQuotes = () => {
-    return MOTIVATIONAL_QUOTES;
-  };
 
-  const getDailyMotivationalQuote = () => {
-    const today = new Date();
-    const dayOfYear = today.getDate() + (today.getMonth() * 31);
-    const index = dayOfYear % MOTIVATIONAL_QUOTES.length;
-    return MOTIVATIONAL_QUOTES[index];
-  };
 
   // Funções para gerenciar oficiais
   const addOfficer = () => {
