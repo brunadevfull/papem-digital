@@ -100,8 +100,7 @@ function getMotivationalQuotes() {
 
 function getDailyMotivationalQuote() {
   const today = new Date();
-  const startOfYear = new Date(today.getFullYear(), 0, 0);
-  const dayOfYear = Math.floor((today.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24));
+  const dayOfYear = today.getDate() + (today.getMonth() * 31);
   const index = dayOfYear % MOTIVATIONAL_QUOTES.length;
   return MOTIVATIONAL_QUOTES[index];
 }
@@ -220,7 +219,7 @@ const Admin: React.FC = () => {
 
   const getDailyMotivationalQuote = () => {
     const today = new Date();
-    const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+    const dayOfYear = today.getDate() + (today.getMonth() * 31);
     const index = dayOfYear % MOTIVATIONAL_QUOTES.length;
     return MOTIVATIONAL_QUOTES[index];
   };
