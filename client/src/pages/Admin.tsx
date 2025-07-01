@@ -2017,7 +2017,6 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
             <Tabs defaultValue="sistema" className="w-full">
               <TabsList className="w-full mb-4">
                 <TabsTrigger value="sistema" className="flex-1">⚙️ Sistema</TabsTrigger>
-                <TabsTrigger value="automacao" className="flex-1">🤖 Automação</TabsTrigger>
                 <TabsTrigger value="militares" className="flex-1">👥 Militares</TabsTrigger>
               </TabsList>
               
