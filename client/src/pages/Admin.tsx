@@ -60,6 +60,52 @@ const OFFICERS_DATA = [
   { name: "2T (AA) MACHADO", rank: "2t" as const }
 ];
 
+// Sistema de Frases Motivacionais da Marinha do Brasil
+const MOTIVATIONAL_QUOTES = [
+  { quote: "O mar não perdoa os imprevidentes, mas recompensa os corajosos.", author: "Tradição Naval Brasileira" },
+  { quote: "Navegar é preciso, viver não é preciso.", author: "Fernando Pessoa (adaptado pela MB)" },
+  { quote: "A disciplina é a base de toda ação naval eficaz.", author: "Escola Naval" },
+  { quote: "O marinheiro que teme a tempestade não merece a bonança.", author: "Doutrina Naval" },
+  { quote: "Honrar a Pátria, servir com lealdade, defender com valor.", author: "Lema da Marinha do Brasil" },
+  { quote: "No mar, a união da tripulação é a força do navio.", author: "Manual do Marinheiro" },
+  { quote: "A coragem não é a ausência do medo, mas a ação apesar dele.", author: "Tradição Naval" },
+  { quote: "Cada marinheiro é um elo na corrente que protege o Brasil.", author: "Código de Honra Naval" },
+  { quote: "O oceano ensina humildade, mas forja caracteres.", author: "Filosofia Naval" },
+  { quote: "Servir à Pátria é servir ao futuro das próximas gerações.", author: "Doutrina Militar Naval" },
+  { quote: "A vigilância constante é o preço da soberania marítima.", author: "Estratégia Naval Brasileira" },
+  { quote: "O verdadeiro marinheiro navega tanto nas águas quanto nos valores.", author: "Ética Naval" },
+  { quote: "Disciplina, hierarquia e camaradagem: os três pilares navais.", author: "Regulamento da MB" },
+  { quote: "O mar une todos os continentes, como a Marinha une todos os brasileiros.", author: "Integração Nacional" },
+  { quote: "A responsabilidade do marinheiro transcende as fronteiras do navio.", author: "Compromisso Naval" },
+  { quote: "Em cada missão, a excelência é o único padrão aceitável.", author: "Padrão de Qualidade Naval" },
+  { quote: "O conhecimento é a bússola que guia o marinheiro moderno.", author: "Educação Naval" },
+  { quote: "Tradição e inovação caminham juntas na Marinha do Brasil.", author: "Modernização Naval" },
+  { quote: "O respeito mútuo é a âncora da hierarquia naval.", author: "Relacionamento Hierárquico" },
+  { quote: "Cada dia no mar é uma oportunidade de superação.", author: "Crescimento Pessoal Naval" },
+  { quote: "A segurança no mar começa com a preparação em terra.", author: "Prevenção Naval" },
+  { quote: "O orgulho de servir é o combustível da dedicação naval.", author: "Motivação de Serviço" },
+  { quote: "Nas águas brasileiras, cada marinheiro é guardião da soberania.", author: "Defesa Nacional" },
+  { quote: "A pontualidade naval é reflexo do respeito ao serviço.", author: "Disciplina Operacional" },
+  { quote: "O trabalho em equipe multiplica a força individual.", author: "Cooperação Naval" },
+  { quote: "A precisão técnica é inseparável da conduta ética.", author: "Profissionalismo Naval" },
+  { quote: "O mar ensina que a preparação é fundamental para o sucesso.", author: "Planejamento Naval" },
+  { quote: "Cada missão cumprida fortalece a confiança da Nação.", author: "Credibilidade Institucional" },
+  { quote: "A liderança naval se constrói com exemplo, não com palavras.", author: "Liderança por Exemplo" },
+  { quote: "O compromisso com a excelência define o marinheiro brasileiro.", author: "Identidade Naval" }
+];
+
+function getMotivationalQuotes() {
+  return MOTIVATIONAL_QUOTES;
+}
+
+function getDailyMotivationalQuote() {
+  const today = new Date();
+  const startOfYear = new Date(today.getFullYear(), 0, 0);
+  const dayOfYear = Math.floor((today.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24));
+  const index = dayOfYear % MOTIVATIONAL_QUOTES.length;
+  return MOTIVATIONAL_QUOTES[index];
+}
+
 const MASTERS_DATA = [
   { name: "1SG SALES", rank: "1sg" as const },
   { name: "1SG LEANDRO", rank: "1sg" as const },
@@ -166,6 +212,18 @@ const Admin: React.FC = () => {
   const [editableMasters, setEditableMasters] = useState([...MASTERS_DATA]);
   const [newOfficerName, setNewOfficerName] = useState("");
   const [newMasterName, setNewMasterName] = useState("");
+
+  // Sistema de Frases Motivacionais da Marinha do Brasil
+  const getMotivationalQuotes = () => {
+    return MOTIVATIONAL_QUOTES;
+  };
+
+  const getDailyMotivationalQuote = () => {
+    const today = new Date();
+    const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+    const index = dayOfYear % MOTIVATIONAL_QUOTES.length;
+    return MOTIVATIONAL_QUOTES[index];
+  };
 
   // Funções para gerenciar oficiais
   const addOfficer = () => {
@@ -1059,7 +1117,6 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
             <TabsTrigger value="documentos" className="flex-1">📄 Documentos</TabsTrigger>
             <TabsTrigger value="oficiais" className="flex-1">👮 OSE/CM</TabsTrigger>
             <TabsTrigger value="configuracoes" className="flex-1">⚙️ Configurações</TabsTrigger>
-            <TabsTrigger value="debug" className="flex-1">🔍 Debug</TabsTrigger>
           </TabsList>
           
           {/* Aba de Avisos */}
@@ -2047,6 +2104,141 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
               {/* Sub-aba Sistema */}
               <TabsContent value="sistema">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Card de Debug do Sistema */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>🔍 Informações do Sistema</CardTitle>
+                      <CardDescription>
+                        Status e informações técnicas do sistema
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="p-4 bg-blue-50 rounded-lg">
+                        <h4 className="font-medium mb-2 text-blue-800">📊 Status do Servidor</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <p><strong>Conectado:</strong> {serverStatus.connected ? '✅ Sim' : '❌ Não'}</p>
+                            <p><strong>Última resposta:</strong> {serverStatus.lastResponse || 'N/A'}</p>
+                            <p><strong>Documentos:</strong> {serverStatus.documents}</p>
+                          </div>
+                          <div>
+                            <p><strong>Avisos:</strong> {serverStatus.notices}</p>
+                            <p><strong>Última verificação:</strong> {serverStatus.lastCheck ? serverStatus.lastCheck.toLocaleTimeString('pt-BR') : 'Nunca'}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Button 
+                          onClick={checkServerStatus}
+                          disabled={isLoading}
+                          className="w-full"
+                        >
+                          {isLoading ? 'Verificando...' : '🔄 Verificar Status do Servidor'}
+                        </Button>
+                        
+                        <Button 
+                          onClick={async () => {
+                            try {
+                              const response = await fetch(getBackendUrl('/api/list-pdfs'));
+                              const data = await response.json();
+                              console.log('📄 Documentos do servidor:', data);
+                              alert(`Documentos encontrados: ${data.files ? data.files.length : 0}\nVerifique o console para detalhes.`);
+                            } catch (error) {
+                              console.error('❌ Erro ao listar documentos:', error);
+                              alert('Erro ao listar documentos do servidor');
+                            }
+                          }}
+                          variant="outline"
+                          className="w-full"
+                        >
+                          📋 Listar Documentos do Servidor
+                        </Button>
+                      </div>
+
+                      <div className="p-4 bg-green-50 rounded-lg border-l-4 border-green-500">
+                        <h4 className="font-medium mb-2 text-green-800">💡 Dicas de Debug</h4>
+                        <ul className="list-disc pl-5 space-y-1 text-sm text-green-700">
+                          <li>Verifique o console do navegador (F12) para logs detalhados</li>
+                          <li>O botão "Listar Documentos" mostra todos os PDFs no servidor</li>
+                          <li>Status do servidor é atualizado automaticamente</li>
+                          <li>Documentos são processados em background</li>
+                        </ul>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Card de Logs do Sistema */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>📋 Logs do Sistema</CardTitle>
+                      <CardDescription>
+                        Informações técnicas e logs de funcionamento
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2 max-h-64 overflow-y-auto text-sm font-mono bg-gray-100 p-3 rounded">
+                        <div>✅ Sistema iniciado com sucesso</div>
+                        <div>📡 Backend conectado: {getBackendUrl('/api/status')}</div>
+                        <div>🔄 Auto-refresh ativo a cada 30 segundos</div>
+                        <div>📱 Interface responsiva carregada</div>
+                        <div>🎯 Componentes Radix UI inicializados</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Card de Frases Motivacionais */}
+                  <Card className="lg:col-span-2">
+                    <CardHeader className="bg-gradient-to-r from-navy to-blue-700 text-white">
+                      <CardTitle className="flex items-center gap-2">
+                        ⚓ Frase do Dia - Marinha do Brasil
+                      </CardTitle>
+                      <CardDescription className="text-blue-100">
+                        Inspiração naval diária para fortalecer o espírito marinheiro
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-6">
+                      <div className="text-center space-y-4">
+                        <div className="p-6 bg-gradient-to-br from-blue-50 to-navy-50 rounded-lg border-l-4 border-navy">
+                          <blockquote className="text-lg font-medium text-navy italic mb-3">
+                            "{getDailyMotivationalQuote().quote}"
+                          </blockquote>
+                          <cite className="text-sm text-gray-600 font-medium">
+                            — {getDailyMotivationalQuote().author}
+                          </cite>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                          <div className="p-3 bg-blue-100 rounded-lg text-center">
+                            <div className="font-semibold text-navy">Renovação</div>
+                            <div className="text-blue-700">Diária às 00:00h</div>
+                          </div>
+                          <div className="p-3 bg-green-100 rounded-lg text-center">
+                            <div className="font-semibold text-green-800">Total</div>
+                            <div className="text-green-700">{getMotivationalQuotes().length} frases disponíveis</div>
+                          </div>
+                          <div className="p-3 bg-yellow-100 rounded-lg text-center">
+                            <div className="font-semibold text-yellow-800">Fonte</div>
+                            <div className="text-yellow-700">Tradição Naval Brasileira</div>
+                          </div>
+                        </div>
+                        
+                        <div className="p-4 bg-gray-50 rounded-lg">
+                          <p className="text-xs text-gray-600 text-center">
+                            As frases motivacionais são selecionadas automaticamente com base no dia atual, 
+                            promovendo valores navais de honra, coragem, disciplina e dedicação ao serviço da Pátria.
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+              </div>
+            </TabsContent>
+            
+            {/* Sub-aba Automação */}
+            <TabsContent value="automacao">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Card de Automação BONO já existente */}
               <Card>
                 <CardHeader>
                   <CardTitle>⚙️ Configurações do Sistema</CardTitle>
@@ -2872,91 +3064,7 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
           </Tabs>
         </TabsContent>
 
-        {/* Aba de Debug */}
-        <TabsContent value="debug">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>🔍 Informações do Sistema</CardTitle>
-                <CardDescription>
-                  Status e informações técnicas do sistema
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-4 bg-blue-50 rounded-lg">
-                  <h4 className="font-medium mb-2 text-blue-800">📊 Status do Servidor</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p><strong>Conectado:</strong> {serverStatus.connected ? '✅ Sim' : '❌ Não'}</p>
-                      <p><strong>Última resposta:</strong> {serverStatus.lastResponse || 'N/A'}</p>
-                      <p><strong>Documentos:</strong> {serverStatus.documents}</p>
-                    </div>
-                    <div>
-                      <p><strong>Avisos:</strong> {serverStatus.notices}</p>
-                      <p><strong>Última verificação:</strong> {serverStatus.lastCheck ? serverStatus.lastCheck.toLocaleTimeString('pt-BR') : 'Nunca'}</p>
-                    </div>
-                  </div>
-                </div>
 
-                <div className="space-y-2">
-                  <Button 
-                    onClick={checkServerStatus}
-                    disabled={isLoading}
-                    className="w-full"
-                  >
-                    {isLoading ? 'Verificando...' : '🔄 Verificar Status do Servidor'}
-                  </Button>
-                  
-                  <Button 
-                    onClick={async () => {
-                      try {
-                        const response = await fetch(getBackendUrl('/api/list-pdfs'));
-                        const data = await response.json();
-                        console.log('📄 Documentos do servidor:', data);
-                        alert(`Documentos encontrados: ${data.files ? data.files.length : 0}\nVerifique o console para detalhes.`);
-                      } catch (error) {
-                        console.error('❌ Erro ao listar documentos:', error);
-                        alert('Erro ao listar documentos do servidor');
-                      }
-                    }}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    📋 Listar Documentos do Servidor
-                  </Button>
-                </div>
-
-                <div className="p-4 bg-green-50 rounded-lg border-l-4 border-green-500">
-                  <h4 className="font-medium mb-2 text-green-800">💡 Dicas de Debug</h4>
-                  <ul className="list-disc pl-5 space-y-1 text-sm text-green-700">
-                    <li>Verifique o console do navegador (F12) para logs detalhados</li>
-                    <li>O botão "Listar Documentos" mostra todos os PDFs no servidor</li>
-                    <li>Status do servidor é atualizado automaticamente</li>
-                    <li>Documentos são processados em background</li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>📋 Logs do Sistema</CardTitle>
-                <CardDescription>
-                  Informações técnicas e logs de funcionamento
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 max-h-64 overflow-y-auto text-sm font-mono bg-gray-100 p-3 rounded">
-                  <div>✅ Sistema iniciado com sucesso</div>
-                  <div>📡 Backend conectado: {getBackendUrl('/api/status')}</div>
-                  <div>🔄 Auto-refresh ativo a cada 30 segundos</div>
-                  <div>📱 Interface responsiva carregada</div>
-                  <div>🎯 Componentes Radix UI inicializados</div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
       </Tabs>
 
       </div>
