@@ -1124,6 +1124,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Ativar/desativar automação BONO
+  app.post("/api/bono/toggle", async (req, res) => {
+    try {
+      const { enabled } = req.body;
+      
+      if (typeof enabled !== 'boolean') {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Parâmetro "enabled" deve ser true ou false',
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      bonoAutomation.setEnabled(enabled);
+      
+      res.json({ 
+        success: true, 
+        message: `Automação BONO ${enabled ? 'ativada' : 'desativada'}`,
+        enabled: bonoAutomation.getEnabled(),
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("❌ Erro ao alterar status da automação:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Erro ao alterar status da automação',
+        details: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
   // Verificar se wkhtmltopdf está instalado
   app.get("/api/bono/check-tools", async (req, res) => {
     try {
