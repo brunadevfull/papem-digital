@@ -407,37 +407,21 @@ export class MemStorage implements IStorage {
   }
 
   async updateDutyOfficers(officers: InsertDutyOfficers): Promise<DutyOfficers> {
-    // Validar ranks
-    const validOfficerRanks = ["1t", "2t", "ct"] as const;
-    const validMasterRanks = ["3sg", "2sg", "1sg"] as const;
-    
-    const officerRank = validOfficerRanks.includes(officers.officerRank as any) 
-      ? officers.officerRank as "1t" | "2t" | "ct" 
-      : "1t";
-      
-    const masterRank = validMasterRanks.includes(officers.masterRank as any) 
-      ? officers.masterRank as "3sg" | "2sg" | "1sg" 
-      : "3sg";
-
     const updatedOfficers: DutyOfficers = {
       id: 1, // Sempre ID 1 pois só temos um registro
       officerName: officers.officerName || "",
-      officerRank: officerRank,
       masterName: officers.masterName || "",
-      masterRank: masterRank,
       updatedAt: new Date()
     };
 
     this.dutyOfficers = updatedOfficers;
     console.log('👮 Oficiais de serviço atualizados:', {
-      oficial: `${updatedOfficers.officerRank} ${updatedOfficers.officerName}`,
-      contramestre: `${updatedOfficers.masterRank} ${updatedOfficers.masterName}`
+      oficial: updatedOfficers.officerName,
+      contramestre: updatedOfficers.masterName
     });
     
     return updatedOfficers;
   }
 }
 
-import { DatabaseStorage } from "./db-storage";
-
-export const storage = new DatabaseStorage();
+export const storage = new MemStorage();

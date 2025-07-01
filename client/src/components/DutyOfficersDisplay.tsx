@@ -3,10 +3,8 @@ import { Users, AlertCircle, RefreshCw, Clock } from 'lucide-react';
 
 interface DutyOfficers {
   id: number;
-  officerName: string;
-  officerRank: "1t" | "2t" | "ct";
-  masterName: string;
-  masterRank: "3sg" | "2sg" | "1sg";
+  officerName: string; // Nome completo com graduação: "1º Tenente KARINE"
+  masterName: string; // Nome completo com graduação: "1º Sargento RAFAELA"
   updatedAt: string;
 }
 
@@ -15,18 +13,7 @@ export const DutyOfficersDisplay = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Função para traduzir ranks
-  const translateRank = (rank: string): string => {
-    const rankMap: Record<string, string> = {
-      '1t': '1º Tenente',
-      '2t': '2º Tenente', 
-      'ct': 'Capitão-Tenente',
-      '3sg': '3º Sargento',
-      '2sg': '2º Sargento',
-      '1sg': '1º Sargento'
-    };
-    return rankMap[rank] || rank;
-  };
+  // Agora não precisa mais traduzir ranks pois já vem completo
 
   // Detectar se estamos no Replit ou local
   const getBackendUrl = (): string => {
@@ -146,16 +133,8 @@ export const DutyOfficersDisplay = () => {
         {officers.officerName && (
           <div className="flex items-center gap-2">
             <span className="text-xs text-blue-300 font-medium">Oficial:</span>
-            <img 
-              src={`/rank-insignias/${officers.officerRank}.svg`}
-              alt={`Patente ${officers.officerRank.toUpperCase()}`}
-              className="w-8 h-4 object-contain"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
-            />
             <span className="text-white font-semibold text-sm">
-              {translateRank(officers.officerRank)} {officers.officerName}
+              {officers.officerName}
             </span>
           </div>
         )}
@@ -163,16 +142,8 @@ export const DutyOfficersDisplay = () => {
         {officers.masterName && (
           <div className="flex items-center gap-2">
             <span className="text-xs text-blue-300 font-medium">Contramestre:</span>
-            <img 
-              src={`/rank-insignias/${officers.masterRank}.svg`}
-              alt={`Patente ${officers.masterRank.toUpperCase()}`}
-              className="w-8 h-4 object-contain"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
-            />
             <span className="text-white font-semibold text-sm">
-              {translateRank(officers.masterRank)} {officers.masterName}
+              {officers.masterName}
             </span>
           </div>
         )}

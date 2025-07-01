@@ -42,7 +42,7 @@ export class DatabaseStorage implements IStorage {
   async createNotice(insertNotice: InsertNotice): Promise<Notice> {
     const [notice] = await db
       .insert(notices)
-      .values(insertNotice)
+      .values([insertNotice])
       .returning();
     return notice;
   }
