@@ -136,6 +136,32 @@ The Navy Display System is a sophisticated PDF document display platform designe
 
 ## Recent Updates (July 1, 2025)
 
+### System Administration Tools Implementation
+- Added comprehensive cache clearing functionality with API endpoint `/api/clear-cache`
+- Implemented system information display with browser and environment details
+- Created maintenance tools section in Sistema tab with organized administrative functions
+- Enhanced error handling for cache operations with detailed success/failure reporting
+
+### Military Personnel Management Restoration
+- Restored combobox interface for officer and master selection as requested by user
+- Maintained pre-registered military personnel lists (OFFICERS_DATA and MASTERS_DATA)
+- Enhanced saveDutyOfficers function to construct complete names with rank and title
+- System now saves full military titles (e.g., "1º Tenente KARINE", "1º Sargento RAFAELA")
+- Preserved PostgreSQL database persistence for duty officer information
+
+### Database Migration and Persistence
+- Successfully migrated from JSON file storage to PostgreSQL database
+- Implemented DatabaseStorage class with proper type safety and error handling
+- Fixed TypeScript compilation errors in db-storage.ts with correct type casting
+- Enhanced data integrity with null-safe operations for database interactions
+- Maintained backward compatibility while improving system reliability
+
+### User Documentation Creation
+- Created comprehensive README-USUARIO.md with complete system usage instructions
+- Documented all administrative functions, document management, and troubleshooting
+- Provided step-by-step guides for common operations and problem resolution
+- Included system requirements, deployment information, and technical support contacts
+
 ### Weather Data Accuracy Fix
 - Resolved weather data discrepancy issue reported by user
 - Implemented intelligent fallback system for weather APIs

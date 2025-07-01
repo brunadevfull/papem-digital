@@ -433,12 +433,42 @@ const Admin: React.FC = () => {
 
     setIsLoadingOfficers(true);
     try {
+      // Construir nomes completos com graduação
+      const selectedOfficer = OFFICERS_DATA.find(o => o.name === dutyOfficers.officerName);
+      const selectedMaster = MASTERS_DATA.find(m => m.name === dutyOfficers.masterName);
+      
+      // Mapeamento de graduações para nomes completos
+      const rankMap = {
+        "1t": "1º Tenente",
+        "2t": "2º Tenente", 
+        "ct": "Capitão-Tenente",
+        "cc": "Capitão de Corveta",
+        "cf": "Capitão de Fragata",
+        "1sg": "1º Sargento",
+        "2sg": "2º Sargento",
+        "3sg": "3º Sargento"
+      };
+      
+      const officerFullName = selectedOfficer 
+        ? `${rankMap[selectedOfficer.rank]} ${selectedOfficer.name}`
+        : dutyOfficers.officerName;
+      
+      const masterFullName = selectedMaster 
+        ? `${rankMap[selectedMaster.rank]} ${selectedMaster.name}`
+        : dutyOfficers.masterName;
+
+      const officersData = {
+        ...dutyOfficers,
+        officerName: officerFullName,
+        masterName: masterFullName
+      };
+
       const response = await fetch(getBackendUrl('/api/duty-officers'), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(dutyOfficers),
+        body: JSON.stringify(officersData),
       });
 
       const data = await response.json();
@@ -448,6 +478,13 @@ const Admin: React.FC = () => {
           title: "Sucesso",
           description: "Oficiais de serviço atualizados com sucesso!",
         });
+        
+        // Atualizar o estado local com os nomes completos
+        setDutyOfficers(prev => ({
+          ...prev,
+          officerName: officerFullName,
+          masterName: masterFullName
+        }));
       } else {
         throw new Error(data.error || 'Erro ao salvar oficiais');
       }
@@ -1952,21 +1989,30 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
 
 
                       <div className="space-y-2">
-                        <Label htmlFor="officerName">Nome Completo do Oficial</Label>
-                        <Input
-                          id="officerName"
-                          value={dutyOfficers.officerName}
-                          onChange={(e) => setDutyOfficers({
-                            ...dutyOfficers,
-                            officerName: e.target.value
-                          })}
-                          placeholder="Ex: 1º Tenente KARINE"
+                        <Label htmlFor="officerName">Nome do Oficial</Label>
+                        <Select 
+                          value={dutyOfficers.officerName} 
+                          onValueChange={(value) => {
+                            const officer = OFFICERS_DATA.find(o => o.name === value);
+                            setDutyOfficers({
+                              ...dutyOfficers, 
+                              officerName: value,
+                              officerRank: officer?.rank as "1t" | "2t" | "ct" || dutyOfficers.officerRank
+                            });
+                          }}
                           disabled={isLoadingOfficers}
-                          className="font-medium"
-                        />
-                        <p className="text-xs text-blue-600">
-                          💡 Inclua a graduação: "1º Tenente NOME" ou "Capitão-Tenente NOME"
-                        </p>
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o oficial" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {OFFICERS_DATA.map((officer) => (
+                              <SelectItem key={officer.name} value={officer.name}>
+                                {officer.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
 
@@ -1979,21 +2025,30 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
 
 
                       <div className="space-y-2">
-                        <Label htmlFor="masterName">Nome Completo do Contramestre</Label>
-                        <Input
-                          id="masterName"
-                          value={dutyOfficers.masterName}
-                          onChange={(e) => setDutyOfficers({
-                            ...dutyOfficers,
-                            masterName: e.target.value
-                          })}
-                          placeholder="Ex: 1º Sargento RAFAELA"
+                        <Label htmlFor="masterName">Nome do Contramestre</Label>
+                        <Select 
+                          value={dutyOfficers.masterName} 
+                          onValueChange={(value) => {
+                            const master = MASTERS_DATA.find(m => m.name === value);
+                            setDutyOfficers({
+                              ...dutyOfficers, 
+                              masterName: value,
+                              masterRank: master?.rank as "3sg" | "2sg" | "1sg" || dutyOfficers.masterRank
+                            });
+                          }}
                           disabled={isLoadingOfficers}
-                          className="font-medium"
-                        />
-                        <p className="text-xs text-green-600">
-                          💡 Inclua a graduação: "1º Sargento NOME" ou "3º Sargento NOME"
-                        </p>
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o contramestre" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {MASTERS_DATA.map((master) => (
+                              <SelectItem key={master.name} value={master.name}>
+                                {master.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                   </div>
