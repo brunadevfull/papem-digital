@@ -93,15 +93,16 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  const server = await registerRoutes(app);
+  try {
+    const server = await registerRoutes(app);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
-    
-    console.log(`❌ ERRO: ${status} - ${message}`);
-    res.status(status).json({ message });
-  });
+    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+      const status = err.status || err.statusCode || 500;
+      const message = err.message || "Internal Server Error";
+      
+      console.log(`❌ ERRO: ${status} - ${message}`);
+      res.status(status).json({ message });
+    });
 
   if (app.get("env") === "development") {
     await setupVite(app, server);
@@ -146,7 +147,7 @@ app.use((req, res, next) => {
     networkIPs.forEach(ip => {
       console.log(`   http://${ip}:${port}/ping`);
     });
-    
+      
     console.log('\n⚠️  AVISO: Modo de desenvolvimento');
     console.log('   Todas as restrições foram removidas');
     console.log('   Use apenas em redes confiáveis');
@@ -154,6 +155,7 @@ app.use((req, res, next) => {
 
     // Sistema BONO automático removido por problemas de renderização
     console.log('🚀 Sistema iniciado com sucesso');
+  });
   } catch (error) {
     console.error('❌ Erro:', error);
   }

@@ -409,9 +409,15 @@ const Admin: React.FC = () => {
 
     setIsLoadingOfficers(true);
     try {
-      // Construir nomes completos com graduação
+      // Construir nomes completos com graduação (evitando duplicação)
       const selectedOfficer = OFFICERS_DATA.find(o => o.name === dutyOfficers.officerName);
       const selectedMaster = MASTERS_DATA.find(m => m.name === dutyOfficers.masterName);
+      
+      // Função para verificar se o nome já contém graduação
+      const hasRank = (name: string): boolean => {
+        const ranks = ["1º Tenente", "2º Tenente", "Capitão-Tenente", "Capitão de Corveta", "Capitão de Fragata", "1º Sargento", "2º Sargento", "3º Sargento"];
+        return ranks.some(rank => name.includes(rank));
+      };
       
       // Mapeamento de graduações para nomes completos
       const rankMap = {
@@ -425,11 +431,12 @@ const Admin: React.FC = () => {
         "3sg": "3º Sargento"
       };
       
-      const officerFullName = selectedOfficer 
+      // Só adicionar graduação se não estiver presente
+      const officerFullName = selectedOfficer && !hasRank(dutyOfficers.officerName)
         ? `${rankMap[selectedOfficer.rank]} ${selectedOfficer.name}`
         : dutyOfficers.officerName;
       
-      const masterFullName = selectedMaster 
+      const masterFullName = selectedMaster && !hasRank(dutyOfficers.masterName)
         ? `${rankMap[selectedMaster.rank]} ${selectedMaster.name}`
         : dutyOfficers.masterName;
 
