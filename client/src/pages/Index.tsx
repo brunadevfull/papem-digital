@@ -3,7 +3,6 @@ import PDFViewer from "@/components/PDFViewer";
 import NoticeDisplay from "@/components/NoticeDisplay";
 import { TemperatureDisplay } from "@/components/TemperatureDisplay";
 import { DutyOfficersDisplay } from "@/components/DutyOfficersDisplay";
-import { WeatherAlertsActive } from "@/components/WeatherAlertsActive";
 import { useDisplay } from "@/context/DisplayContext";
 import { getSunsetWithLabel } from "@/utils/sunsetUtils";
 import logoPAPEM from "@assets/logoPAPEM_1751352314977.png";
@@ -205,11 +204,6 @@ const Index = () => {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Alertas Meteorológicos */}
-      <div className="mt-4">
-        <WeatherAlertsActive />
       </div>
 
       {/* Footer Premium */}

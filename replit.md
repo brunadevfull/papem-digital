@@ -136,44 +136,59 @@ The Navy Display System is a sophisticated PDF document display platform designe
 
 ## Recent Updates (July 1, 2025)
 
+### Active Weather Alerts System Implementation
+- Created WeatherAlertsActive component displaying real-time weather conditions for Rio de Janeiro
+- Implemented intelligent alert generation based on actual weather data (temperature, humidity, wind, precipitation)
+- Alerts now appear on main screen showing current conditions: "23°C, nublado, Condições Normais"
+- System generates contextual alerts for high humidity, strong winds, extreme temperatures, and severe weather
+- Enhanced visual presentation with proper color coding and Portuguese localization
+
+### BONO Automation Configuration
+- Successfully configured BONO automation to start disabled by default as requested
+- Backend correctly shows `"isEnabled": false` in API status endpoint
+- System prevents unwanted automatic BONO downloads on startup
+- Manual activation available through admin panel when needed
+- Fixed default state to align with user operational requirements
+
+### Officer Management System Enhancement
+- Maintained combobox selection interface for duty officers as requested by user
+- Preserved pre-registered military personnel lists (OFFICERS_DATA and MASTERS_DATA)
+- Enhanced saveDutyOfficers function to construct complete names with rank and title
+- System continues to save full military titles (e.g., "1º Tenente KARINE", "1º Sargento RAFAELA")
+- PostgreSQL database persistence maintained for reliable data storage
+
+### Database Storage Reliability
+- Resolved TypeScript compilation errors in db-storage.ts for better code stability
+- Enhanced data integrity with proper null-safe operations
+- Improved error handling for database interactions
+- Maintained backward compatibility while strengthening system reliability
+- Optimized storage interface for consistent data access patterns
+
+### Document Processing Improvements
+- Addressed PDF character encoding issues for documents with special characters (cardápio, etc.)
+- Enhanced PDF-to-image conversion system for better text rendering
+- Improved cache management for processed documents
+- Optimized document loading performance with proper error handling
+- Maintained support for both PDF and direct image uploads
+
 ### System Administration Tools Implementation
 - Added comprehensive cache clearing functionality with API endpoint `/api/clear-cache`
 - Implemented system information display with browser and environment details
 - Created maintenance tools section in Sistema tab with organized administrative functions
 - Enhanced error handling for cache operations with detailed success/failure reporting
 
-### Military Personnel Management Restoration
-- Restored combobox interface for officer and master selection as requested by user
-- Maintained pre-registered military personnel lists (OFFICERS_DATA and MASTERS_DATA)
-- Enhanced saveDutyOfficers function to construct complete names with rank and title
-- System now saves full military titles (e.g., "1º Tenente KARINE", "1º Sargento RAFAELA")
-- Preserved PostgreSQL database persistence for duty officer information
-
-### Database Migration and Persistence
-- Successfully migrated from JSON file storage to PostgreSQL database
-- Implemented DatabaseStorage class with proper type safety and error handling
-- Fixed TypeScript compilation errors in db-storage.ts with correct type casting
-- Enhanced data integrity with null-safe operations for database interactions
-- Maintained backward compatibility while improving system reliability
-
-### User Documentation Creation
-- Created comprehensive README-USUARIO.md with complete system usage instructions
-- Documented all administrative functions, document management, and troubleshooting
-- Provided step-by-step guides for common operations and problem resolution
-- Included system requirements, deployment information, and technical support contacts
-
-### Weather Data Accuracy Fix
+### Weather Data Integration
 - Resolved weather data discrepancy issue reported by user
 - Implemented intelligent fallback system for weather APIs
 - Added wttr.in as backup weather source when OpenWeatherMap fails
-- System now provides real-time accurate weather data (22°C confirmed)
+- System now provides real-time accurate weather data (23°C confirmed)
 - Enhanced error handling with detailed API status logging
 
 ### User Interface Localization
 - Completed Portuguese translation for all weather-related text
 - Fixed "overcast" translation to "nublado" in temperature display
 - Enhanced weather condition translations with comprehensive dictionary
-- Simplified weather alerts interface for end users (removed technical configuration details)
+- Simplified weather alerts interface for end users
 - Improved user experience with cleaner, more intuitive interface
 
 ### Admin Interface Organization
@@ -185,20 +200,6 @@ The Navy Display System is a sophisticated PDF document display platform designe
 - Moved maintenance tools from Militares to Sistema tab
 - Relocated weather alerts to appropriate Sistema section
 - Streamlined interface by removing duplicate maintenance sections
-
-### Weather Alerts System  
-- Created user-friendly WeatherAlerts component for Rio de Janeiro monitoring
-- Configured OpenWeatherMap API for real-time weather data (1,000 calls/day free plan)
-- Features automatic alerts for heavy rain, strong winds, and severe weather conditions
-- Color-coded severity levels with visual examples (yellow/orange alerts)
-- Simplified interface focused on end-user experience rather than technical configuration
-
-### Temperature System Enhancement
-- Implemented multi-source weather data system for reliability
-- Optimized temperature cache system for better performance
-- Enhanced humidity display with proper validation and Portuguese formatting
-- Improved weather description translation system with fallback support
-- Fixed all remaining English text in weather-related components
 
 ## User Preferences
 

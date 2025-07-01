@@ -2488,52 +2488,6 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                       </div>
                     </CardContent>
                   </Card>
-                  
-                  {/* Card de Frases Motivacionais */}
-                  <Card className="lg:col-span-2">
-                    <CardHeader className="bg-gradient-to-r from-navy to-blue-700 text-white">
-                      <CardTitle className="flex items-center gap-2">
-                        ⚓ Frase do Dia - Marinha do Brasil
-                      </CardTitle>
-                      <CardDescription className="text-blue-100">
-                        Inspiração naval diária para fortalecer o espírito marinheiro
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-6">
-                      <div className="text-center space-y-4">
-                        <div className="p-6 bg-gradient-to-br from-blue-50 to-navy-50 rounded-lg border-l-4 border-navy">
-                          <blockquote className="text-lg font-medium text-navy italic mb-3">
-                            "{getDailyMotivationalQuote().quote}"
-                          </blockquote>
-                          <cite className="text-sm text-gray-600 font-medium">
-                            — {getDailyMotivationalQuote().author}
-                          </cite>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                          <div className="p-3 bg-blue-100 rounded-lg text-center">
-                            <div className="font-semibold text-navy">Renovação</div>
-                            <div className="text-blue-700">Diária às 00:00h</div>
-                          </div>
-                          <div className="p-3 bg-green-100 rounded-lg text-center">
-                            <div className="font-semibold text-green-800">Total</div>
-                            <div className="text-green-700">{getMotivationalQuotes().length} frases disponíveis</div>
-                          </div>
-                          <div className="p-3 bg-yellow-100 rounded-lg text-center">
-                            <div className="font-semibold text-yellow-800">Fonte</div>
-                            <div className="text-yellow-700">Tradição Naval Brasileira</div>
-                          </div>
-                        </div>
-                        
-                        <div className="p-4 bg-gray-50 rounded-lg">
-                          <p className="text-xs text-gray-600 text-center">
-                            As frases motivacionais são selecionadas automaticamente com base no dia atual, 
-                            promovendo valores navais de honra, coragem, disciplina e dedicação ao serviço da Pátria.
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
               </div>
             </TabsContent>
             
