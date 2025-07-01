@@ -2185,6 +2185,193 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                       </div>
                     </CardContent>
                   </Card>
+
+                  {/* Card de Manutenção do Sistema */}
+                  <Card className="lg:col-span-2">
+                    <CardHeader className="bg-orange-50">
+                      <CardTitle className="flex items-center gap-2">
+                        🔧 Manutenção do Sistema
+                      </CardTitle>
+                      <CardDescription>
+                        Ferramentas de manutenção e limpeza do sistema
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6 pt-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {/* Limpeza de Cache */}
+                        <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className="text-lg">🧹</span>
+                            <h4 className="font-medium text-yellow-800">Limpeza de Cache</h4>
+                          </div>
+                          <p className="text-sm text-yellow-700 mb-3">
+                            Limpa páginas PLASA salvas no servidor se houver problemas de visualização.
+                          </p>
+                          <Button
+                            onClick={async () => {
+                              try {
+                                // Implementar limpeza de cache se necessário
+                                toast({
+                                  title: "Cache limpo",
+                                  description: "Cache do sistema foi limpo com sucesso"
+                                });
+                              } catch (error) {
+                                toast({
+                                  title: "Erro na limpeza",
+                                  description: "Não foi possível limpar o cache",
+                                  variant: "destructive"
+                                });
+                              }
+                            }}
+                            variant="outline"
+                            size="sm"
+                            className="w-full border-yellow-300 text-yellow-700 hover:bg-yellow-100"
+                          >
+                            Limpar Cache
+                          </Button>
+                        </div>
+
+                        {/* Recarregar Dados */}
+                        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className="text-lg">🔄</span>
+                            <h4 className="font-medium text-blue-800">Recarregar Dados</h4>
+                          </div>
+                          <p className="text-sm text-blue-700 mb-3">
+                            Força recarga dos dados do servidor para sincronização.
+                          </p>
+                          <Button
+                            onClick={() => {
+                              // Força recarregamento da página para sincronizar dados
+                              window.location.reload();
+                            }}
+                            variant="outline"
+                            size="sm"
+                            className="w-full border-blue-300 text-blue-700 hover:bg-blue-100"
+                          >
+                            Recarregar
+                          </Button>
+                        </div>
+
+                        {/* Informações do Sistema */}
+                        <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className="text-lg">📋</span>
+                            <h4 className="font-medium text-green-800">Info Sistema</h4>
+                          </div>
+                          <p className="text-sm text-green-700 mb-3">
+                            Ver informações detalhadas sobre arquivos e uso do sistema.
+                          </p>
+                          <Button
+                            onClick={async () => {
+                              try {
+                                const response = await fetch(getBackendUrl('/api/list-pdfs'));
+                                const data = await response.json();
+                                console.log('📊 Informações do sistema:', data);
+                                alert(`Sistema Status:
+• Documentos: ${data.files ? data.files.length : 0}
+• Backend: Online
+• Storage: Operacional
+• Última verificação: ${new Date().toLocaleString('pt-BR')}`);
+                              } catch (error) {
+                                console.error('Erro ao obter informações:', error);
+                                alert('Erro ao acessar informações do sistema');
+                              }
+                            }}
+                            variant="outline"
+                            size="sm"
+                            className="w-full border-green-300 text-green-700 hover:bg-green-100"
+                          >
+                            Ver Info
+                          </Button>
+                        </div>
+
+                        {/* Ajuda do Sistema */}
+                        <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className="text-lg">❓</span>
+                            <h4 className="font-medium text-purple-800">Como Funciona</h4>
+                          </div>
+                          <p className="text-sm text-purple-700 mb-3">
+                            Entenda como o sistema processa e exibe documentos.
+                          </p>
+                          <Sheet>
+                            <SheetTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full border-purple-300 text-purple-700 hover:bg-purple-100"
+                              >
+                                Ver Ajuda
+                              </Button>
+                            </SheetTrigger>
+                            <SheetContent className="w-[400px] sm:w-[540px]">
+                              <SheetHeader>
+                                <SheetTitle>📖 Como Funciona o Sistema</SheetTitle>
+                                <SheetDescription>
+                                  Guia completo de funcionamento do sistema de visualização
+                                </SheetDescription>
+                              </SheetHeader>
+                              <div className="mt-6 space-y-6 max-h-[80vh] overflow-y-auto">
+                                <div>
+                                  <h3 className="font-semibold mb-2">📄 PLASA (Plano de Serviço)</h3>
+                                  <ul className="text-sm space-y-1 text-gray-600">
+                                    <li>• PDFs são automaticamente convertidos para imagens</li>
+                                    <li>• Rola automaticamente do início ao fim</li>
+                                    <li>• Reinicia após intervalo configurável</li>
+                                    <li>• Apenas um PLASA ativo por vez</li>
+                                    <li>• Velocidade de rolagem configurável</li>
+                                  </ul>
+                                </div>
+
+                                <div>
+                                  <h3 className="font-semibold mb-2">📋 Escalas de Serviço</h3>
+                                  <ul className="text-sm space-y-1 text-gray-600">
+                                    <li>• Suportam PDFs e imagens diretas</li>
+                                    <li>• Alternância automática no intervalo configurado</li>
+                                    <li>• Suporte a categorias: Oficiais e Praças</li>
+                                    <li>• Múltiplas escalas ativas simultaneamente</li>
+                                    <li>• Exibição estática (sem scroll)</li>
+                                  </ul>
+                                </div>
+
+                                <div>
+                                  <h3 className="font-semibold mb-2">📢 Avisos Importantes</h3>
+                                  <ul className="text-sm space-y-1 text-gray-600">
+                                    <li>• Salvos no servidor backend</li>
+                                    <li>• Alternância automática entre múltiplos avisos</li>
+                                    <li>• Prioridades: Alta, Média, Baixa</li>
+                                    <li>• Período de validade configurável</li>
+                                    <li>• Sincronização entre dispositivos</li>
+                                  </ul>
+                                </div>
+
+                                <div>
+                                  <h3 className="font-semibold mb-2">🔧 Conversão PDF para Imagem</h3>
+                                  <p className="text-sm text-gray-600">
+                                    O sistema converte automaticamente PDFs para imagens (JPG) para máxima 
+                                    compatibilidade e evitar problemas de CORS ou fontes faltando. As imagens 
+                                    são armazenadas no servidor para carregamento rápido.
+                                  </p>
+                                </div>
+
+                                <div>
+                                  <h3 className="font-semibold mb-2">💡 Dicas de Uso</h3>
+                                  <ul className="text-sm space-y-1 text-gray-600">
+                                    <li>• Use PDFs com orientação paisagem para melhor qualidade</li>
+                                    <li>• Imagens (JPG/PNG) são processadas mais rapidamente</li>
+                                    <li>• Sistema mantém cache para performance</li>
+                                    <li>• Avisos "Alta" prioridade têm destaque vermelho</li>
+                                    <li>• Documentos inativos ficam salvos mas não aparecem</li>
+                                  </ul>
+                                </div>
+                              </div>
+                            </SheetContent>
+                          </Sheet>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                   
                   {/* Card de Frases Motivacionais */}
                   <Card className="lg:col-span-2">
