@@ -20,7 +20,7 @@ interface BonoConfig {
 export class BonoAutomation {
   private config: BonoConfig;
   private isRunning: boolean = false;
-  private isEnabled: boolean = true;
+  private isEnabled: boolean = false;
 
   constructor() {
     this.config = {

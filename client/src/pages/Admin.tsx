@@ -212,6 +212,8 @@ const Admin: React.FC = () => {
   const [editableMasters, setEditableMasters] = useState([...MASTERS_DATA]);
   const [newOfficerName, setNewOfficerName] = useState("");
   const [newMasterName, setNewMasterName] = useState("");
+  const [editingOfficer, setEditingOfficer] = useState<{index: number, name: string} | null>(null);
+  const [editingMaster, setEditingMaster] = useState<{index: number, name: string} | null>(null);
 
   // Sistema de Frases Motivacionais da Marinha do Brasil
   const getMotivationalQuotes = () => {
@@ -246,6 +248,33 @@ const Admin: React.FC = () => {
       description: `${officer.name} foi removido da lista`,
       variant: "destructive",
     });
+  };
+
+  const startEditOfficer = (index: number) => {
+    setEditingOfficer({
+      index,
+      name: editableOfficers[index].name
+    });
+  };
+
+  const saveEditOfficer = () => {
+    if (editingOfficer && editingOfficer.name.trim()) {
+      const updatedOfficers = [...editableOfficers];
+      updatedOfficers[editingOfficer.index] = {
+        ...updatedOfficers[editingOfficer.index],
+        name: editingOfficer.name.trim()
+      };
+      setEditableOfficers(updatedOfficers);
+      setEditingOfficer(null);
+      toast({
+        title: "Oficial atualizado",
+        description: "Nome do oficial foi atualizado com sucesso",
+      });
+    }
+  };
+
+  const cancelEditOfficer = () => {
+    setEditingOfficer(null);
   };
 
   // Funções para gerenciar contramesres
@@ -2791,15 +2820,57 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                             <div className="mt-6 space-y-4 max-h-96 overflow-y-auto">
                               {editableOfficers.map((officer, index) => (
                                 <div key={index} className="flex items-center justify-between p-2 border rounded">
-                                  <span className="text-sm">{officer.name}</span>
-                                  <Button 
-                                    size="sm" 
-                                    variant="destructive" 
-                                    className="text-xs"
-                                    onClick={() => removeOfficer(index)}
-                                  >
-                                    🗑️
-                                  </Button>
+                                  {editingOfficer?.index === index ? (
+                                    <div className="flex-1 flex items-center gap-2">
+                                      <Input
+                                        value={editingOfficer.name}
+                                        onChange={(e) => setEditingOfficer({
+                                          ...editingOfficer,
+                                          name: e.target.value
+                                        })}
+                                        className="text-sm"
+                                        autoFocus
+                                      />
+                                      <Button 
+                                        size="sm" 
+                                        onClick={saveEditOfficer}
+                                        disabled={!editingOfficer.name.trim()}
+                                        className="text-xs"
+                                      >
+                                        ✅
+                                      </Button>
+                                      <Button 
+                                        size="sm" 
+                                        variant="outline"
+                                        onClick={cancelEditOfficer}
+                                        className="text-xs"
+                                      >
+                                        ❌
+                                      </Button>
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <span className="text-sm flex-1">{officer.name}</span>
+                                      <div className="flex gap-1">
+                                        <Button 
+                                          size="sm" 
+                                          variant="outline"
+                                          className="text-xs"
+                                          onClick={() => startEditOfficer(index)}
+                                        >
+                                          ✏️
+                                        </Button>
+                                        <Button 
+                                          size="sm" 
+                                          variant="destructive" 
+                                          className="text-xs"
+                                          onClick={() => removeOfficer(index)}
+                                        >
+                                          🗑️
+                                        </Button>
+                                      </div>
+                                    </>
+                                  )}
                                 </div>
                               ))}
                             </div>
