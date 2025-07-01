@@ -105,6 +105,14 @@ export const getCurrentTemperature = async (): Promise<WeatherData | null> => {
     const response = await fetch(url);
     
     if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error("❌ Erro na API OpenWeatherMap:", errorData);
+      
+      if (response.status === 401) {
+        console.error("🔑 Chave de API inválida ou expirada");
+        temperatureCache.error = "Chave de API inválida. Verifique sua configuração no OpenWeatherMap.";
+      }
+      
       // Fallback para API alternativa gratuita (sem chave)
       return await getTemperatureFromAlternativeAPI();
     }

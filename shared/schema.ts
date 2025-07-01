@@ -32,10 +32,8 @@ export const documents = pgTable("documents", {
 
 export const dutyOfficers = pgTable("duty_officers", {
   id: serial("id").primaryKey(),
-  officerName: text("officer_name").notNull().default(""),
-  officerRank: text("officer_rank").notNull().$type<"1t" | "2t" | "ct">().default("1t"),
-  masterName: text("master_name").notNull().default(""),
-  masterRank: text("master_rank").notNull().$type<"3sg" | "2sg" | "1sg">().default("3sg"),
+  officerName: text("officer_name").notNull().default(""), // Nome completo com graduação: "1º Tenente KARINE"
+  masterName: text("master_name").notNull().default(""), // Nome completo com graduação: "1º Sargento RAFAELA"
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
