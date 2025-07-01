@@ -137,7 +137,7 @@ const Admin: React.FC = () => {
   });
   
   // Estados para upload de documentos
-  const [selectedDocType, setSelectedDocType] = useState<"plasa" | "escala" | "cardapio" | "bono">("plasa");
+  const [selectedDocType, setSelectedDocType] = useState<"plasa" | "escala" | "cardapio">("plasa");
   const [docTitle, setDocTitle] = useState("");
   const [docUrl, setDocUrl] = useState("");
   const [docCategory, setDocCategory] = useState<"oficial" | "praca" | undefined>(undefined);
@@ -153,16 +153,6 @@ const Admin: React.FC = () => {
     masterRank: "3sg" as "3sg" | "2sg" | "1sg"
   });
   const [isLoadingOfficers, setIsLoadingOfficers] = useState(false);
-
-  // Estados para automação BONO
-  const [bonoStatus, setBonoStatus] = useState({
-    isRunning: false,
-    isEnabled: true,
-    currentUrl: "",
-    nextScheduled: "",
-    lastCheck: ""
-  });
-  const [isLoadingBono, setIsLoadingBono] = useState(false);
 
   // Estados para edição de militares
   const [editableOfficers, setEditableOfficers] = useState([...OFFICERS_DATA]);
@@ -483,99 +473,11 @@ const Admin: React.FC = () => {
     }
   };
 
-  // Funções para automação BONO
-  const loadBonoStatus = async () => {
-    try {
-      const response = await fetch(getBackendUrl('/api/bono/status'));
-      const data = await response.json();
-      
-      if (data.success) {
-        setBonoStatus({
-          isRunning: data.isRunning,
-          isEnabled: data.isEnabled,
-          currentUrl: data.currentUrl,
-          nextScheduled: data.nextScheduled,
-          lastCheck: data.timestamp
-        });
-      }
-    } catch (error) {
-      console.error('Erro ao carregar status BONO:', error);
-    }
-  };
-
-  const toggleBonoAutomation = async () => {
-    setIsLoadingBono(true);
-    try {
-      const response = await fetch(getBackendUrl('/api/bono/toggle'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ enabled: !bonoStatus.isEnabled }),
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
-        setBonoStatus(prev => ({
-          ...prev,
-          isEnabled: data.enabled
-        }));
-        
-        toast({
-          title: data.enabled ? "Automação Ativada" : "Automação Desativada",
-          description: data.message,
-        });
-      } else {
-        throw new Error(data.error || 'Erro ao alterar automação');
-      }
-    } catch (error) {
-      console.error('Erro ao alterar automação BONO:', error);
-      toast({
-        title: "Erro",
-        description: "Falha ao alterar configuração da automação.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoadingBono(false);
-    }
-  };
-
-  const triggerManualBono = async () => {
-    setIsLoadingBono(true);
-    try {
-      const response = await fetch(getBackendUrl('/api/bono/download'), {
-        method: 'POST',
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
-        toast({
-          title: "Download Manual Concluído",
-          description: `BONO baixado: ${data.filename}`,
-        });
-        // Recarregar o status
-        loadBonoStatus();
-      } else {
-        throw new Error(data.error || 'Erro no download manual');
-      }
-    } catch (error) {
-      console.error('Erro no download manual BONO:', error);
-      toast({
-        title: "Erro",
-        description: "Falha no download manual do BONO.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoadingBono(false);
-    }
-  };
+  // Funcionalidade de edição de nomes dos oficiais implementada abaixo
 
   useEffect(() => {
     console.log("🔧 Admin carregado, avisos serão carregados do servidor");
     loadDutyOfficers();
-    loadBonoStatus();
   }, []);
   
   // Form handler para avisos com servidor
@@ -1442,7 +1344,7 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
             <Select 
               value={selectedDocType} 
               onValueChange={(value) => {
-                setSelectedDocType(value as "plasa" | "bono" | "escala" | "cardapio");
+                setSelectedDocType(value as "plasa" | "escala" | "cardapio");
                 if (value !== "escala") {
                   setDocCategory(undefined);
                 }
@@ -1453,7 +1355,6 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="plasa">📄 PLASA - Plano de Serviço</SelectItem>
-                <SelectItem value="bono">📋 BONO - Boletim de Ocorrências</SelectItem>
                 <SelectItem value="escala">📋 Escala de Serviço</SelectItem>
                 <SelectItem value="cardapio">🍽️ Cardápio Semanal</SelectItem>
               </SelectContent>
@@ -1484,7 +1385,6 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
               id="docTitle" 
               placeholder={`Ex: ${
                 selectedDocType === "plasa" ? "PLASA - Junho 2025" : 
-                selectedDocType === "bono" ? "BONO - Junho 2025" :
                 selectedDocType === "escala" ? "Escala de Serviço - Junho 2025" :
                 selectedDocType === "cardapio" ? "Cardápio - Semana 25/2025" :
                 "Documento"
