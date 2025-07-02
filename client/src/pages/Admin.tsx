@@ -161,7 +161,7 @@ const Admin: React.FC = () => {
   const [dbMasters, setDbMasters] = useState<any[]>([]);
   const [newOfficerName, setNewOfficerName] = useState("");
   const [newMasterName, setNewMasterName] = useState("");
-  const [editingOfficer, setEditingOfficer] = useState<{index: number, name: string} | null>(null);
+  const [editingOfficer, setEditingOfficer] = useState<{id: number, name: string} | null>(null);
   const [editingMaster, setEditingMaster] = useState<{id: number, name: string} | null>(null);
   const [loadingMilitary, setLoadingMilitary] = useState(false);
 
@@ -251,26 +251,32 @@ const Admin: React.FC = () => {
     }
   };
 
-  const startEditOfficer = (index: number, name: string) => {
-    setEditingOfficer({ index, name });
+  const startEditOfficer = (id: number, name: string) => {
+    setEditingOfficer({ id, name });
   };
 
   const saveEditOfficer = async () => {
     if (editingOfficer && editingOfficer.name.trim()) {
       try {
-        // Update the local array
-        const updatedOfficers = [...editableOfficers];
-        updatedOfficers[editingOfficer.index] = {
-          ...updatedOfficers[editingOfficer.index],
-          name: editingOfficer.name.trim()
-        };
-        setEditableOfficers(updatedOfficers);
-        setEditingOfficer(null);
-        
-        toast({
-          title: "Oficial atualizado",
-          description: "Nome do oficial foi atualizado com sucesso",
+        const response = await fetch(getBackendUrl(`/api/military-personnel/${editingOfficer.id}`), {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: editingOfficer.name.trim(),
+            fullRankName: `1º Tenente ${editingOfficer.name.trim()}`
+          })
         });
+
+        if (response.ok) {
+          await loadMilitaryPersonnel();
+          setEditingOfficer(null);
+          toast({
+            title: "Oficial atualizado",
+            description: "Nome do oficial foi atualizado com sucesso",
+          });
+        } else {
+          throw new Error('Erro ao atualizar');
+        }
       } catch (error) {
         toast({
           title: "Erro",
@@ -2699,9 +2705,9 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                               </SheetDescription>
                             </SheetHeader>
                             <div className="mt-6 space-y-4 max-h-96 overflow-y-auto">
-                              {editableOfficers.map((officer, index) => (
-                                <div key={index} className="flex items-center justify-between p-2 border rounded">
-                                  {editingOfficer?.index === index ? (
+                              {dbOfficers.map((officer) => (
+                                <div key={officer.id} className="flex items-center justify-between p-2 border rounded">
+                                  {editingOfficer?.id === officer.id ? (
                                     <div className="flex-1 flex items-center gap-2">
                                       <Input
                                         value={editingOfficer.name}
@@ -2737,7 +2743,7 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                                           size="sm" 
                                           variant="outline"
                                           className="text-xs"
-                                          onClick={() => startEditOfficer(index, officer.name)}
+                                          onClick={() => startEditOfficer(officer.id, officer.name)}
                                         >
                                           ✏️
                                         </Button>
