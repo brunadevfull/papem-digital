@@ -446,8 +446,13 @@ export class MemStorage implements IStorage {
   async createMilitaryPersonnel(personnel: InsertMilitaryPersonnel): Promise<MilitaryPersonnel> {
     const id = this.currentMilitaryPersonnelId++;
     const newPersonnel: MilitaryPersonnel = {
-      ...personnel,
       id,
+      name: personnel.name,
+      type: personnel.type as "officer" | "master",
+      rank: personnel.rank as "1t" | "2t" | "ct" | "cc" | "cf" | "1sg" | "2sg" | "3sg",
+      specialty: personnel.specialty || null,
+      fullRankName: personnel.fullRankName,
+      active: personnel.active ?? true,
       createdAt: new Date(),
       updatedAt: new Date(),
     };

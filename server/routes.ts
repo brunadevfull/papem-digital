@@ -1,7 +1,7 @@
 import express, { type Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertNoticeSchema, insertDocumentSchema, insertDutyOfficersSchema } from "@shared/schema";
+import { insertNoticeSchema, insertDocumentSchema, insertDutyOfficersSchema, insertMilitaryPersonnelSchema } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
@@ -932,6 +932,139 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false, 
         error: 'Failed to update duty officers',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Military Personnel endpoints
+  app.get('/api/military-personnel', async (req, res) => {
+    try {
+      console.log('🎖️ GET /api/military-personnel - Buscando pessoal militar...');
+      
+      const { type } = req.query;
+      
+      let personnel;
+      if (type && (type === 'officer' || type === 'master')) {
+        personnel = await storage.getMilitaryPersonnelByType(type);
+      } else {
+        personnel = await storage.getMilitaryPersonnel();
+      }
+      
+      console.log(`🎖️ Encontrados ${personnel.length} militares`);
+      
+      res.json({ 
+        success: true, 
+        data: personnel 
+      });
+      
+    } catch (error) {
+      console.error('❌ Erro ao buscar pessoal militar:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to fetch military personnel',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.post('/api/military-personnel', async (req, res) => {
+    try {
+      console.log('🎖️ POST /api/military-personnel - Criando militar...');
+      
+      const validatedData = insertMilitaryPersonnelSchema.parse(req.body);
+      const personnel = await storage.createMilitaryPersonnel(validatedData);
+      
+      console.log(`🎖️ Militar criado: ${personnel.name} (${personnel.type})`);
+      
+      res.json({ 
+        success: true, 
+        data: personnel 
+      });
+      
+    } catch (error) {
+      console.error('❌ Erro ao criar militar:', error);
+      
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Validation error',
+          details: error.errors 
+        });
+      }
+      
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to create military personnel',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.put('/api/military-personnel/:id', async (req, res) => {
+    try {
+      console.log(`🎖️ PUT /api/military-personnel/${req.params.id} - Atualizando militar...`);
+      
+      const id = parseInt(req.params.id);
+      const existingPersonnel = await storage.getMilitaryPersonnel();
+      const personnel = existingPersonnel.find(p => p.id === id);
+      
+      if (!personnel) {
+        return res.status(404).json({ 
+          success: false, 
+          error: 'Military personnel not found' 
+        });
+      }
+      
+      const updateData = req.body;
+      const updatedPersonnel = await storage.updateMilitaryPersonnel({ 
+        ...personnel, 
+        ...updateData 
+      });
+      
+      console.log(`🎖️ Militar atualizado: ${updatedPersonnel.name}`);
+      
+      res.json({ 
+        success: true, 
+        data: updatedPersonnel 
+      });
+      
+    } catch (error) {
+      console.error('❌ Erro ao atualizar militar:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to update military personnel',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.delete('/api/military-personnel/:id', async (req, res) => {
+    try {
+      console.log(`🎖️ DELETE /api/military-personnel/${req.params.id} - Removendo militar...`);
+      
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteMilitaryPersonnel(id);
+      
+      if (!success) {
+        return res.status(404).json({ 
+          success: false, 
+          error: 'Military personnel not found' 
+        });
+      }
+      
+      console.log(`🎖️ Militar removido: ID ${id}`);
+      
+      res.json({ 
+        success: true, 
+        message: 'Military personnel deleted successfully' 
+      });
+      
+    } catch (error) {
+      console.error('❌ Erro ao remover militar:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to delete military personnel',
         details: error instanceof Error ? error.message : 'Unknown error'
       });
     }

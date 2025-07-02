@@ -154,13 +154,16 @@ const Admin: React.FC = () => {
   });
   const [isLoadingOfficers, setIsLoadingOfficers] = useState(false);
 
-  // Estados para edição de militares
+  // Estados para edição de militares - agora carregados da API
   const [editableOfficers, setEditableOfficers] = useState([...OFFICERS_DATA]);
   const [editableMasters, setEditableMasters] = useState([...MASTERS_DATA]);
+  const [dbOfficers, setDbOfficers] = useState<any[]>([]);
+  const [dbMasters, setDbMasters] = useState<any[]>([]);
   const [newOfficerName, setNewOfficerName] = useState("");
   const [newMasterName, setNewMasterName] = useState("");
   const [editingOfficer, setEditingOfficer] = useState<{index: number, name: string} | null>(null);
   const [editingMaster, setEditingMaster] = useState<{index: number, name: string} | null>(null);
+  const [loadingMilitary, setLoadingMilitary] = useState(false);
 
 
 
