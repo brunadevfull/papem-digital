@@ -1,4 +1,4 @@
-import { users, notices, documents, dutyOfficers, type User, type InsertUser, type Notice, type InsertNotice, type PDFDocument, type InsertDocument, type DutyOfficers, type InsertDutyOfficers } from "@shared/schema";
+import { users, notices, documents, dutyOfficers, militaryPersonnel, type User, type InsertUser, type Notice, type InsertNotice, type PDFDocument, type InsertDocument, type DutyOfficers, type InsertDutyOfficers, type MilitaryPersonnel, type InsertMilitaryPersonnel } from "@shared/schema";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -22,6 +22,13 @@ export interface IStorage {
   // Duty Officers methods
   getDutyOfficers(): Promise<DutyOfficers | null>;
   updateDutyOfficers(officers: InsertDutyOfficers): Promise<DutyOfficers>;
+  
+  // Military Personnel methods
+  getMilitaryPersonnel(): Promise<MilitaryPersonnel[]>;
+  getMilitaryPersonnelByType(type: "officer" | "master"): Promise<MilitaryPersonnel[]>;
+  createMilitaryPersonnel(personnel: InsertMilitaryPersonnel): Promise<MilitaryPersonnel>;
+  updateMilitaryPersonnel(personnel: MilitaryPersonnel): Promise<MilitaryPersonnel>;
+  deleteMilitaryPersonnel(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -29,9 +36,11 @@ export class MemStorage implements IStorage {
   private notices: Map<number, Notice>;
   private documents: Map<number, PDFDocument>;
   private dutyOfficers: DutyOfficers | null;
+  private militaryPersonnel: Map<number, MilitaryPersonnel>;
   private currentUserId: number;
   private currentNoticeId: number;
   private currentDocumentId: number;
+  private currentMilitaryPersonnelId: number;
 
   constructor() {
     this.users = new Map();

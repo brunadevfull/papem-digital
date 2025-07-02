@@ -37,6 +37,18 @@ export const dutyOfficers = pgTable("duty_officers", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const militaryPersonnel = pgTable("military_personnel", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  rank: text("rank").notNull().$type<"1t" | "2t" | "ct" | "cc" | "cf" | "1sg" | "2sg" | "3sg">(),
+  type: text("type").notNull().$type<"officer" | "master">(),
+  specialty: text("specialty"),
+  fullRankName: text("full_rank_name").notNull(),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -58,6 +70,12 @@ export const insertDutyOfficersSchema = createInsertSchema(dutyOfficers).omit({
   updatedAt: true,
 });
 
+export const insertMilitaryPersonnelSchema = createInsertSchema(militaryPersonnel).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type Notice = typeof notices.$inferSelect;
@@ -66,3 +84,5 @@ export type PDFDocument = typeof documents.$inferSelect;
 export type InsertDocument = z.infer<typeof insertDocumentSchema>;
 export type DutyOfficers = typeof dutyOfficers.$inferSelect;
 export type InsertDutyOfficers = z.infer<typeof insertDutyOfficersSchema>;
+export type MilitaryPersonnel = typeof militaryPersonnel.$inferSelect;
+export type InsertMilitaryPersonnel = z.infer<typeof insertMilitaryPersonnelSchema>;
