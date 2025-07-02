@@ -149,17 +149,101 @@ export const getCurrentTemperature = async (): Promise<WeatherData | null> => {
 };
 
 /**
- * API alternativa gratuita (wttr.in) - não requer chave
+ * APIs alternativas gratuitas em português - não requerem chave
  */
 const getTemperatureFromAlternativeAPI = async (): Promise<WeatherData | null> => {
+  // Tentar múltiplas APIs em sequência - prioridade para APIs funcionais
+  const apis = [
+    () => getTemperatureFromWttr(), // API internacional - mais confiável
+    () => getTemperatureFromOpenMeteo(), // API europeia gratuita
+    () => getTemperatureFromClimaTempo() // API brasileira alternativa
+  ];
+
+  for (const api of apis) {
+    try {
+      const result = await api();
+      if (result) return result;
+    } catch (error) {
+      console.log("🌡️ Tentando próxima API...");
+    }
+  }
+
+  // Último recurso - dados de fallback
+  console.log("⚠️ Todas as APIs falharam, usando dados de fallback");
+  const fallbackData: WeatherData = {
+    temp: 24, // Temperatura típica do Rio
+    description: "temperatura não disponível",
+    icon: '01d',
+    humidity: 65,
+    feelsLike: 26
+  };
+
+  temperatureCache = {
+    data: fallbackData,
+    timestamp: Date.now(),
+    error: "APIs indisponíveis"
+  };
+
+  return fallbackData;
+};
+
+/**
+ * INMET - Instituto Nacional de Meteorologia (Brasil)
+ * API oficial brasileira em português
+ */
+const getTemperatureFromINMET = async (): Promise<WeatherData | null> => {
   try {
-    console.log("🌡️ Tentando API alternativa...");
+    console.log("🌡️ Tentando API do INMET (Brasil)...");
     
-    // wttr.in é uma API gratuita que não requer chave
+    // INMET endpoint correto para dados meteorológicos
+    const today = new Date().toISOString().split('T')[0];
+    const response = await fetch(`https://apitempo.inmet.gov.br/estacao/${today}/${today}/A602`);
+    
+    if (!response.ok) {
+      throw new Error(`INMET HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    if (!data || data.length === 0) {
+      throw new Error('Dados INMET vazios');
+    }
+
+    // Pegar dado mais recente
+    const latest = data[data.length - 1];
+    
+    const weatherData: WeatherData = {
+      temp: Math.round(parseFloat(latest.TEM_INS) || 24),
+      description: 'condições atuais', // INMET não fornece descrição
+      icon: '01d',
+      humidity: Math.round(parseFloat(latest.UMD_INS) || 65),
+      feelsLike: Math.round(parseFloat(latest.TEM_INS) || 24)
+    };
+
+    temperatureCache = {
+      data: weatherData,
+      timestamp: Date.now()
+    };
+
+    console.log(`🌡️ Temperatura obtida via INMET: ${weatherData.temp}°C`);
+    return weatherData;
+
+  } catch (error) {
+    console.log("❌ Erro na API INMET:", error);
+    throw error;
+  }
+};
+
+/**
+ * wttr.in - API internacional gratuita
+ */
+const getTemperatureFromWttr = async (): Promise<WeatherData | null> => {
+  try {
+    console.log("🌡️ Tentando wttr.in...");
+    
     const response = await fetch('https://wttr.in/Rio+de+Janeiro?format=j1');
     
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+      throw new Error(`wttr.in HTTP ${response.status}`);
     }
 
     const data = await response.json();
@@ -168,39 +252,110 @@ const getTemperatureFromAlternativeAPI = async (): Promise<WeatherData | null> =
     const weatherData: WeatherData = {
       temp: parseInt(current.temp_C),
       description: translateWeatherDescription(current.weatherDesc[0].value),
-      icon: '01d', // ícone padrão
+      icon: '01d',
       humidity: parseInt(current.humidity),
       feelsLike: parseInt(current.FeelsLikeC)
     };
 
-    // Atualizar cache
     temperatureCache = {
       data: weatherData,
       timestamp: Date.now()
     };
 
-    console.log(`🌡️ Temperatura obtida via API alternativa: ${weatherData.temp}°C`);
+    console.log(`🌡️ Temperatura obtida via wttr.in: ${weatherData.temp}°C`);
     return weatherData;
 
   } catch (error) {
-    console.error("❌ Erro na API alternativa:", error);
+    console.log("❌ Erro na API wttr.in:", error);
+    throw error;
+  }
+};
+
+/**
+ * Open-Meteo - API europeia gratuita sem chave
+ */
+const getTemperatureFromOpenMeteo = async (): Promise<WeatherData | null> => {
+  try {
+    console.log("🌡️ Tentando Open-Meteo...");
     
-    // Retornar dados simulados como último recurso (apenas para demonstração)
-    const fallbackData: WeatherData = {
-      temp: 24, // Temperatura típica do Rio
-      description: "temperatura não disponível",
+    const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${RIO_COORDS.lat}&longitude=${RIO_COORDS.lon}&current_weather=true&hourly=relativehumidity_2m&timezone=America/Sao_Paulo`);
+    
+    if (!response.ok) {
+      throw new Error(`Open-Meteo HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    const current = data.current_weather;
+    
+    // Determinar descrição baseada no código do tempo
+    const getWeatherDescription = (code: number): string => {
+      if (code === 0) return 'céu limpo';
+      if (code <= 2) return 'parcialmente nublado';
+      if (code === 3) return 'nublado';
+      if (code <= 67) return 'chuva';
+      if (code <= 77) return 'neve';
+      if (code <= 82) return 'chuva';
+      if (code <= 99) return 'tempestade';
+      return 'condições variáveis';
+    };
+    
+    const weatherData: WeatherData = {
+      temp: Math.round(current.temperature),
+      description: getWeatherDescription(current.weathercode),
       icon: '01d',
-      humidity: 65,
-      feelsLike: 26
+      humidity: Math.round(data.hourly?.relativehumidity_2m?.[0] || 65),
+      feelsLike: Math.round(current.temperature)
     };
 
     temperatureCache = {
-      data: fallbackData,
-      timestamp: Date.now(),
-      error: "API indisponível"
+      data: weatherData,
+      timestamp: Date.now()
     };
 
-    return fallbackData;
+    console.log(`🌡️ Temperatura obtida via Open-Meteo: ${weatherData.temp}°C`);
+    return weatherData;
+
+  } catch (error) {
+    console.log("❌ Erro na API Open-Meteo:", error);
+    throw error;
+  }
+};
+
+/**
+ * API brasileira simples baseada em localização
+ */
+const getTemperatureFromClimaTempo = async (): Promise<WeatherData | null> => {
+  try {
+    console.log("🌡️ Tentando API brasileira alternativa...");
+    
+    // Usar API meteorológica gratuita focada no Brasil
+    const response = await fetch(`https://api.weatherapi.com/v1/current.json?key=demo&q=Rio de Janeiro&lang=pt`);
+    
+    if (!response.ok) {
+      throw new Error(`ClimateTempo HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    const weatherData: WeatherData = {
+      temp: Math.round(data.current.temp_c),
+      description: data.current.condition.text.toLowerCase(),
+      icon: '01d',
+      humidity: data.current.humidity,
+      feelsLike: Math.round(data.current.feelslike_c)
+    };
+
+    temperatureCache = {
+      data: weatherData,
+      timestamp: Date.now()
+    };
+
+    console.log(`🌡️ Temperatura obtida via API brasileira: ${weatherData.temp}°C`);
+    return weatherData;
+
+  } catch (error) {
+    console.log("❌ Erro na API brasileira:", error);
+    throw error;
   }
 };
 
