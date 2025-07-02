@@ -291,7 +291,7 @@ const Admin: React.FC = () => {
     setEditingOfficer(null);
   };
 
-  // Funções para gerenciar contramesres com persistência
+  // Funções para gerenciar Contramesres com persistência
   const addMaster = async () => {
     if (newMasterName.trim()) {
       try {
@@ -499,10 +499,10 @@ const Admin: React.FC = () => {
 
   // Salvar oficiais de serviço
   const saveDutyOfficers = async () => {
-    if (!dutyOfficers.officerName || !dutyOfficers.masterName) {
+    if (!dutyOfficers.officerName && !dutyOfficers.masterName) {
       toast({
         title: "Erro",
-        description: "Nome do oficial e contramestre são obrigatórios.",
+        description: "Selecione pelo menos um oficial ou contramestre.",
         variant: "destructive"
       });
       return;
@@ -535,11 +535,11 @@ const Admin: React.FC = () => {
       // Construir nomes completos sempre usando dados da lista (para evitar duplicação)
       const officerFullName = selectedOfficer 
         ? `${rankMap[selectedOfficer.rank]} ${selectedOfficer.name}`
-        : dutyOfficers.officerName;
+        : dutyOfficers.officerName || "";
       
       const masterFullName = selectedMaster 
         ? `${rankMap[selectedMaster.rank]} ${selectedMaster.name}`
-        : dutyOfficers.masterName;
+        : dutyOfficers.masterName || "";
 
       const officersData = {
         ...dutyOfficers,
@@ -2061,7 +2061,7 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                   <div className="flex gap-2 pt-4">
                     <Button 
                       onClick={saveDutyOfficers}
-                      disabled={isLoadingOfficers || !dutyOfficers.officerName || !dutyOfficers.masterName}
+                      disabled={isLoadingOfficers || (!dutyOfficers.officerName && !dutyOfficers.masterName)}
                       className="bg-navy hover:bg-navy/90"
                     >
                       {isLoadingOfficers ? "💾 Salvando..." : "💾 Salvar Oficiais"}
@@ -2705,7 +2705,7 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                               </SheetDescription>
                             </SheetHeader>
                             <div className="mt-6 space-y-4 max-h-96 overflow-y-auto">
-                              {dbOfficers.map((officer) => (
+                              {(dbOfficers.length > 0 ? dbOfficers : OFFICERS_DATA.map((o, index) => ({ id: index + 1, name: o.name, type: 'officer' as const }))).map((officer) => (
                                 <div key={officer.id} className="flex items-center justify-between p-2 border rounded">
                                   {editingOfficer?.id === officer.id ? (
                                     <div className="flex-1 flex items-center gap-2">
@@ -2806,14 +2806,14 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                             <SheetHeader>
                               <SheetTitle>Gerenciar Contramesres</SheetTitle>
                               <SheetDescription>
-                                Adicione, edite ou remova contramesres da lista
+                                Adicione, edite ou remova Contramesres da lista
                               </SheetDescription>
                             </SheetHeader>
                             <div className="mt-6 space-y-4 max-h-96 overflow-y-auto">
                               {loadingMilitary ? (
                                 <div className="text-center text-sm text-muted-foreground">Carregando militares...</div>
                               ) : (
-                                dbMasters.map((master) => (
+                                (dbMasters.length > 0 ? dbMasters : MASTERS_DATA.map((m, index) => ({ id: index + 1, name: m.name, type: 'master' as const }))).map((master) => (
                                   <div key={master.id} className="flex items-center justify-between p-2 border rounded">
                                     <span className="text-sm">{master.name}</span>
                                     <Button 
@@ -2856,7 +2856,7 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                         ))}
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Total: {MASTERS_DATA.length} contramesres
+                        Total: {MASTERS_DATA.length} Contramesres
                       </p>
                     </div>
                   </div>
