@@ -161,7 +161,7 @@ const Admin: React.FC = () => {
   const [dbMasters, setDbMasters] = useState<any[]>([]);
   const [newOfficerName, setNewOfficerName] = useState("");
   const [newMasterName, setNewMasterName] = useState("");
-  const [editingOfficer, setEditingOfficer] = useState<{id: number, name: string} | null>(null);
+  const [editingOfficer, setEditingOfficer] = useState<{index: number, name: string} | null>(null);
   const [editingMaster, setEditingMaster] = useState<{id: number, name: string} | null>(null);
   const [loadingMilitary, setLoadingMilitary] = useState(false);
 
@@ -251,32 +251,26 @@ const Admin: React.FC = () => {
     }
   };
 
-  const startEditOfficer = (id: number, name: string) => {
-    setEditingOfficer({ id, name });
+  const startEditOfficer = (index: number, name: string) => {
+    setEditingOfficer({ index, name });
   };
 
   const saveEditOfficer = async () => {
     if (editingOfficer && editingOfficer.name.trim()) {
       try {
-        const response = await fetch(getBackendUrl(`/api/military-personnel/${editingOfficer.id}`), {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: editingOfficer.name.trim(),
-            fullRankName: `1º Tenente ${editingOfficer.name.trim()}`
-          })
+        // Update the local array
+        const updatedOfficers = [...editableOfficers];
+        updatedOfficers[editingOfficer.index] = {
+          ...updatedOfficers[editingOfficer.index],
+          name: editingOfficer.name.trim()
+        };
+        setEditableOfficers(updatedOfficers);
+        setEditingOfficer(null);
+        
+        toast({
+          title: "Oficial atualizado",
+          description: "Nome do oficial foi atualizado com sucesso",
         });
-
-        if (response.ok) {
-          await loadMilitaryPersonnel();
-          setEditingOfficer(null);
-          toast({
-            title: "Oficial atualizado",
-            description: "Nome do oficial foi atualizado com sucesso",
-          });
-        } else {
-          throw new Error('Erro ao atualizar');
-        }
       } catch (error) {
         toast({
           title: "Erro",
@@ -2743,7 +2737,7 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                                           size="sm" 
                                           variant="outline"
                                           className="text-xs"
-                                          onClick={() => startEditOfficer(index)}
+                                          onClick={() => startEditOfficer(index, officer.name)}
                                         >
                                           ✏️
                                         </Button>
