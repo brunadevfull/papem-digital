@@ -894,6 +894,17 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
     }
   };
 
+  const handleDocumentAlternateIntervalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value);
+    if (value >= 5 && value <= 60) {
+      setDocumentAlternateInterval(value * 1000);
+      toast({
+        title: "Intervalo de alternância atualizado",
+        description: `Escalas agora alternam a cada ${value} segundos.`
+      });
+    }
+  };
+
   const formatDate = (date: Date) => {
     return date.toISOString().split("T")[0];
   };
