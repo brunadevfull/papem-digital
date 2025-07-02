@@ -47,9 +47,11 @@ export class MemStorage implements IStorage {
     this.notices = new Map();
     this.documents = new Map();
     this.dutyOfficers = null; // Inicializar como null, será criado quando necessário
+    this.militaryPersonnel = new Map();
     this.currentUserId = 1;
     this.currentNoticeId = 1;
     this.currentDocumentId = 1;
+    this.currentMilitaryPersonnelId = 1;
       console.log('💾 MemStorage initialized'); 
   }
 
@@ -430,6 +432,37 @@ export class MemStorage implements IStorage {
     });
     
     return updatedOfficers;
+  }
+
+  // Military Personnel methods
+  async getMilitaryPersonnel(): Promise<MilitaryPersonnel[]> {
+    return Array.from(this.militaryPersonnel.values());
+  }
+
+  async getMilitaryPersonnelByType(type: "officer" | "master"): Promise<MilitaryPersonnel[]> {
+    return Array.from(this.militaryPersonnel.values()).filter(p => p.type === type);
+  }
+
+  async createMilitaryPersonnel(personnel: InsertMilitaryPersonnel): Promise<MilitaryPersonnel> {
+    const id = this.currentMilitaryPersonnelId++;
+    const newPersonnel: MilitaryPersonnel = {
+      ...personnel,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.militaryPersonnel.set(id, newPersonnel);
+    return newPersonnel;
+  }
+
+  async updateMilitaryPersonnel(personnel: MilitaryPersonnel): Promise<MilitaryPersonnel> {
+    const updatedPersonnel = { ...personnel, updatedAt: new Date() };
+    this.militaryPersonnel.set(personnel.id, updatedPersonnel);
+    return updatedPersonnel;
+  }
+
+  async deleteMilitaryPersonnel(id: number): Promise<boolean> {
+    return this.militaryPersonnel.delete(id);
   }
 }
 
