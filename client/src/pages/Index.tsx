@@ -100,21 +100,20 @@ const Index = () => {
           {/* Logo e título - 3 colunas */}
           <div className="col-span-12 lg:col-span-3 flex items-center justify-center lg:justify-start space-x-3">
             <div className="relative">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center shadow-lg p-1">
+              <div className="w-16 h-16 bg-transparent rounded-lg flex items-center justify-center shadow-lg p-1">
                 <img 
                   src={logoPAPEM} 
                   alt="Logo PAPEM" 
                   className="w-full h-full object-contain"
                 />
               </div>
-              <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full border border-white shadow-lg animate-pulse"></div>
             </div>
             
             <div className="text-center lg:text-left">
               <h1 className="text-xl font-bold bg-gradient-to-r from-blue-300 to-white bg-clip-text text-transparent">
                 MARINHA DO BRASIL
               </h1>
-              <p className="text-blue-200/80 text-sm">Sistema de Visualização Naval</p>
+              <p className="text-blue-200/80 text-sm">SISDOCPAPEM</p>
             </div>
           </div>
 

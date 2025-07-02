@@ -291,6 +291,49 @@ const Admin: React.FC = () => {
     setEditingOfficer(null);
   };
 
+  // Funções para editar contramesres
+  const startEditMaster = (id: number, name: string) => {
+    setEditingMaster({ id, name });
+  };
+
+  const saveEditMaster = async () => {
+    if (editingMaster && editingMaster.name.trim()) {
+      try {
+        const response = await fetch(getBackendUrl(`/api/military-personnel/${editingMaster.id}`), {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: editingMaster.name.trim(),
+            type: 'master',
+            rank: '1sg',
+            fullRankName: `1º Sargento ${editingMaster.name.trim()}`
+          })
+        });
+
+        if (response.ok) {
+          await loadMilitaryPersonnel();
+          setEditingMaster(null);
+          toast({
+            title: "Contramestre atualizado",
+            description: `${editingMaster.name.trim()} foi atualizado no sistema`,
+          });
+        } else {
+          throw new Error('Erro ao atualizar');
+        }
+      } catch (error) {
+        toast({
+          title: "Erro",
+          description: "Não foi possível atualizar o contramestre",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const cancelEditMaster = () => {
+    setEditingMaster(null);
+  };
+
   // Funções para gerenciar Contramesres com persistência
   const addMaster = async () => {
     if (newMasterName.trim()) {
@@ -2293,23 +2336,7 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                           {isLoading ? 'Verificando...' : '🔄 Verificar Status do Servidor'}
                         </Button>
                         
-                        <Button 
-                          onClick={async () => {
-                            try {
-                              const response = await fetch(getBackendUrl('/api/list-pdfs'));
-                              const data = await response.json();
-                              console.log('📄 Documentos do servidor:', data);
-                              alert(`Documentos encontrados: ${data.files ? data.files.length : 0}\nVerifique o console para detalhes.`);
-                            } catch (error) {
-                              console.error('❌ Erro ao listar documentos:', error);
-                              alert('Erro ao listar documentos do servidor');
-                            }
-                          }}
-                          variant="outline"
-                          className="w-full"
-                        >
-                          📋 Listar Documentos do Servidor
-                        </Button>
+
                       </div>
 
                       <div className="p-4 bg-green-50 rounded-lg border-l-4 border-green-500">
@@ -2815,15 +2842,57 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                               ) : (
                                 (dbMasters.length > 0 ? dbMasters : MASTERS_DATA.map((m, index) => ({ id: index + 1, name: m.name, type: 'master' as const }))).map((master) => (
                                   <div key={master.id} className="flex items-center justify-between p-2 border rounded">
-                                    <span className="text-sm">{master.name}</span>
-                                    <Button 
-                                      size="sm" 
-                                      variant="destructive" 
-                                      className="text-xs"
-                                      onClick={() => removeMaster(master.id, master.name)}
-                                    >
-                                      🗑️
-                                    </Button>
+                                    {editingMaster?.id === master.id ? (
+                                      <div className="flex-1 flex items-center gap-2">
+                                        <Input
+                                          value={editingMaster.name}
+                                          onChange={(e) => setEditingMaster({
+                                            ...editingMaster,
+                                            name: e.target.value
+                                          })}
+                                          className="text-sm"
+                                          autoFocus
+                                        />
+                                        <Button 
+                                          size="sm" 
+                                          onClick={saveEditMaster}
+                                          disabled={!editingMaster.name.trim()}
+                                          className="text-xs"
+                                        >
+                                          ✅
+                                        </Button>
+                                        <Button 
+                                          size="sm" 
+                                          variant="outline"
+                                          onClick={cancelEditMaster}
+                                          className="text-xs"
+                                        >
+                                          ❌
+                                        </Button>
+                                      </div>
+                                    ) : (
+                                      <>
+                                        <span className="text-sm flex-1">{master.name}</span>
+                                        <div className="flex gap-1">
+                                          <Button 
+                                            size="sm" 
+                                            variant="outline"
+                                            className="text-xs"
+                                            onClick={() => startEditMaster(master.id, master.name)}
+                                          >
+                                            ✏️
+                                          </Button>
+                                          <Button 
+                                            size="sm" 
+                                            variant="destructive" 
+                                            className="text-xs"
+                                            onClick={() => removeMaster(master.id, master.name)}
+                                          >
+                                            🗑️
+                                          </Button>
+                                        </div>
+                                      </>
+                                    )}
                                   </div>
                                 ))
                               )}
