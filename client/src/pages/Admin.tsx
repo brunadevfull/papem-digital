@@ -167,27 +167,88 @@ const Admin: React.FC = () => {
 
 
 
-  // Funções para gerenciar oficiais
-  const addOfficer = () => {
-    if (newOfficerName.trim()) {
-      const newOfficer = { name: newOfficerName.trim(), rank: "1t" as const };
-      setEditableOfficers([...editableOfficers, newOfficer]);
-      setNewOfficerName("");
-      toast({
-        title: "Oficial adicionado",
-        description: `${newOfficer.name} foi adicionado à lista`,
-      });
+  // Carregar dados dos militares da API
+  const loadMilitaryPersonnel = async () => {
+    try {
+      setLoadingMilitary(true);
+      const response = await fetch(getBackendUrl('/api/military-personnel'));
+      
+      if (response.ok) {
+        const result = await response.json();
+        const personnel = result.data || [];
+        
+        setDbOfficers(personnel.filter((p: any) => p.type === 'officer'));
+        setDbMasters(personnel.filter((p: any) => p.type === 'master'));
+      }
+    } catch (error) {
+      console.error('Erro ao carregar militares:', error);
+    } finally {
+      setLoadingMilitary(false);
     }
   };
 
-  const removeOfficer = (index: number) => {
-    const officer = editableOfficers[index];
-    setEditableOfficers(editableOfficers.filter((_, i) => i !== index));
-    toast({
-      title: "Oficial removido",
-      description: `${officer.name} foi removido da lista`,
-      variant: "destructive",
-    });
+  // Carregar dados na inicialização
+  useEffect(() => {
+    loadMilitaryPersonnel();
+  }, []);
+
+  // Funções para gerenciar oficiais com persistência
+  const addOfficer = async () => {
+    if (newOfficerName.trim()) {
+      try {
+        const response = await fetch(getBackendUrl('/api/military-personnel'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: newOfficerName.trim(),
+            type: 'officer',
+            rank: '1t',
+            fullRankName: `1º Tenente ${newOfficerName.trim()}`,
+            active: true
+          })
+        });
+
+        if (response.ok) {
+          await loadMilitaryPersonnel();
+          setNewOfficerName("");
+          toast({
+            title: "Oficial adicionado",
+            description: `${newOfficerName.trim()} foi salvo no sistema`,
+          });
+        } else {
+          throw new Error('Erro ao salvar');
+        }
+      } catch (error) {
+        toast({
+          title: "Erro",
+          description: "Não foi possível salvar o oficial",
+          variant: "destructive"
+        });
+      }
+    }
+  };
+
+  const removeOfficer = async (id: number, name: string) => {
+    try {
+      const response = await fetch(getBackendUrl(`/api/military-personnel/${id}`), {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        await loadMilitaryPersonnel();
+        toast({
+          title: "Oficial removido",
+          description: `${name} foi removido do sistema`,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível remover o oficial",
+        variant: "destructive"
+      });
+    }
   };
 
   const startEditOfficer = (index: number) => {
@@ -217,27 +278,61 @@ const Admin: React.FC = () => {
     setEditingOfficer(null);
   };
 
-  // Funções para gerenciar contramesres
-  const addMaster = () => {
+  // Funções para gerenciar contramesres com persistência
+  const addMaster = async () => {
     if (newMasterName.trim()) {
-      const newMaster = { name: newMasterName.trim(), rank: "1sg" as const };
-      setEditableMasters([...editableMasters, newMaster]);
-      setNewMasterName("");
-      toast({
-        title: "Contramestre adicionado",
-        description: `${newMaster.name} foi adicionado à lista`,
-      });
+      try {
+        const response = await fetch(getBackendUrl('/api/military-personnel'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: newMasterName.trim(),
+            type: 'master',
+            rank: '1sg',
+            fullRankName: `1º Sargento ${newMasterName.trim()}`,
+            active: true
+          })
+        });
+
+        if (response.ok) {
+          await loadMilitaryPersonnel();
+          setNewMasterName("");
+          toast({
+            title: "Contramestre adicionado",
+            description: `${newMasterName.trim()} foi salvo no sistema`,
+          });
+        }
+      } catch (error) {
+        toast({
+          title: "Erro",
+          description: "Não foi possível salvar o contramestre",
+          variant: "destructive"
+        });
+      }
     }
   };
 
-  const removeMaster = (index: number) => {
-    const master = editableMasters[index];
-    setEditableMasters(editableMasters.filter((_, i) => i !== index));
-    toast({
-      title: "Contramestre removido",
-      description: `${master.name} foi removido da lista`,
-      variant: "destructive",
-    });
+  const removeMaster = async (id: number, name: string) => {
+    try {
+      const response = await fetch(getBackendUrl(`/api/military-personnel/${id}`), {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        await loadMilitaryPersonnel();
+        toast({
+          title: "Contramestre removido",
+          description: `${name} foi removido do sistema`,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível remover o contramestre",
+        variant: "destructive"
+      });
+    }
   };
 
   // Estados para status do sistema
@@ -2643,7 +2738,7 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                                           size="sm" 
                                           variant="destructive" 
                                           className="text-xs"
-                                          onClick={() => removeOfficer(index)}
+                                          onClick={() => removeOfficer(officer.id, officer.name)}
                                         >
                                           🗑️
                                         </Button>
@@ -2702,19 +2797,23 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                               </SheetDescription>
                             </SheetHeader>
                             <div className="mt-6 space-y-4 max-h-96 overflow-y-auto">
-                              {editableMasters.map((master, index) => (
-                                <div key={index} className="flex items-center justify-between p-2 border rounded">
-                                  <span className="text-sm">{master.name}</span>
-                                  <Button 
-                                    size="sm" 
-                                    variant="destructive" 
-                                    className="text-xs"
-                                    onClick={() => removeMaster(index)}
-                                  >
-                                    🗑️
-                                  </Button>
-                                </div>
-                              ))}
+                              {loadingMilitary ? (
+                                <div className="text-center text-sm text-muted-foreground">Carregando militares...</div>
+                              ) : (
+                                dbMasters.map((master) => (
+                                  <div key={master.id} className="flex items-center justify-between p-2 border rounded">
+                                    <span className="text-sm">{master.name}</span>
+                                    <Button 
+                                      size="sm" 
+                                      variant="destructive" 
+                                      className="text-xs"
+                                      onClick={() => removeMaster(master.id, master.name)}
+                                    >
+                                      🗑️
+                                    </Button>
+                                  </div>
+                                ))
+                              )}
                             </div>
                             <div className="mt-4 pt-4 border-t">
                               <Input 
