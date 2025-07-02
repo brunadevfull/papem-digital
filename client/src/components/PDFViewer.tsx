@@ -1139,21 +1139,30 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
     );
   };
 
-  // CORREÇÃO: Título dinâmico baseado na escala atual
+  // CORREÇÃO: Título dinâmico baseado na escala atual com detecção de cardápio
   const getCurrentTitle = () => {
     if (documentType === "escala") {
       const currentEscala = getCurrentEscalaDoc();
       const activeEscalas = escalaDocuments.filter(doc => doc.active);
       
       if (currentEscala) {
+        // Detectar se é cardápio baseado no nome do arquivo/título
+        const isCardapio = currentEscala.title.toLowerCase().includes('cardápio') || 
+                          currentEscala.title.toLowerCase().includes('cardapio') ||
+                          currentEscala.url.toLowerCase().includes('cardápio') ||
+                          currentEscala.url.toLowerCase().includes('cardapio');
+        
         const categorySubtitle = currentEscala.category
           ? `(${currentEscala.category === "oficial" ? "Oficiais" : "Praças"})`
           : "";
         
+        // Emoji especial para cardápio
+        const emojiPrefix = isCardapio ? "🍽️ " : "";
+        
         if (activeEscalas.length > 1) {
-          return `${title} ${categorySubtitle} - ${currentEscalaIndex + 1}/${activeEscalas.length}`;
+          return `${emojiPrefix}${title} ${categorySubtitle} - ${currentEscalaIndex + 1}/${activeEscalas.length}`;
         } else {
-          return `${title} ${categorySubtitle}`;
+          return `${emojiPrefix}${title} ${categorySubtitle}`;
         }
       }
     }
@@ -1187,7 +1196,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                 {documentType === "plasa" ? (
                   activePlasaDoc?.title || "PLASA - Plano de Serviço Semanal"
                 ) : (
-                  currentEscala?.title || "Escala de Serviço Semanal"
+                  getCurrentTitle() || "Escala de Serviço Semanal"
                 )}
               </span>
               
