@@ -421,12 +421,12 @@ const Admin: React.FC = () => {
         "3sg": "3º Sargento"
       };
       
-      // Só adicionar graduação se não estiver presente
-      const officerFullName = selectedOfficer && !hasRank(dutyOfficers.officerName)
+      // Construir nomes completos sempre usando dados da lista (para evitar duplicação)
+      const officerFullName = selectedOfficer 
         ? `${rankMap[selectedOfficer.rank]} ${selectedOfficer.name}`
         : dutyOfficers.officerName;
       
-      const masterFullName = selectedMaster && !hasRank(dutyOfficers.masterName)
+      const masterFullName = selectedMaster 
         ? `${rankMap[selectedMaster.rank]} ${selectedMaster.name}`
         : dutyOfficers.masterName;
 
@@ -2065,38 +2065,65 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                         </p>
                       </div>
                       
-                      <div className="space-y-2">
-                        <div className="flex items-center">
-                          <Label htmlFor="documentAlternateInterval">
-                            ⏱️ Intervalo de Alternância entre Escalas (segundos)
-                          </Label>
-                          <HoverCard>
-                            <HoverCardTrigger asChild>
-                              <span className="ml-2 text-blue-500 cursor-help text-sm">[?]</span>
-                            </HoverCardTrigger>
-                            <HoverCardContent className="w-80">
-                              <p className="text-sm">
-                                Define quanto tempo cada escala (Oficiais/Praças) será exibida antes de alternar para a outra. 
-                                Esta configuração só tem efeito quando há mais de uma escala ativa.
-                              </p>
-                            </HoverCardContent>
-                          </HoverCard>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <div className="flex items-center">
+                            <Label htmlFor="escalaInterval">
+                              ⚖️ Intervalo entre Escalas (segundos)
+                            </Label>
+                            <HoverCard>
+                              <HoverCardTrigger asChild>
+                                <span className="ml-2 text-blue-500 cursor-help text-sm">[?]</span>
+                              </HoverCardTrigger>
+                              <HoverCardContent className="w-80">
+                                <p className="text-sm">
+                                  Define quanto tempo cada escala (Oficiais/Praças) será exibida antes de alternar para a outra.
+                                </p>
+                              </HoverCardContent>
+                            </HoverCard>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Input 
+                              id="escalaInterval" 
+                              type="number" 
+                              min="5" 
+                              max="60" 
+                              className="w-24"
+                              value={Math.floor(documentAlternateInterval / 1000)}
+                              onChange={handleDocumentAlternateIntervalChange}
+                            />
+                            <span className="text-sm text-muted-foreground">segundos entre escalas</span>
+                          </div>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <Input 
-                            id="documentAlternateInterval" 
-                            type="number" 
-                            min="5" 
-                            max="60" 
-                            className="w-24"
-                            value={documentAlternateInterval}
-                            onChange={handleDocumentAlternateIntervalChange}
-                          />
-                          <span className="text-sm text-muted-foreground">segundos entre escalas</span>
+
+                        <div className="space-y-2">
+                          <div className="flex items-center">
+                            <Label htmlFor="cardapioInterval">
+                              🍽️ Intervalo do Cardápio (segundos)
+                            </Label>
+                            <HoverCard>
+                              <HoverCardTrigger asChild>
+                                <span className="ml-2 text-blue-500 cursor-help text-sm">[?]</span>
+                              </HoverCardTrigger>
+                              <HoverCardContent className="w-80">
+                                <p className="text-sm">
+                                  Define quanto tempo o cardápio fica visível antes de voltar às escalas.
+                                </p>
+                              </HoverCardContent>
+                            </HoverCard>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Input 
+                              id="cardapioInterval" 
+                              type="number" 
+                              min="10" 
+                              max="120" 
+                              className="w-24"
+                              defaultValue="15"
+                            />
+                            <span className="text-sm text-muted-foreground">segundos para cardápio</span>
+                          </div>
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                          Tempo que cada escala fica visível antes de alternar para a próxima.
-                        </p>
                       </div>
 
                       <div className="space-y-2">

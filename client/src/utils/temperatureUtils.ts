@@ -39,7 +39,9 @@ const translateWeatherDescription = (description: string): string => {
     'scattered clouds': 'nuvens dispersas',
     'broken clouds': 'nuvens fragmentadas',
     'overcast clouds': 'nublado',
+    'overcast': 'nublado',
     'cloudy': 'nublado',
+    'partly cloudy': 'parcialmente nublado',
     
     // Chuva
     'light rain': 'chuva fraca',
@@ -48,6 +50,8 @@ const translateWeatherDescription = (description: string): string => {
     'shower rain': 'chuva rápida',
     'rain': 'chuva',
     'drizzle': 'garoa',
+    'light intensity drizzle': 'garoa fraca',
+    'heavy intensity drizzle': 'garoa forte',
     
     // Tempestades
     'thunderstorm': 'tempestade',
@@ -55,17 +59,17 @@ const translateWeatherDescription = (description: string): string => {
     'thunderstorm with rain': 'tempestade com chuva',
     'thunderstorm with heavy rain': 'tempestade com chuva forte',
     
-    // Neblina e névoa
-    'mist': 'névoa',
-    'fog': 'neblina',
-    'haze': 'nebulosidade',
+    // Neve (raro no Rio, mas pode aparecer)
+    'snow': 'neve',
+    'light snow': 'neve fraca',
     
-    // Outras condições
-    'overcast': 'nublado',
-    'partly cloudy': 'parcialmente nublado',
+    // Outras condições  
+    'mist': 'neblina',
+    'fog': 'nevoeiro',
+    'haze': 'névoa seca',
+    'dust': 'poeira',
+    'smoke': 'fumaça',
     'mostly cloudy': 'muito nublado',
-    'light intensity drizzle': 'garoa fraca',
-    'heavy intensity drizzle': 'garoa forte',
     
     // Fallbacks comuns da API
     'temperature not available': 'temperatura não disponível',
