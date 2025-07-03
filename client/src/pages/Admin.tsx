@@ -45,63 +45,42 @@ import {
 } from "@/components/ui/sheet";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import WeatherAlerts from "@/components/WeatherAlerts";
-// Dados dos oficiais baseados no quadro da Marinha
-const OFFICERS_DATA = [
-  { name: "CT (IM) YAGO", rank: "ct" as const },
-  { name: "CT (IM) MATEUS BARBOSA", rank: "ct" as const },
-  { name: "1T (RM2-T) LARISSA CASTRO", rank: "1t" as const },
-  { name: "1T (IM) ALEXANDRIA", rank: "1t" as const },
-  { name: "1T (QC-IM) TAMIRES", rank: "1t" as const },
-  { name: "1T (RM2-T) KARINE", rank: "1t" as const },
-  { name: "1T (AA) RONALD CHAVES", rank: "1t" as const },
-  { name: "1T (RM2-T) PINA TRIGO", rank: "1t" as const },
-  { name: "1T (IM) LEONARDO ANDRADE", rank: "1t" as const },
-  { name: "1T (IM) ELIEZER", rank: "1t" as const },
-  { name: "2T (AA) MARCIO MARTINS", rank: "2t" as const },
-  { name: "2T (AA) MACHADO", rank: "2t" as const }
-];
+// Dados dos oficiais baseados no quadro acda Marinha
+
+// ✅ FIXED: Import the correct data structures
+import { 
+  OFFICERS_LIST, 
+  MASTERS_LIST, 
+  type OfficerData, 
+  type MasterData,
+  RANK_DISPLAY_MAP,
+  RANK_FULL_NAME_MAP
+} from "@/data/officersData";
+
+// ✅ FIXED: Create compatible data arrays for backward compatibility
+const OFFICERS_DATA = OFFICERS_LIST.map(officer => ({
+  name: officer.name,
+  rank: officer.rank
+}));
+
+const MASTERS_DATA = MASTERS_LIST.map(master => ({
+  name: master.name,
+  rank: master.rank
+}));
+
+// ✅ FIXED: Define proper types for the component
+interface MilitaryPersonnel {
+  id: number;
+  name: string;
+  type: 'officer' | 'master';
+  rank: string;
+  fullRankName?: string;
+  active?: boolean;
+}
 
 
 
-const MASTERS_DATA = [
-  { name: "1SG SALES", rank: "1sg" as const },
-  { name: "1SG LEANDRO", rank: "1sg" as const },
-  { name: "1SG ELIANE", rank: "1sg" as const },
-  { name: "1SG RAFAELA", rank: "1sg" as const },
-  { name: "1SG SILVIA HELENA", rank: "1sg" as const },
-  { name: "1SG DA SILVA", rank: "1sg" as const },
-  { name: "1SG BEIRUTH", rank: "1sg" as const },
-  { name: "1SG CARLA", rank: "1sg" as const },
-  { name: "2SG ALICE", rank: "2sg" as const },
-  { name: "2SG DIEGO", rank: "2sg" as const },
-  { name: "2SG CANESCHE", rank: "2sg" as const },
-  { name: "2SG NIBI", rank: "2sg" as const },
-  { name: "2SG MONIQUE", rank: "2sg" as const },
-  { name: "2SG DAMASCENO", rank: "2sg" as const },
-  { name: "2SG SOUZA LIMA", rank: "2sg" as const },
-  { name: "2SG SANT'ANNA", rank: "2sg" as const },
-  { name: "2SG AFONSO", rank: "2sg" as const },
-  { name: "2SG MEIRELES", rank: "2sg" as const },
-  { name: "2SG BRUNA ROCHA", rank: "2sg" as const },
-  { name: "2SG ARIANNE", rank: "2sg" as const },
-  { name: "3SG MAYARA", rank: "3sg" as const },
-  { name: "3SG MARCIA", rank: "3sg" as const },
-  { name: "3SG JUSTINO", rank: "3sg" as const },
-  { name: "3SG JONAS", rank: "3sg" as const },
-  { name: "3SG THAÍS SILVA", rank: "3sg" as const },
-  { name: "3SG SABRINA", rank: "3sg" as const },
-  { name: "3SG TAINÁ NEVES", rank: "3sg" as const },
-  { name: "3SG AMANDA PAULINO", rank: "3sg" as const },
-  { name: "3SG ANA BEATHRIZ", rank: "3sg" as const },
-  { name: "3SG KEVIN", rank: "3sg" as const },
-  { name: "3SG JORGE", rank: "3sg" as const },
-  { name: "3SG ALAN", rank: "3sg" as const },
-  { name: "3SG HUGO", rank: "3sg" as const },
-  { name: "3SG DA SILVA", rank: "3sg" as const },
-  { name: "3SG FERNANDES", rank: "3sg" as const },
-  { name: "3SG LUCAS SANTOS", rank: "3sg" as const },
-  { name: "3SG JÉSSYCA (Dispensa Gestante)", rank: "3sg" as const }
-];
+
 
 const Admin: React.FC = () => {
   const { 
@@ -155,8 +134,7 @@ const Admin: React.FC = () => {
   const [isLoadingOfficers, setIsLoadingOfficers] = useState(false);
 
   // Estados para edição de militares - agora carregados da API
-  const [editableOfficers, setEditableOfficers] = useState([...OFFICERS_DATA]);
-  const [editableMasters, setEditableMasters] = useState([...MASTERS_DATA]);
+
   const [dbOfficers, setDbOfficers] = useState<any[]>([]);
   const [dbMasters, setDbMasters] = useState<any[]>([]);
   const [newOfficerName, setNewOfficerName] = useState("");
@@ -255,37 +233,49 @@ const Admin: React.FC = () => {
     setEditingOfficer({ id, name });
   };
 
-  const saveEditOfficer = async () => {
-    if (editingOfficer && editingOfficer.name.trim()) {
-      try {
-        const response = await fetch(getBackendUrl(`/api/military-personnel/${editingOfficer.id}`), {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: editingOfficer.name.trim(),
-            fullRankName: `1º Tenente ${editingOfficer.name.trim()}`
-          })
-        });
+const saveEditOfficer = async () => {
+  if (!editingOfficer) {
+    console.error('Erro: editingOfficer is null');
+    return;
+  }
 
-        if (response.ok) {
-          await loadMilitaryPersonnel();
-          setEditingOfficer(null);
-          toast({
-            title: "Oficial atualizado",
-            description: "Nome do oficial foi atualizado com sucesso",
-          });
-        } else {
-          throw new Error('Erro ao atualizar');
-        }
-      } catch (error) {
-        toast({
-          title: "Erro",
-          description: "Não foi possível atualizar o oficial",
-          variant: "destructive"
-        });
-      }
+  if (!editingOfficer.name.trim()) {
+    toast({
+      title: "Erro",
+      description: "Nome não pode estar vazio",
+      variant: "destructive"
+    });
+    return;
+  }
+
+  try {
+    const response = await fetch(getBackendUrl(`/api/military-personnel/${editingOfficer.id}`), {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: editingOfficer.name.trim(),
+        fullRankName: `1º Tenente ${editingOfficer.name.trim()}`
+      })
+    });
+
+    if (response.ok) {
+      await loadMilitaryPersonnel();
+      setEditingOfficer(null);
+      toast({
+        title: "Oficial atualizado",
+        description: "Nome do oficial foi atualizado com sucesso",
+      });
+    } else {
+      throw new Error('Erro ao atualizar');
     }
-  };
+  } catch (error) {
+    toast({
+      title: "Erro",
+      description: "Não foi possível atualizar o oficial",
+      variant: "destructive"
+    });
+  }
+};
 
   const cancelEditOfficer = () => {
     setEditingOfficer(null);
@@ -296,39 +286,51 @@ const Admin: React.FC = () => {
     setEditingMaster({ id, name });
   };
 
-  const saveEditMaster = async () => {
-    if (editingMaster && editingMaster.name.trim()) {
-      try {
-        const response = await fetch(getBackendUrl(`/api/military-personnel/${editingMaster.id}`), {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: editingMaster.name.trim(),
-            type: 'master',
-            rank: '1sg',
-            fullRankName: `1º Sargento ${editingMaster.name.trim()}`
-          })
-        });
+ const saveEditMaster = async () => {
+  if (!editingMaster) {
+    console.error('Erro: editingMaster is null');
+    return;
+  }
 
-        if (response.ok) {
-          await loadMilitaryPersonnel();
-          setEditingMaster(null);
-          toast({
-            title: "Contramestre atualizado",
-            description: `${editingMaster.name.trim()} foi atualizado no sistema`,
-          });
-        } else {
-          throw new Error('Erro ao atualizar');
-        }
-      } catch (error) {
-        toast({
-          title: "Erro",
-          description: "Não foi possível atualizar o contramestre",
-          variant: "destructive",
-        });
-      }
+  if (!editingMaster.name.trim()) {
+    toast({
+      title: "Erro",
+      description: "Nome não pode estar vazio",
+      variant: "destructive"
+    });
+    return;
+  }
+
+  try {
+    const response = await fetch(getBackendUrl(`/api/military-personnel/${editingMaster.id}`), {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: editingMaster.name.trim(),
+        type: 'master',
+        rank: '1sg',
+        fullRankName: `1º Sargento ${editingMaster.name.trim()}`
+      })
+    });
+
+    if (response.ok) {
+      await loadMilitaryPersonnel();
+      setEditingMaster(null);
+      toast({
+        title: "Contramestre atualizado",
+        description: `${editingMaster.name.trim()} foi atualizado no sistema`,
+      });
+    } else {
+      throw new Error('Erro ao atualizar');
     }
-  };
+  } catch (error) {
+    toast({
+      title: "Erro",
+      description: "Não foi possível atualizar o contramestre",
+      variant: "destructive",
+    });
+  }
+};
 
   const cancelEditMaster = () => {
     setEditingMaster(null);
@@ -554,10 +556,11 @@ const Admin: React.FC = () => {
     setIsLoadingOfficers(true);
     try {
       // Construir nomes completos com graduação (evitando duplicação)
-      const selectedOfficer = OFFICERS_DATA.find(o => o.name === dutyOfficers.officerName);
-      const selectedMaster = MASTERS_DATA.find(m => m.name === dutyOfficers.masterName);
-      
+   
       // Função para verificar se o nome já contém graduação
+      // ❌ FALTANDO ESTAS LINHAS
+const selectedOfficer = OFFICERS_DATA.find(o => o.name === dutyOfficers.officerName);
+const selectedMaster = MASTERS_DATA.find(m => m.name === dutyOfficers.masterName);
       const hasRank = (name: string): boolean => {
         const ranks = ["1º Tenente", "2º Tenente", "Capitão-Tenente", "Capitão de Corveta", "Capitão de Fragata", "1º Sargento", "2º Sargento", "3º Sargento"];
         return ranks.some(rank => name.includes(rank));
@@ -1945,7 +1948,7 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
         
         <div className="bg-purple-50 p-4 rounded-lg">
           <h4 className="font-medium mb-2 flex items-center gap-2">
-            📋 BONO (Boletim de Ordens e Notícias)
+           (PoC)*** <br></br> 📋 BONO (Boletim de Ordens e Notícias)
           </h4>
           <ul className="list-disc pl-5 space-y-1 text-sm text-purple-700">
             <li>Mesmo comportamento do PLASA</li>
@@ -2734,13 +2737,12 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
                             <div className="mt-6 space-y-4 max-h-96 overflow-y-auto">
                               {(dbOfficers.length > 0 ? dbOfficers : OFFICERS_DATA.map((o, index) => ({ id: index + 1, name: o.name, type: 'officer' as const }))).map((officer) => (
                                 <div key={officer.id} className="flex items-center justify-between p-2 border rounded">
-                                  {editingOfficer?.id === officer.id ? (
-                                    <div className="flex-1 flex items-center gap-2">
-                                      <Input
-                                        value={editingOfficer.name}
-                                        onChange={(e) => setEditingOfficer({
-                                          ...editingOfficer,
-                                          name: e.target.value
+                                {editingOfficer?.id === officer.id ? (
+  <Input
+    value={editingOfficer.name}
+    onChange={(e) => setEditingOfficer({
+      id: editingOfficer.id,    // ✅ GARANTIDO QUE EXISTE
+      name: e.target.value
                                         })}
                                         className="text-sm"
                                         autoFocus

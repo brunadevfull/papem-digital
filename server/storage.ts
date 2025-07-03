@@ -1,4 +1,5 @@
 import { users, notices, documents, dutyOfficers, militaryPersonnel, type User, type InsertUser, type Notice, type InsertNotice, type PDFDocument, type InsertDocument, type DutyOfficers, type InsertDutyOfficers, type MilitaryPersonnel, type InsertMilitaryPersonnel } from "@shared/schema";
+import { DatabaseStorage } from "./db-storage";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -471,4 +472,29 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+function createStorage(): IStorage {
+  console.log('🔍 Verificando configuração de storage...');
+  
+  // Verificar variável de ambiente
+  const dbUrl = process.env.DATABASE_URL;
+  console.log('📊 DATABASE_URL:', dbUrl ? 'ENCONTRADA' : 'NÃO ENCONTRADA');
+  
+  if (dbUrl) {
+    try {
+      console.log('🔗 DATABASE_URL detectada - usando PostgreSQL');
+      console.log('📊 URL:', dbUrl.replace(/:[^:]*@/, ':***@'));
+      return new DatabaseStorage();
+    } catch (error) {
+      console.error('❌ Erro ao conectar PostgreSQL:', error);
+      console.log('🔄 Voltando para MemStorage');
+    }
+  } else {
+    console.log('⚠️ DATABASE_URL não encontrada');
+    console.log('💾 Usando MemStorage (dados serão perdidos ao reiniciar)');
+  }
+  
+  return new MemStorage();
+}
+
+// FORÇAR PostgreSQL (para teste)
+export const storage = new DatabaseStorage();

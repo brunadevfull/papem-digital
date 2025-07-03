@@ -113,7 +113,7 @@ const Index = () => {
               <h1 className="text-xl font-bold bg-gradient-to-r from-blue-300 to-white bg-clip-text text-transparent">
                 MARINHA DO BRASIL
               </h1>
-              <p className="text-blue-200/80 text-sm">SISDOCPAPEM</p>
+              <p className="text-blue-200/80 text-sm">SisDocPAPEM</p>
             </div>
           </div>
 
@@ -208,7 +208,7 @@ const Index = () => {
       {/* Footer Premium */}
       <footer className="mt-4 bg-gradient-to-r from-slate-800/70 to-blue-900/70 backdrop-blur-xl rounded-xl shadow-xl border border-blue-400/25 py-2 px-4 text-center">
         <p className="text-xs text-blue-200/80 font-medium">
-          &copy; {new Date().getFullYear()} Marinha do Brasil - PAPEM | Sistema Operacional v2.0
+          &copy; {new Date().getFullYear()} Marinha do Brasil - PAPEM 
         </p>
       </footer>
     </div>
