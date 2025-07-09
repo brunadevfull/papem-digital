@@ -59,18 +59,45 @@ import {
   RANK_FULL_NAME_MAP
 } from "@/data/officersData";
 
+
+const getErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (typeof error === 'string') {
+    return error;
+  }
+  if (error && typeof error === 'object' && 'message' in error) {
+    return String((error as { message: unknown }).message);
+  }
+  return 'Erro desconhecido';
+};
+
+// Adicionar no topo do arquivo, após os imports
+const handleAsyncError = (error: unknown, defaultMessage: string = "Erro desconhecido"): string => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (typeof error === 'string') {
+    return error;
+  }
+  return defaultMessage;
+};
+
+
+
 // ✅ FIXED: Create compatible data arrays for backward compatibility
 const OFFICERS_DATA = OFFICERS_LIST.map(officer => ({
   name: officer.name,
   rank: officer.rank,
-  specialty: officer.specialty,
+  specialty: officer.specialty || null, // ✅ CORREÇÃO: Converter undefined para null
   fullRankName: officer.fullRankName
 }));
 
 const MASTERS_DATA = MASTERS_LIST.map(master => ({
   name: master.name,
   rank: master.rank,
-  specialty: master.specialty,
+  specialty: master.specialty || null, 
   fullRankName: master.fullRankName
 }));
 
@@ -83,8 +110,6 @@ interface MilitaryPersonnel {
   fullRankName?: string;
   active?: boolean;
 }
-
-
 
 
 
@@ -184,17 +209,16 @@ const Admin: React.FC = () => {
     const personnelData = type === 'officer' ? OFFICERS_DATA : MASTERS_DATA;
     const militaryData = personnelData.find(p => p.name === fullName || p.name.includes(fullName));
     
-    if (militaryData) {
-      const displayName = `${militaryData.rank.toUpperCase()}${militaryData.specialty ? ` (${militaryData.specialty.toUpperCase()})` : ''} ${militaryData.name}`;
-      console.log('✅ Convertido da base:', displayName);
-      return {
-        displayName,
-        rank: militaryData.rank.toUpperCase(),
-        specialty: militaryData.specialty,
-        name: militaryData.name
-      };
-    }
-    
+  if (militaryData) {
+    const displayName = `${militaryData.rank.toUpperCase()}${militaryData.specialty ? ` (${militaryData.specialty.toUpperCase()})` : ''} ${militaryData.name}`;
+    console.log('✅ Convertido da base:', displayName);
+    return {
+      displayName,
+      rank: militaryData.rank.toUpperCase(),
+      specialty: militaryData.specialty || null, // ✅ CORREÇÃO: Converter undefined para null
+      name: militaryData.name
+    };
+  }
     // Verificar se contém graduação por extenso e converter
     const rankMapping = {
       'Primeiro-Tenente': '1T',
@@ -790,10 +814,11 @@ const saveEditOfficer = async () => {
       }
     } catch (error) {
       console.error('❌ Erro ao salvar oficiais:', error);
+const errorMessage = getErrorMessage(error);
+
       toast({
         title: "Erro",
-        description: `Falha ao salvar oficiais: ${error.message}`,
-        variant: "destructive"
+        description: `Falha ao salvar oficiais: ${errorMessage}`,        variant: "destructive"
       });
     } finally {
       setIsLoadingOfficers(false);
@@ -1071,22 +1096,24 @@ const handleDocumentSubmit = async (e: React.FormEvent) => {
     
     resetForm();
 
-  } catch (error: unknown) {
+  } catch (error) {
     console.error('❌ Erro no upload:', error);
     
     let errorMessage = "Não foi possível enviar o arquivo. Tente novamente.";
     
-    if (error instanceof Error) {
-      if (error.message?.includes('FILE_TOO_LARGE')) {
-        errorMessage = "Arquivo muito grande. Máximo permitido: 50MB.";
-      } else if (error.message?.includes('INVALID_FILE')) {
-        errorMessage = "Tipo de arquivo não suportado. Use PDFs ou imagens.";
-      } else if (error.message?.includes('MISSING_FIELDS')) {
-        errorMessage = "Dados obrigatórios estão faltando.";
-      } else if (error.message?.includes('fetch')) {
-        errorMessage = "Erro de conexão. Verifique se o servidor está rodando.";
-      }
+ const baseErrorMessage = getErrorMessage(error);
+  if (baseErrorMessage.includes('FILE_TOO_LARGE')) {
+      errorMessage = "Arquivo muito grande. Máximo permitido: 50MB.";
+    } else if (baseErrorMessage.includes('INVALID_FILE')) {
+      errorMessage = "Tipo de arquivo não suportado. Use PDFs ou imagens.";
+    } else if (baseErrorMessage.includes('MISSING_FIELDS')) {
+      errorMessage = "Dados obrigatórios estão faltando.";
+    } else if (baseErrorMessage.includes('fetch')) {
+      errorMessage = "Erro de conexão. Verifique se o servidor está rodando.";
+    } else if (baseErrorMessage !== 'Erro desconhecido') {
+      errorMessage = `Erro: ${baseErrorMessage}`;
     }
+    
     
     toast({
       title: "Erro no upload",
