@@ -3,6 +3,8 @@ import { useDisplay } from "@/context/DisplayContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const IS_DEV_MODE = process.env.NODE_ENV === 'development';
+const DEBUG_RENDERS = false;
+const processingRefs = new Map<string, boolean>();
 
 // Configurar PDF.js
 declare global {
@@ -121,6 +123,16 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   autoRestartDelay = 3,
   onScrollComplete
 }) => {
+   const renderCountRef = useRef(0);
+  renderCountRef.current++;
+  
+  if (DEBUG_RENDERS) {
+    console.log(`🔢 PDFViewer (${documentType}) Render #${renderCountRef.current}`);
+    if (renderCountRef.current > 10) {
+      console.error(`🚨 POSSÍVEL LOOP DETECTADO - ${documentType.toUpperCase()} renderizou ${renderCountRef.current} vezes!`);
+    }
+  }
+
   // CORREÇÃO: Usar currentEscalaIndex do contexto
   const { activeEscalaDoc, activePlasaDoc, activeBonoDoc, currentEscalaIndex, escalaDocuments } = useDisplay();
   const [totalPages, setTotalPages] = useState(0);
@@ -135,7 +147,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   const scrollerRef = useRef<ContinuousAutoScroller | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const restartTimerRef = useRef<NodeJS.Timeout | null>(null);
-
+const lastProcessedDocRef = useRef<string>('');
+  const isProcessingRef = useRef<boolean>(false);
   // Configurações
   const getScrollSpeed = () => {
     switch (scrollSpeed) {

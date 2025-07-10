@@ -46,7 +46,6 @@ export const DutyOfficersDisplay = () => {
   const extractMilitaryData = (fullName: string, type: 'officer' | 'master') => {
     if (!fullName) return null;
 
-    console.log('🎖️ Analisando militar:', { fullName, type });
     
     // Primeiro: Verificar se já está no formato correto (CT (IM) YAGO)
     const regexAlreadyFormatted = /^([A-Z0-9]+)\s*\(([^)]+)\)\s+(.+)$/;
@@ -65,7 +64,6 @@ export const DutyOfficersDisplay = () => {
     
     // Segundo: Converter de formato extenso e extrair nome para buscar na base
     const convertedName = convertToAbbreviation(fullName);
-    console.log('🎖️ Nome convertido:', { original: fullName, converted: convertedName });
     
     // Extrair apenas o nome do militar (última palavra ou palavras)
     const nameParts = convertedName.trim().split(' ');
@@ -79,7 +77,6 @@ export const DutyOfficersDisplay = () => {
       militaryName = convertedName;
     }
     
-    console.log('🎖️ Nome extraído para busca:', militaryName);
     
     // Buscar dados completos nas listas
     const militaryList = type === 'officer' ? OFFICERS_LIST : MASTERS_LIST;

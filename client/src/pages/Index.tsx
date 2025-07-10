@@ -82,15 +82,7 @@ const Index = () => {
   const mainDocTitle = currentMainDoc?.title || 
     (currentMainDocType === "plasa" ? "PLASA - Plano de Serviço Semanal" : "BONO - Boletim de Ocorrências");
 
-  console.log("🏠 Index: Renderizando página principal", {
-    activePlasa: activePlasaDoc?.title || 'nenhum',
-    activeBono: activeBonoDoc?.title || 'nenhum',
-    activeEscala: activeEscalaDoc?.title || 'nenhum',
-    currentMainDocType,
-    currentMainDoc: currentMainDoc?.title || 'nenhum',
-    scrollSpeed,
-    autoRestartDelay
-  });
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-950 flex flex-col p-2 sm:p-3 lg:p-4">
